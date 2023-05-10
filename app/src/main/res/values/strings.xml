@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">同学笔记3.09</string>
+    <string name="action_settings">ScanBLE</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="unknown_device">Unknown device</string>
+    <string name="action_ckplayer">视频笔记</string>
+    <string name="action_clear">清除数据</string>
+    <string name="dot_info">本地笔迹信息</string>
+    <string name="dot_info_intent">查看本地笔迹存储</string>
+
+
+</resources>

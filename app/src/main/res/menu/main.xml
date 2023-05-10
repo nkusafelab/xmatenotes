@@ -1,0 +1,18 @@
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"/>
+    <item
+        android:id="@+id/action_ckplayer"
+        android:title="@string/action_ckplayer"/>
+    <item
+        android:id="@+id/dot_info_intent"
+        android:title="@string/dot_info_intent"/>
+    <item
+        android:id="@+id/action_clear"
+        android:title="@string/action_clear"/>
+
+
+</menu>
