@@ -93,10 +93,8 @@ public class Instruction {
     private static float yD;
     private static Dot.DotType currentDotType;//当前dot类型
 
-    private static ArrayList<MediaDot> mediaDots = new ArrayList<MediaDot>();//MediaDot类型笔迹点暂存区
-    public static ArrayList<SimpleDot> simpleDots = new ArrayList<SimpleDot>();//SimpleDot类型笔迹点暂存区
-    private static Gesture gesture = new Gesture();//当前笔划
-
+    private static ArrayList<MediaDot> mediaDots;//MediaDot类型笔迹点暂存区
+    public static ArrayList<SimpleDot> simpleDots;//SimpleDot类型笔迹点暂存区
 
     public Instruction() {
         pageManager = PageManager.getInstance();
@@ -198,6 +196,7 @@ public class Instruction {
             reced = true;
         }
 
+        gesT = new Gesture(rGesture);
         //指令集识别
         Set<Map.Entry<String,ArrayList<SimpleDot>>> set = rGesture.getStrokes().entrySet();
         for (Map.Entry<String,ArrayList<SimpleDot>> node:
@@ -356,6 +355,9 @@ public class Instruction {
         rectF.top = y;
         rectF.bottom = y;
 
+        mediaDots = new ArrayList<MediaDot>();
+        simpleDots = new ArrayList<SimpleDot>();
+
         Log.e(TAG, "暂存区初始化成功");
     }
 
@@ -376,6 +378,10 @@ public class Instruction {
         getureStrokeN++;
         Log.e(TAG, "当前待定命令包含笔划数量： " + getureStrokeN);
 
+        Gesture gesture = new Gesture();
+
+        gesture.setFrontTSpan(frontTSpan);
+        Log.e(TAG, "gesture.frontTSpan: " + frontTSpan + "ms");
         gesture.setRectF(rectF);
         gesture.setDuration(strokeOverT - strokeBeginT);
         gesture.setStrokesNumber(getureStrokeN);
@@ -388,16 +394,16 @@ public class Instruction {
 //            @Override
 //            public void run() {
 
-                int instructionType = recognize(gesture);
-                Log.e(TAG, "instructionType: " + instructionType);
+                gesture.setInsId(recognize(gesture));
+                Log.e(TAG, "InsId: " + gesture.getInsId());
                 Log.e(TAG, "命令识别结束");
 
-                if(instructionType == -1){
+                if(gesture.getInsId() == -1){
                     return;
                 }
 
-                if ((instructionType == 1 || instructionType == 2) && (wTimer == true)) {
-                    instructionType = 0;//当普通书写延时计时器处于打开状态时，无论单击或双击都按照普通书写算
+                if ((gesture.getInsId() == 1 || gesture.getInsId() == 2) && (wTimer == true)) {
+                    gesture.setInsId(0);//当普通书写延时计时器处于打开状态时，无论单击或双击都按照普通书写算
                     Log.e(TAG, "双击或单击判定为普通书写");
 
                     dcdotFirst = dotDown;
@@ -407,18 +413,18 @@ public class Instruction {
                 }
 
                 Log.e(TAG, "基础响应开始");
-                response(instructionType);
+                response(gesture);
                 Log.e(TAG, "基础响应结束");
 
-                simpleDots.clear();
-                mediaDots.clear();
-                Log.e(TAG, "mediaDots.clear(): " + mediaDots.size());
+//                simpleDots.clear();
+//                mediaDots.clear();
+//                Log.e(TAG, "mediaDots.clear(): " + mediaDots.size());
 
-                if (instructionType != 1) {
+                if (gesture.getInsId() != 1) {
                     Log.e(TAG, "BaseActivity.baseActivity: " + BaseActivity.baseActivity);
                     if (BaseActivity.baseActivity != null) {
                         Log.e(TAG, "回调响应");
-                        BaseActivity.baseActivity.receiveRecognizeResult(instructionType, dcdotFirst.PageID, dcdotFirst.x, dcdotFirst.y);
+                        BaseActivity.baseActivity.receiveRecognizeResult(gesture, dcdotFirst.PageID, dcdotFirst.x, dcdotFirst.y);
                     }
                 }
 //            }
@@ -506,9 +512,6 @@ public class Instruction {
 //                mediaDots.add(mD);
 //                Log.e(TAG, "processEachDot: 添加了(-3, -3)");
 //            }
-
-            gesture.setFrontTSpan(frontTSpan);
-            Log.e(TAG, "gesture.frontTSpan: " + frontTSpan + "ms");
 
             dotDown = dot;
 
@@ -599,11 +602,11 @@ public class Instruction {
     /**
      * 各命令的基础响应。
      * 除了基础响应，如果还需要在特定场景下进一步完成特殊响应，则需要后续进入特定场景下继续响应
-     * @param ctype 待响应命令ID
+     * @param ges 待响应命令ID
      */
     @SuppressLint("SimpleDateFormat")
-    private void response(int ctype) {
-        if (ctype == 1) {
+    private void response(Gesture ges) {
+        if (ges.getInsId() == 1) {
             Log.e(TAG, "单击响应开始");
 
             ////双击两笔划间隔计时起点
@@ -628,8 +631,8 @@ public class Instruction {
                         dcTimer = false;
                         Log.e(TAG, "双击间隔计时器关闭");
                         dcdotFirst = null;
-                        gesture.clear();
-                        gesture = new Gesture();
+//                        gesture.clear();
+//                        gesture = new Gesture();
                         Log.e(TAG, "gesture清空");
 
                         getureStrokeN = 0;
@@ -644,29 +647,25 @@ public class Instruction {
             getureStrokeN = 0;
             Log.e(TAG, "getureStrokeN归零");
 
-            gesture.clear();
-            gesture = new Gesture();
-            Log.e(TAG, "gesture清空");
-
-            if (ctype == 2) {
+            if (ges.getInsId() == 2) {
                 Log.e(TAG, "双击命令基础响应开始");
 
             }
 
-            if (ctype == 3) {
+            if (ges.getInsId() == 3) {
                 Log.e(TAG, "长压命令基础响应开始");
 
             }
 
-            if(ctype == 4){
+            if(ges.getInsId() == 4){
                 Log.e(TAG, "指令控制符命令基础响应开始");
             }
 
-            if(ctype == 5){
+            if(ges.getInsId() == 5){
                 Log.e(TAG, "对钩命令基础响应开始");
             }
 
-            if (ctype == 0 || ctype == 4 || ctype == 5) {
+            if (ges.getInsId() !=1 || ges.getInsId() != 2 || ges.getInsId() != 3) {
                 Log.e(TAG, "普通书写基础响应开始");
 
                 strokesID++;//书写笔划编号+1
@@ -892,6 +891,8 @@ public class Instruction {
     //保存so手势识别返回结果
     public static int res;
 
+    private Gesture gesT;//仅用作传输gestrue,上一次的已经使用了，下一次的才能往里装
+
     //获取so手势识别返回结果
     public void observe(int result){
         Log.e(TAG, "observe: " +result);
@@ -900,14 +901,14 @@ public class Instruction {
 //        Log.e(TAG, "rr: " + rr);
 
         Log.e(TAG, "SVM命令识别结束");
-
-        if(result == 4 || result == 5){
-//            Log.e(TAG, "基础响应开始");
-//            response(result);
-//            Log.e(TAG, "基础响应结束");
-        }else{
-            result = 0;
-        }
+//
+//        if(result == 4 || result == 5){
+////            Log.e(TAG, "基础响应开始");
+////            response(result);
+////            Log.e(TAG, "基础响应结束");
+//        }else{
+//            result = 0;
+//        }
 
         dcdotFirst = dotDown;
 
@@ -920,19 +921,21 @@ public class Instruction {
 //        Toast.makeText(XApp.context, "普通书写", Toast.LENGTH_SHORT).show();
 //        Looper.loop();
 
+        Gesture ges = new Gesture(gesT);
+        ges.setInsId(result);
         Log.e(TAG, "基础响应开始");
-        response(result);
+        response(ges);
         Log.e(TAG, "基础响应结束");
 
-        simpleDots.clear();
-        mediaDots.clear();
-        Log.e(TAG, "mediaDots.clear(): " + mediaDots.size());
+//        simpleDots.clear();
+//        mediaDots.clear();
+//        Log.e(TAG, "mediaDots.clear(): " + mediaDots.size());
 
 //        if (instructionType != 1) {
             Log.e(TAG, "BaseActivity.baseActivity: " + BaseActivity.baseActivity);
             if (BaseActivity.baseActivity != null) {
                 Log.e(TAG, "回调响应");
-                BaseActivity.baseActivity.receiveRecognizeResult(result, dcdotFirst.PageID, dcdotFirst.x, dcdotFirst.y);
+                BaseActivity.baseActivity.receiveRecognizeResult(ges, dcdotFirst.PageID, dcdotFirst.x, dcdotFirst.y);
             }
 //        }
     }

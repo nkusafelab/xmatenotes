@@ -98,7 +98,7 @@ public class BaseActivity extends AppCompatActivity {
      * @param x 命令第一个点的横坐标
      * @param y 命令第一个点的纵坐标
      */
-    public void receiveRecognizeResult(int i, int pageID, int x, int y){
+    public void receiveRecognizeResult(Gesture ges, int pageID, int x, int y){
         Log.e(TAG,"BaseActivity: receiveRecognizeResult()");
     }
 
