@@ -15,7 +15,12 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    task wrapper(type: Wrapper){
+        gradleVersion = '7.4'
+    }
+    task prepareKotlinBuildScriptModel {
 
+    }
     buildTypes {
         release {
             minifyEnabled false
