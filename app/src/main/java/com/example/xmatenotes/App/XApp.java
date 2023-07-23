@@ -30,11 +30,13 @@ public class XApp extends Application {
     public static final float DEFAULT_FLOAT = -1f;
     public static final int DEFAULT_INT = -1;
 
+    public static final String peopleSharedPreferences = "people";
+
     public static String mPenName = "SmartPen";
     public static String mFirmWare = "B736_OID1-V10000";
     public static String mMCUFirmWare = "MCUF_R01";
     public static String mCustomerID = "0000";
-    public static String mBTMac = "00:00:00:00:00:2F";
+    public static String mBTMac = "00:00:00:00:00:00";
     public static int mBattery = 100;
     public static boolean mCharging = false;
     public static int mUsedMem = 0;

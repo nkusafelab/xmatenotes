@@ -1,5 +1,7 @@
 package com.example.xmatenotes.DotClass;
 
+import android.view.MotionEvent;
+
 import com.tqltech.tqlpencomm.bean.Dot;
 
 
@@ -29,6 +31,14 @@ public class SimpleDot {
         this.x = mediaDot.getCx();
         this.y = mediaDot.getCy();
         this.type = mediaDot.type;
+    }
+
+    /**
+     * 通过触摸事件构造SimpleDot
+     * @param event
+     */
+    public SimpleDot(MotionEvent event) {
+
     }
 
     public static float computeCompletedDot(int z, int fz){

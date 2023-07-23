@@ -1,11 +1,13 @@
 package com.example.xmatenotes;
 
+import static com.example.xmatenotes.App.XApp.videoManager;
 import static com.example.xmatenotes.Constants.A3_ABSCISSA_RANGE;
 import static com.example.xmatenotes.Constants.A3_ORDINATE_RANGE;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 
 import java.io.BufferedReader;
@@ -17,7 +19,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 
 import com.example.xmatenotes.App.XApp;
@@ -62,7 +66,7 @@ public class MainActivity extends BaseActivity {
     private RelativeLayout gLayout;
     private DrawView[] bDrawl = new DrawView[2];  //add 2016-06-15 for draw
 //    private DrawImageView drawImageView = null;//画图控件
-    private DrawImageSurfaceView drawImageSurfaceView = null;//画图控件
+    private PageSurfaceView pageSurfaceView = null;//画图控件
 
     private final static boolean isSaveLog = false;          //是否保存绘制数据到日志
     private final static String LOGPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/TQL/"; //绘制数据保存目录
@@ -171,6 +175,16 @@ public class MainActivity extends BaseActivity {
     public int audioNoteColor = Color.GREEN;//音频笔记颜色
 
     private LocalRect lastLocalRect = null;//上一个局域
+
+    /**
+     * 当前MediaDot
+     */
+    private MediaDot curMediaDot = null;
+
+    /**
+     * 上一个MediaDot
+     */
+    private MediaDot lastMediaDot = null;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(final ComponentName className, IBinder rawBinder) {
@@ -402,7 +416,7 @@ public class MainActivity extends BaseActivity {
         penMacManager = PenMacManager.getInstance();//必须在加载数据之前
 
 //        drawImageView = (DrawImageView)findViewById(R.id.drawImageView);
-        drawImageSurfaceView = (DrawImageSurfaceView)findViewById(R.id.drawImageSurfaceView);
+        pageSurfaceView = (PageSurfaceView)findViewById(R.id.drawImageSurfaceView);
         switchPage(0);
 //        DisplayMetrics dm = new DisplayMetrics();
 //        getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -549,13 +563,16 @@ public class MainActivity extends BaseActivity {
                 return true;
             case R.id.action_clear:
                 pageManager.clear();
-                drawImageSurfaceView.clear();
+                pageSurfaceView.clear();
                 Log.e(TAG,"action_clear");
                 return true;
             case R.id.dot_info_intent:
                 Intent dotInfoIntent = new Intent(this, DotInfoActivity.class);Log.e(TAG,"dot_info_intent");
                 startActivity(dotInfoIntent);
                 return true;
+            case R.id.action_setup:
+                Intent setUpIntent = new Intent(this, SetUpActivity.class);Log.e(TAG,"set_up_intent");
+                startActivity(setUpIntent);
             default:
 /*
             case R.id.clear:
@@ -629,25 +646,58 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private boolean isWrite = false;
-    private boolean isWriteFirst = false;
-    private MediaDot lastDot = null;
-    /*
-     * 将原始点数据进行处理（主要是坐标变换）并保存
+    /**
+     * 通过Dot构造MediaDot
+     * time:实时视频进度。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_FLOAT}
+     * videoID:当前视频ID。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_INT}
+     * audioID:当前正在录制的音频ID。如果当前没有正在录制音频，则传入默认值{@link XApp#DEFAULT_INT}
+     * @param dot
+     * @return
      */
-    private void processEachDot(Dot dot) {
-
-        MediaDot mediaDot =null;
+    private MediaDot createMediaDot(Dot dot){
+        MediaDot mediaDot = null;
         try {
             mediaDot = new MediaDot(dot);
+            mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
+            mediaDot.time = XApp.DEFAULT_FLOAT;
+            mediaDot.videoID = XApp.DEFAULT_INT;
+            mediaDot.audioID = XApp.DEFAULT_INT;
+            //如果正在录音，再次长压结束录音
+            if(audioRecorder == true){
+                mediaDot.audioID = audioManager.getCurrentRecordAudioNumber();
+                mediaDot.color = MediaDot.DEEP_GREEN;
+            }
+            mediaDot.penMac = XApp.mBTMac;
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        if(dot.type == Dot.DotType.PEN_DOWN){
-            lastDot = mediaDot;
+        return mediaDot;
+    }
 
-            if(pageManager.currentPageID != dot.PageID){//是否更换页码
+    /**
+     * 是否将每个笔划开头不确定的一小段笔迹画出来(动作命令不画，其他笔迹均画出来)
+     */
+    private boolean isWriteFirst = true;
+
+    /**
+     * 将原始点数据进行预处理，然后传给命令统一处理模块
+     * @param dot
+     */
+    public void processEachDot(Dot dot) {
+
+        processEachDot(createMediaDot(dot));
+
+    }
+
+    public void processEachDot(MediaDot mediaDot){
+
+        lastMediaDot = curMediaDot;
+        curMediaDot = mediaDot;
+
+        if(curMediaDot.type == Dot.DotType.PEN_DOWN){
+
+            if(pageManager.currentPageID != curMediaDot.pageID){//是否更换页码
                 Page p = pageManager.getPageByPageID(pageManager.currentPageID);
                 if(p != null){
                     int pPN = p.getPageNumber();//上一页号
@@ -656,62 +706,42 @@ public class MainActivity extends BaseActivity {
                         if(lastLocalRect != null){
                             int currentSaveBmpNumber = p.addCurrentSaveBmpNumber();
                             Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
-                            drawImageSurfaceView.saveBmp(pPN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
+                            pageSurfaceView.saveBmp(pPN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
                             handlerToast("底图已存储");
                         }
                     }
                 }
                 lastLocalRect = null;
-                switchPage(dot.PageID);
+                switchPage(curMediaDot.pageID);
             }
         }
 
-        if(dot.type == Dot.DotType.PEN_MOVE){
-            lastDot = mediaDot;
+        if(curMediaDot.type == Dot.DotType.PEN_MOVE){
+
         }
 
-        if(dot.type == Dot.DotType.PEN_UP){
-            isWrite = false;
-        }
-
-        float time = XApp.DEFAULT_FLOAT;
-        int videoID = XApp.DEFAULT_INT;
-        int audioID = XApp.DEFAULT_INT;
-
-        //如果正在录音，再次长压结束录音
-        if(audioRecorder == true){
-            audioID = audioManager.getCurrentRecordAudioNumber();
+        if(curMediaDot.type == Dot.DotType.PEN_UP){
+            isWriteFirst = true;
         }
 
         int result = XApp.DEFAULT_INT;//接收识别结果
-        try {
-            result = XApp.instruction.processEachDot(dot, time, videoID, audioID);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        result = XApp.instruction.processEachDot(curMediaDot);
 
         if(result == 0){
-
-            if(!isWrite){
-                isWrite = true;
-                isWriteFirst = true;
-            }
-
             if(isWriteFirst){
-                drawImageSurfaceView.drawDots(Instruction.simpleDots);
+                pageSurfaceView.drawMDots(Instruction.mediaDots);
                 isWriteFirst = false;
             }
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    drawImageSurfaceView.drawDot(dot);
+                    pageSurfaceView.drawMDot(curMediaDot);
                 }
             }).start();
 
 //            drawImageSurfaceView.drawDot(dot);
         }
-
     }
 
 
@@ -735,9 +765,9 @@ public class MainActivity extends BaseActivity {
         pageManager.currentPageID = pageID;
         int resID = pageManager.getResIDByPageID(pageID);
         if(resID != -1){
-            drawImageSurfaceView.setImageBitmapByResId(resID);
+            pageSurfaceView.setImageBitmapByResId(resID);
         }else {
-            drawImageSurfaceView.setImageBitmapByResId(-1);
+            pageSurfaceView.setImageBitmapByResId(-1);
             Toast.makeText(MainActivity.this, "不存在页码对应的图片资源", Toast.LENGTH_SHORT).show();
             Log.e(TAG,"switchPage(): 不存在页码对应的图片资源");
         }
@@ -745,10 +775,10 @@ public class MainActivity extends BaseActivity {
         Page page = pageManager.getPageByPageID(pageID);
         if(page != null){
             //确保在绘制新页码底图之后再绘制，否则上一个invalidate()发送的WM_PAINT消息还在队列里没取出来，bitmap都还是null
-            drawImageSurfaceView.post(new Runnable() {
+            pageSurfaceView.post(new Runnable() {
                 @Override
                 public void run() {
-                    drawImageSurfaceView.drawDots(page.getPageDotsBuffer());
+                    pageSurfaceView.drawMDots(page.getPageDotsBuffer());
                     Log.e(TAG,"switchPage(): 新页上的点绘制完毕");
                 }
             });
@@ -763,6 +793,18 @@ public class MainActivity extends BaseActivity {
         super.receiveRecognizeResult(ges, pageID, firstX, firstY);
 
         Log.e(TAG,"receiveRecognizeResult(): ges: "+ges.getInsId()+" pageID: "+ pageID + " firstX: "+firstX+" firstY: "+firstY);
+
+        if(ges.isCharInstruction()){
+            //按照特定样式重绘
+            pageSurfaceView.restoreRect(Gesture.rectFToRect(ges.getRectF()));
+            pageSurfaceView.lastMediaDot = null;
+            pageSurfaceView.curMediaDot = null;
+            Set<Map.Entry<String, ArrayList<MediaDot>>> set = ges.getStrokes().entrySet();
+            for (Map.Entry<String, ArrayList<MediaDot>> node: set) {
+                pageSurfaceView.drawMDots(node.getValue());
+            }
+
+        }
 
         if(ges.getInsId() == 0){//普通书写，包含在基础响应中
 //            Message message = new Message();
@@ -828,59 +870,103 @@ public class MainActivity extends BaseActivity {
                     }
                 }
 
-                if(mediaDot.y < 20){
-                    drawImageSurfaceView.saveBmp(mediaDot.pageID+"-"+pageManager.getPageByPageID(mediaDot.pageID).addCurrentSaveBmpNumber());
+//                if(mediaDot.y < 20){
+//                    pageSurfaceView.saveBmp(mediaDot.pageID+"-"+pageManager.getPageByPageID(mediaDot.pageID).addCurrentSaveBmpNumber());
+//
+//                    handlerToast("底图已存储");
+//
+//                }
+            }else {
 
-                    handlerToast("底图已存储");
-
-                }
-            }
-
-            if(lR != null){
-                Log.e(TAG, "lR: "+lR.toString());
-                if("资源卡".equals(lR.localName)){
-                    Log.e(TAG, "双击资源卡");
-                    //跳转至ck
-                    Intent ckIntent = new Intent(this,CkplayerActivity.class);
-                    ckIntent.putExtra("time",0.0f);
+                if(lR != null){
+                    Log.e(TAG, "lR: "+lR.toString());
+                    if("资源卡".equals(lR.localName)){
+                        Log.e(TAG, "双击资源卡");
+                        //跳转至ck
+                        Intent ckIntent = new Intent(this,CkplayerActivity.class);
+                        ckIntent.putExtra("time",0.0f);
 
 //                    Random random = new Random();
 //                    int videoID = random.nextInt(5)+1;
-                    int videoID = lR.getVideoIDByAddInf();
-                    String videoName = lR.getVideoNameByAddInf();
+                        int videoID = lR.getVideoIDByAddInf();
+                        String videoName = lR.getVideoNameByAddInf();
 
-                    Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(videoID));
-                    Log.e(TAG, "ckplayer跳转至videoName: " + videoName);
-                    ckIntent.putExtra("videoID",videoID);
-                    ckIntent.putExtra("videoName",videoName);
-                    startActivity(ckIntent);
+                        Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(videoID));
+                        Log.e(TAG, "ckplayer跳转至videoName: " + videoName);
+                        videoManager.addVideo(videoID, videoName);
+                        ckIntent.putExtra("videoID",videoID);
+                        ckIntent.putExtra("videoName",videoName);
+                        startActivity(ckIntent);
+                    }
                 }
+
+                //依次按照圆圈从左到右的顺序对不同笔迹类别进行颜色区分
+                if(pageSurfaceView.isLRInforShow){
+                    if(pageSurfaceView.peoOrHW == 0){
+                        pageSurfaceView.peoOrHW = 1;
+                    }else if(pageSurfaceView.peoOrHW == 1){
+                        pageSurfaceView.peoOrHW = 2;
+                    }else if(pageSurfaceView.peoOrHW == 2){
+                        pageSurfaceView.peoOrHW = 1;
+                    }
+                }
+
             }
 
         }else if(ges.getInsId() == 3){//长压
             handlerToast("长压命令");
+            int pN = pageManager.getPageNumberByPageID(pageID);
+            LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
+            if(lR == null){
+                return;
+            }
+            MediaDot mediaDot = pageManager.getDotMedia(pageID,firstX,firstY);
+            if(mediaDot == null){
+                if(!pageSurfaceView.isLRInforShow){
+                    //呈现局域统计信息
+                    Rect rectMaped = pageSurfaceView.mapRect(lR.rect);
+                    int diam = 30, padding = 5;
+                    pageSurfaceView.hwNumRect = new Rect(rectMaped.right-padding-diam, rectMaped.top+padding, rectMaped.right-padding, rectMaped.top+padding+diam);
+                    Log.e(TAG, "receiveRecognizeResult: hwNumRect: "+pageSurfaceView.hwNumRect);
+                    pageSurfaceView.hwNumber = pageManager.getPageByPageID(pageID).getHandWritingsNum(lR.getLocalCode());
+                    Rect rectPeo = new Rect(pageSurfaceView.hwNumRect);
+                    rectPeo.left -= diam*2;rectPeo.right -= diam*2;
+                    pageSurfaceView.peoNumRect = rectPeo;
+                    Log.e(TAG, "receiveRecognizeResult: peoNumRect: "+pageSurfaceView.peoNumRect);
+                    pageSurfaceView.peoNumber = pageManager.getPageByPageID(pageID).getPeopleNum(lR.getLocalCode());
+                    pageSurfaceView.pageId = pageID;
+                    pageSurfaceView.lR = lR;
+                    pageSurfaceView.peoOrHW = 0;
 
-//            //如果正在录音，再次长压结束录音
-//            if(audioRecorder == true){
-//                audioRecorder = false;
-//                audioManager.stopRATimer();
-//
-//                drawImageSurfaceView.saveBmp(mediaDot.pageID+"-"+pageManager.getPageByPageID(mediaDot.pageID).addCurrentSaveBmpNumber());
-//
-//                message = new Message();
-//                message.what = 0;
-//                bundle = new Bundle();
-//                bundle.putString("showInftTextView","底图已存储");
-//                message.setData(bundle);
-//                handler.sendMessage(message);
-//                Log.e(TAG,"receiveRecognizeResult(): 关闭录音");
-//                return;
-//            }
+                    pageSurfaceView.isLRInforShow = true;
+                }else {
+                    //隐藏局域统计信息
+                    pageSurfaceView.isLRInforShow = false;
+                    pageSurfaceView.drawlR(pageSurfaceView.lR);
+                }
 
-            //开启录音
-//            audioManager.startRATimer();
-//            audioRecorder = true;
-//            Log.e(TAG,"receiveRecognizeResult(): 开启录音");
+            }else {
+                //呈现笔迹详细信息
+                if(!pageSurfaceView.isDdrawLocalHWMap){
+                    pageSurfaceView.isDdrawLocalHWMap = true;
+                    Page page = XApp.pageManager.getPageByPageID(mediaDot.pageID);
+                    Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
+                    Page.LocalHandwritingsMap lhwm = null;
+                    for (Page.LocalHandwritingsMap lh :page.getLocalHandwritings(lR.getLocalCode())) {
+                        if(lh.contains(mediaDot.x,mediaDot.y)){
+                            lhwm = lh;
+                        }
+                    }
+//                   Page.LocalHandwritingsMap lhwm  = page.getLocalHandwritings(lR.getLocalCode()).get(mediaDot.strokesID);
+                    ArrayList<MediaDot> edimaDots = page.getPageDotsBuffer();
+                    pageSurfaceView.drawLocalHWMap(lR, lhwm, edimaDots);
+                }else {
+                    pageSurfaceView.isDdrawLocalHWMap = false;
+                    pageSurfaceView.pageId = mediaDot.pageID;
+                    pageSurfaceView.drawlR(lR);
+                }
+
+            }
 
         }else if(ges.getInsId() == 4){
             //指令控制符
@@ -940,7 +1026,7 @@ public class MainActivity extends BaseActivity {
 //                }
                 int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
                 Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
-                drawImageSurfaceView.saveBmp(pN+"-"+lR.firstLocalCode+"-"+ lR.secondLocalCode+"-"+currentSaveBmpNumber, lR.rect);
+                pageSurfaceView.saveBmp(pN+"-"+lR.firstLocalCode+"-"+ lR.secondLocalCode+"-"+currentSaveBmpNumber, lR.rect);
                 handlerToast("底图已存储");
 //                Page.lockSaveBmpNumber = false;
             }
@@ -954,7 +1040,7 @@ public class MainActivity extends BaseActivity {
 
                     int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
                     Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
-                    drawImageSurfaceView.saveBmp(pN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
+                    pageSurfaceView.saveBmp(pN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
                     handlerToast("底图已存储");
                     lastLocalRect = lR;
                 }

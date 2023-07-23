@@ -1,7 +1,7 @@
 package com.example.xmatenotes.instruction;
 
 import android.annotation.SuppressLint;
-import android.graphics.Rect;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.util.Log;
 
@@ -12,8 +12,6 @@ import com.example.xmatenotes.DotClass.SimpleDot;
 import com.example.xmatenotes.Gesture;
 import com.example.xmatenotes.datamanager.AudioManager;
 import com.example.xmatenotes.datamanager.ExcelReader;
-import com.example.xmatenotes.datamanager.LocalRect;
-import com.example.xmatenotes.datamanager.Page;
 import com.example.xmatenotes.datamanager.PageManager;
 import com.example.xmatenotes.datamanager.PenMacManager;
 import com.tqltech.tqlpencomm.bean.Dot;
@@ -65,12 +63,12 @@ public class Instruction {
     private static int getureStrokeN = 0;//记录当前待定动作命令的笔划数
     private static int strokesID = 0;//全局当前书写笔划编号：1,2...，命令或无效笔划不算，也是当前已有笔划数量，该值不写入文件
 
-    private static Dot dotDown = null;//记录每次类型为PEN_DOWN的笔迹点
-    private static Dot dcdotFirst = null;//记录双击动作的初始笔迹点
-    private static Dot hwDotFirst = null;//记录普通书写笔迹起始点
-    private static Dot shwDotFirst = null;//记录单次笔迹起始点
-    private static Dot lastDot = null;//上一个Dot
-    private static MediaDot mediaDot = null;//当前MediaDot
+    private static MediaDot dotDown = null;//记录每次类型为PEN_DOWN的笔迹点
+    private static MediaDot dcdotFirst = null;//记录双击动作的初始笔迹点
+    private static MediaDot hwDotFirst = null;//记录普通书写笔迹起始点
+    private static MediaDot shwDotFirst = null;//记录单次笔迹起始点
+    private static MediaDot lastDot = null;//上一个Dot
+    private static MediaDot curMediaDot = null;//当前MediaDot
     private static SimpleDot simpleDot = null;//当前SimpleDot
 
     private static double xMin;
@@ -93,7 +91,7 @@ public class Instruction {
     private static float yD;
     private static Dot.DotType currentDotType;//当前dot类型
 
-    private static ArrayList<MediaDot> mediaDots;//MediaDot类型笔迹点暂存区
+    public static ArrayList<MediaDot> mediaDots;//MediaDot类型笔迹点暂存区
     public static ArrayList<SimpleDot> simpleDots;//SimpleDot类型笔迹点暂存区
 
     public Instruction() {
@@ -198,13 +196,13 @@ public class Instruction {
 
         gesT = new Gesture(rGesture);
         //指令集识别
-        Set<Map.Entry<String,ArrayList<SimpleDot>>> set = rGesture.getStrokes().entrySet();
-        for (Map.Entry<String,ArrayList<SimpleDot>> node:
+        Set<Map.Entry<String,ArrayList<MediaDot>>> set = rGesture.getStrokes().entrySet();
+        for (Map.Entry<String,ArrayList<MediaDot>> node:
              set) {
-            ArrayList<SimpleDot> sDotA = node.getValue();
-            for (SimpleDot sDot:
+            ArrayList<MediaDot> sDotA = node.getValue();
+            for (MediaDot sDot:
                  sDotA) {
-                recognizeGestures(sDot);
+                recognizeGestures(new SimpleDot(sDot));
             }
         }
 
@@ -387,20 +385,21 @@ public class Instruction {
         gesture.setStrokesNumber(getureStrokeN);
 
         Log.e(TAG, "gesture.getStrokes().put()开始 ");
-        gesture.getStrokes().put(getureStrokeN + "", simpleDots);
+        gesture.getStrokes().put(getureStrokeN + "", mediaDots);
         Log.e(TAG, "gesture.getStrokes().put()结束 ");
 
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
 
-                gesture.setInsId(recognize(gesture));
-                Log.e(TAG, "InsId: " + gesture.getInsId());
-                Log.e(TAG, "命令识别结束");
-
-                if(gesture.getInsId() == -1){
+                int res = recognize(gesture);
+                if(res == -1){
                     return;
                 }
+
+                gesture.setInsId(res);
+                Log.e(TAG, "InsId: " + gesture.getInsId());
+                Log.e(TAG, "命令识别结束");
 
                 if ((gesture.getInsId() == 1 || gesture.getInsId() == 2) && (wTimer == true)) {
                     gesture.setInsId(0);//当普通书写延时计时器处于打开状态时，无论单击或双击都按照普通书写算
@@ -424,7 +423,7 @@ public class Instruction {
                     Log.e(TAG, "BaseActivity.baseActivity: " + BaseActivity.baseActivity);
                     if (BaseActivity.baseActivity != null) {
                         Log.e(TAG, "回调响应");
-                        BaseActivity.baseActivity.receiveRecognizeResult(gesture, dcdotFirst.PageID, dcdotFirst.x, dcdotFirst.y);
+                        BaseActivity.baseActivity.receiveRecognizeResult(gesture, dcdotFirst.pageID, dcdotFirst.x, dcdotFirst.y);
                     }
                 }
 //            }
@@ -441,49 +440,33 @@ public class Instruction {
      * 对每个接收到的笔迹点进行处理。
      * 命令识别模块的入口，通过全局唯一Instruction对象进行调用
      * 当前在哪个活动界面书写，就在哪个活动中调用该方法传入笔迹点进行处理
-     * @param dot 待处理Dot
-     * @param timeS 实时视频进度。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_FLOAT}
-     * @param videoID 当前视频ID。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_INT}
-     * @param audioID 当前正在录制的音频ID。如果当前没有正在录制音频，则传入默认值{@link XApp#DEFAULT_INT}
+     * @param mediaDot 待处理mediaDot
      * @return 若当前笔划未写完就识别出了结果，则立刻返回识别出的命令类型：0：普通书写；1：单击；2：双击;3:长压; 若当前尚未识别出则返回-1
-     * @throws ParseException
      */
-    public int processEachDot(Dot dot, float timeS, int videoID, int audioID) throws ParseException {
+    public int processEachDot(MediaDot mediaDot){
         //传进来的timeS就是已经处理好的
         //float timeS = MediaDot.reviseTimeS(dot.timelong, time);//修正视频进度
 
-        if (reTurn == false && dot.type != Dot.DotType.PEN_UP) {
+        if (reTurn == false && mediaDot.type != Dot.DotType.PEN_UP) {
             return -1;
-        }
-
-        //用原始dot生成mediaDot和simpleDot
-        try {
-            mediaDot = new MediaDot(dot);
-            mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
-            mediaDot.time = timeS;
-            mediaDot.videoID = videoID;
-            mediaDot.audioID = audioID;
-            mediaDot.penMac = XApp.mBTMac;
-
-            simpleDot = new SimpleDot(dot);
-        } catch (ParseException e) {
-            e.printStackTrace();
         }
 
         Log.e(TAG, "mediaDot.toString(): " + mediaDot.toString());
         Log.e(TAG, "System.currentTimeMillis(): " + System.currentTimeMillis());
 
         //存储pageID
-        pageManager.savePage(dot.PageID);
-        pageManager.currentPageID = dot.PageID;
+        pageManager.savePage(mediaDot.pageID);
+        pageManager.currentPageID = mediaDot.pageID;
 
         penMacManager.putMac(XApp.mBTMac);
+
+        simpleDot = new SimpleDot(mediaDot);
 
         //完整坐标
         xD = simpleDot.x;
         yD = simpleDot.y;
 
-        if (dot.type == Dot.DotType.PEN_DOWN) {
+        if (mediaDot.type == Dot.DotType.PEN_DOWN) {
             currentDotType = Dot.DotType.PEN_DOWN;
             Log.e(TAG, "PEN_DOWN");
             bufferInit(simpleDot.x, simpleDot.y);//初始化暂存区
@@ -513,39 +496,39 @@ public class Instruction {
 //                Log.e(TAG, "processEachDot: 添加了(-3, -3)");
 //            }
 
-            dotDown = dot;
+            dotDown = mediaDot;
 
             mediaDots.add(mediaDot);
-            simpleDots.add(simpleDot);
+//            simpleDots.add(simpleDot);
         }
 
         rectF.union(simpleDot.x, simpleDot.y);
 //        processRect();
 
-        if (dot.type == Dot.DotType.PEN_MOVE) {
+        if (mediaDot.type == Dot.DotType.PEN_MOVE) {
             if (currentDotType == Dot.DotType.PEN_UP) {
-                dot.type = Dot.DotType.PEN_DOWN;//可能存在PEN_UP后直接PEN_MOVE的情况
-                return processEachDot(dot, timeS, videoID, audioID);
+                mediaDot.type = Dot.DotType.PEN_DOWN;//可能存在PEN_UP后直接PEN_MOVE的情况
+                return processEachDot(mediaDot);
             }
             Log.e(TAG, "PEN_MOVE");
             currentDotType = Dot.DotType.PEN_MOVE;
 
             if (rectF.width() > DoubleClick.SINGLE_CLICK_dLIMIT || rectF.height() > DoubleClick.SINGLE_CLICK_dLIMIT) {
 
-                wTimer = false;
-                shTimer = false;
+//                wTimer = false;
+//                shTimer = false;
 //                isSHDelay5s = false;
                 Log.e(TAG, "普通书写和单次笔迹延迟响应计时器关闭");
 
                 mediaDots.add(mediaDot);
-                simpleDots.add(simpleDot);
+//                simpleDots.add(simpleDot);
                 Log.e(TAG, "笔划坐标范围超出单击坐标范围！识别为非0类指令或普通书写");
                 return 0;
 
             } else if ((mediaDot.timelong - strokeBeginT) < LongPress.LONG_PRESS_tLIMIT && (mediaDot.timelong - strokeBeginT) > DoubleClick.SINGLE_CLICK_tLIMIT) {
                 //不是单击、双击，可能是长压
                 mediaDots.add(mediaDot);
-                simpleDots.add(simpleDot);
+//                simpleDots.add(simpleDot);
                 return -1;
             } else if ((mediaDot.timelong - strokeBeginT) >= LongPress.LONG_PRESS_tLIMIT) {
                 Log.e(TAG, "单击超时！识别为长压");
@@ -555,7 +538,7 @@ public class Instruction {
                 strokeOverT = mediaDot.timelong;
 
                 mediaDots.add(mediaDot);
-                simpleDots.add(simpleDot);
+//                simpleDots.add(simpleDot);
 
 //                new Thread(new Runnable()
 //                {
@@ -571,10 +554,10 @@ public class Instruction {
             }
 
             mediaDots.add(mediaDot);
-            simpleDots.add(simpleDot);
+//            simpleDots.add(simpleDot);
         }
 
-        if (dot.type == Dot.DotType.PEN_UP) {
+        if (mediaDot.type == Dot.DotType.PEN_UP) {
             Log.e(TAG, "PEN_UP");
             if (reTurn == false) {
                 reTurn = true;
@@ -587,7 +570,7 @@ public class Instruction {
 
             strokeOverT = mediaDot.timelong;
             mediaDots.add(mediaDot);
-            simpleDots.add(simpleDot);
+//            simpleDots.add(simpleDot);
 
             processGesture();
 
@@ -606,6 +589,7 @@ public class Instruction {
      */
     @SuppressLint("SimpleDateFormat")
     private void response(Gesture ges) {
+
         if (ges.getInsId() == 1) {
             Log.e(TAG, "单击响应开始");
 
@@ -665,7 +649,7 @@ public class Instruction {
                 Log.e(TAG, "对钩命令基础响应开始");
             }
 
-            if (ges.getInsId() !=1 || ges.getInsId() != 2 || ges.getInsId() != 3) {
+            if (ges.isCharInstruction() || ges.isHandWriting()) {
                 Log.e(TAG, "普通书写基础响应开始");
 
                 strokesID++;//书写笔划编号+1
@@ -728,17 +712,13 @@ public class Instruction {
                             reced = false;
 
                             if (shTimer && hwDotFirst != null) {
-                                try {
-                                    MediaDot mD = null;
-                                    mD = new MediaDot(hwDotFirst);//标志一次普通书写笔迹结束
-                                    mD.setCx(-5);
-                                    mD.setCy(-5);
-                                    mD.timelong = System.currentTimeMillis();
-                                    mD.type = Dot.DotType.PEN_UP;
-                                    pageManager.writeDot(mD);
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
+                                MediaDot mD = null;
+                                mD = new MediaDot(hwDotFirst);//标志一次普通书写笔迹结束
+                                mD.setCx(-5);
+                                mD.setCy(-5);
+                                mD.timelong = System.currentTimeMillis();
+                                mD.type = Dot.DotType.PEN_UP;
+                                pageManager.writeDot(mD);
 
 //                                Page p = PageManager.getPageByPageID(hwDotFirst.PageID);//使用普通书写笔迹第一个点
 //                                if(p != null){
@@ -750,7 +730,7 @@ public class Instruction {
 
                             //延迟响应
                             if (BaseActivity.baseActivity != null && hwDotFirst != null) {
-                                BaseActivity.baseActivity.writeTimerFinished(hwDotFirst.PageID, hwDotFirst.x, hwDotFirst.y);
+                                BaseActivity.baseActivity.writeTimerFinished(hwDotFirst.pageID, hwDotFirst.x, hwDotFirst.y);
                             }
                             hwDotFirst = null;
                         }
@@ -775,19 +755,15 @@ public class Instruction {
 //                                int pN = pageManager.getPageNumberByPageID(shwDotFirst.PageID);
 //                                LocalRect lR = excelReader.getLocalRectByXY(pN, shwDotFirst.x, shwDotFirst.y);
 //                                if(lR != null && p != null){
-                                try {
-                                    MediaDot mD = null;
-                                    mD = new MediaDot(shwDotFirst);//标志单次笔迹结束
-                                    mD.setCx(-4);
-                                    mD.setCy(-4);
-                                    mD.timelong = System.currentTimeMillis();
-                                    mD.type = Dot.DotType.PEN_UP;
-                                    pageManager.writeDot(mD);
+                                MediaDot mD = null;
+                                mD = new MediaDot(shwDotFirst);//标志单次笔迹结束
+                                mD.setCx(-4);
+                                mD.setCy(-4);
+                                mD.timelong = System.currentTimeMillis();
+                                mD.type = Dot.DotType.PEN_UP;
+                                pageManager.writeDot(mD);
 //                                        String localCode = lR.firstLocalCode+"-"+ lR.secondLocalCode;
 //                                        p.addLocalHwsMapEnd(localCode);
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
                             }
                             shwDotFirst = null;
                             shTimer = false;
@@ -935,7 +911,7 @@ public class Instruction {
             Log.e(TAG, "BaseActivity.baseActivity: " + BaseActivity.baseActivity);
             if (BaseActivity.baseActivity != null) {
                 Log.e(TAG, "回调响应");
-                BaseActivity.baseActivity.receiveRecognizeResult(ges, dcdotFirst.PageID, dcdotFirst.x, dcdotFirst.y);
+                BaseActivity.baseActivity.receiveRecognizeResult(ges, dcdotFirst.pageID, dcdotFirst.x, dcdotFirst.y);
             }
 //        }
     }

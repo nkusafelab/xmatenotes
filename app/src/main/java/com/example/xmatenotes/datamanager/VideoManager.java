@@ -21,6 +21,7 @@ public class VideoManager {
 	private VideoManager() {
 		super();
 		videos = new ArrayList<Video>();
+		addVideo(1, "001不等号的由来《一元一次不等式》初一下doc.mp4");
 //		addVideo(1,"p1");//如果从0开始，意味着每次新page都要把videoID矩阵所有元素初始化为-1
 //		addVideo(2,"p2");
 //		addVideo(3,"p3");

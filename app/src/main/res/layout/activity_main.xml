@@ -22,7 +22,7 @@
 <!--        android:layout_height="match_parent"-->
 <!--        android:src="@drawable/x1"/>-->
 
-    <com.example.xmatenotes.DrawImageSurfaceView
+    <com.example.xmatenotes.PageSurfaceView
         android:id="@+id/drawImageSurfaceView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

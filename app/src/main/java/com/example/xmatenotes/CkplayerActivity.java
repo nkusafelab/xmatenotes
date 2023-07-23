@@ -34,6 +34,8 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
+
 //封装笔迹点对应的视频ID和视频进度
 class TimeOrder{
 	public float time;
@@ -112,6 +114,16 @@ public class CkplayerActivity extends BaseActivity {
 	private ExcelReader excelReader = null;//操作excel的对象
 	private VideoManager videoManager = null;
 	private PageManager pageManager = null;
+
+	/**
+	 * 当前MediaDot
+	 */
+	private MediaDot curMediaDot = null;
+
+	/**
+	 * 上一个MediaDot
+	 */
+	private MediaDot lastMediaDot = null;
 	
 	/*
 	 * 根据传入的原始点的部分属性重新打包成Dots，并存放在bookID对应的dot_number dot_number类型为ArrayListMultimap<Integer, Dots>   
@@ -330,6 +342,40 @@ public class CkplayerActivity extends BaseActivity {
 		handler.sendMessage(message);
 	}
 
+	/**
+	 * 通过Dot构造MediaDot
+	 * time:实时视频进度。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_FLOAT}
+	 * videoID:当前视频ID。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_INT}
+	 * audioID:当前正在录制的音频ID。如果当前没有正在录制音频，则传入默认值{@link XApp#DEFAULT_INT}
+	 * @param dot
+	 * @return
+	 */
+	private MediaDot createMediaDot(Dot dot){
+		MediaDot mediaDot = null;
+		try {
+			mediaDot = new MediaDot(dot);
+			mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
+			mediaDot.audioID = XApp.DEFAULT_INT;
+
+			float timeR = time;
+			try {
+				//修正视频进度;
+				timeR = MediaDot.reviseTimeS(dot.timelong, time);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+
+			mediaDot.time = timeR;
+			mediaDot.videoID = currentID;
+			mediaDot.color = MediaDot.DEEP_ORANGE;
+
+			mediaDot.penMac = XApp.mBTMac;
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		return mediaDot;
+	}
 	
 	private boolean reTurn=true;//控制方法执行退出
 	/*
@@ -337,14 +383,8 @@ public class CkplayerActivity extends BaseActivity {
 	 */
 	private void ProcessEachDot(Dot dot) {
 
-		float timeR = time;
-		try {
-			//修正视频进度;
-			timeR = MediaDot.reviseTimeS(dot.timelong, time);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		int audioID = XApp.DEFAULT_INT;
+		lastMediaDot = curMediaDot;
+		curMediaDot = createMediaDot(dot);
 
 		//如果正在书写区答题，退出视频笔记
 //		if(dot.type == Dot.DotType.PEN_DOWN){
@@ -355,31 +395,28 @@ public class CkplayerActivity extends BaseActivity {
 //			}
 //		}
 
-		try {
-			int result = XApp.instruction.processEachDot(dot, timeR,currentID,audioID);
-			if(result == 0){//普通书写
-				if(skRunnable != null && skRunnable.isAlive()){
-					skRunnable.stop();
-					Log.e(TAG,"视频碎片计时器关闭");
-				}
-				callJavaScript("pause()");
-
-			}else if(result == 1){
-
-			}else if(result == 2){
-
-			}else if(result == 3){
-				if(skRunnable != null && skRunnable.isAlive()){
-					skRunnable.stop();
-					Log.e(TAG,"视频碎片计时器关闭");
-				}
-			}else if(result == -1){
-
+		int result = XApp.instruction.processEachDot(curMediaDot);
+		if(result == 0){//普通书写
+			if(skRunnable != null && skRunnable.isAlive()){
+				skRunnable.stop();
+				Log.e(TAG,"视频碎片计时器关闭");
 			}
-		} catch (ParseException e) {
-			e.printStackTrace();
+			callJavaScript("pause()");
+
+		}else if(result == 1){
+
+		}else if(result == 2){
+
+		}else if(result == 3){
+			if(skRunnable != null && skRunnable.isAlive()){
+				skRunnable.stop();
+				Log.e(TAG,"视频碎片计时器关闭");
+			}
+		}else if(result == -1){
+
 		}
 	}
+
     //接收到数据点后执行的主要逻辑
 	private void processDots(Dot dot) {
 		ProcessEachDot(dot);
@@ -411,9 +448,9 @@ public class CkplayerActivity extends BaseActivity {
 			//如果正在书写区答题，退出视频笔记
 			int pN = pageManager.getPageNumberByPageID(pageID);
 			LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
-			if("书写区".equals(lR.localName)){
-				finish();
-			}
+//			if("书写区".equals(lR.localName)){
+//				finish();
+//			}
 
 		}else if(ges.getInsId() == 1){//单击，包含在基础响应中
 
@@ -432,9 +469,9 @@ public class CkplayerActivity extends BaseActivity {
 					if ("资源卡".equals(lR.localName)) {
 						Log.e(TAG, "双击资源卡");
 
-						//跳转至ck
-						Intent ckIntent = new Intent(this, CkplayerActivity.class);
-						ckIntent.putExtra("time", 5.0f);
+//						//跳转至ck
+//						Intent ckIntent = new Intent(this, CkplayerActivity.class);
+//						ckIntent.putExtra("time", 5.0f);
 
 						int videoID = lR.getVideoIDByAddInf();
 						String videoName = lR.getVideoNameByAddInf();
@@ -464,11 +501,17 @@ public class CkplayerActivity extends BaseActivity {
 				}
 			}
 		}else if(ges.getInsId() == 3) {//长压
+//			handlerToast("长压命令");//会直接导致活动界面崩溃自动退出
+			Log.e(TAG, "receiveRecognizeResult: "+"长压命令");
 
 		}else if(ges.getInsId() == 4){
 			//指令控制符
+//			handlerToast("指令控制符命令");
+			Log.e(TAG, "receiveRecognizeResult: "+"指令控制符命令");
 		}else if(ges.getInsId() == 5){
 			//对钩
+//			handlerToast("对钩命令");
+			Log.e(TAG, "receiveRecognizeResult: "+"对钩命令");
 		}
 	}
 
@@ -757,6 +800,11 @@ public class CkplayerActivity extends BaseActivity {
 //        Arrays.fill(timeS, -1.0f);
 //        Arrays.fill(videoIDS, -1);
 
+		ActionBar actionBar = getSupportActionBar();
+		//actionBar.setTitle(ApplicationResources.getLocalVersionName(this));
+		actionBar.setDisplayHomeAsUpEnabled(true);
+
+
 		//将当前活动与蓝牙服务绑定，之后就共有两个活动（另一个是主活动）同时绑定了蓝牙服务
 		Intent getServiceIntent = new Intent(this, BluetoothLEService.class);
 		boolean bBind = bindService(getServiceIntent, ckServiceConnection, BIND_AUTO_CREATE);
@@ -777,8 +825,8 @@ public class CkplayerActivity extends BaseActivity {
         ckTextView = (TextView) findViewById(R.id.cktextview);
 		Log.e(TAG,"currentID"+": "+currentID+"");
 		Log.e(TAG,"videoManager.videos.size(): "+videoManager.videos.size()+"");
-		VideoManager.Video v1 = videoManager.getVideoByID(currentID);
-		ckTextView.setText("[视频编号： "+v1.getVideoID()+" ][视频名称： "+v1.getVideoName()+" ][笔记人数："+v1.getMatesNumber()+" ][笔记页数： "+v1.getPageNumber()+" ]");
+//		VideoManager.Video v1 = videoManager.getVideoByID(currentID);
+//		ckTextView.setText("[视频编号： "+v1.getVideoID()+" ][视频名称： "+v1.getVideoName()+" ][笔记人数："+v1.getMatesNumber()+" ][笔记页数： "+v1.getPageNumber()+" ]");
 
 		webView = (WebView) findViewById(R.id.web_view);
         WebSettings settings = webView.getSettings();
@@ -833,6 +881,12 @@ public class CkplayerActivity extends BaseActivity {
 //					} catch (InterruptedException e) {
 //						e.printStackTrace();
 //					}
+					try {
+						Thread.sleep(200);//避免直接跳转导致的视频加载无限循环等莫名其妙问题
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
 					seekTime(time, videoID);
 				}
 			}).start();
@@ -937,6 +991,9 @@ public class CkplayerActivity extends BaseActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id) {
+			case android.R.id.home:
+				finish();
+				break;
 	        case R.id.action_clear:
 //				pageManager.clear();Log.e(TAG,"清除数据");
 				VideoManager.Video v1 = videoManager.getVideoByID(currentID);

@@ -126,4 +126,16 @@ public class HandWriting extends Instruction{
     public void setLocalHWsMapID(int localHWsMapID) {
         this.localHWsMapID = localHWsMapID;
     }
+
+    @Override
+    public String toString() {
+        return "HandWriting{" +
+                "time=" + time +
+                ", videoID=" + videoID +
+                ", audioID=" + audioID +
+                ", penMac='" + penMac + '\'' +
+                ", localHWsMapID=" + localHWsMapID +
+                ", region=" + region +
+                '}';
+    }
 }

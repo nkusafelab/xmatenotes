@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.xmatenotes.App.XApp;
+import com.example.xmatenotes.DotClass.MediaDot;
 import com.example.xmatenotes.util.ActivityCollector;
 
 /**
@@ -105,6 +106,9 @@ public class BaseActivity extends AppCompatActivity {
     //普通书写延迟响应回调方法
     public void writeTimerFinished(int pageID, int x, int y){
 
+    }
+
+    public void processEachDot(MediaDot mediaDot) {
     }
 
     /**

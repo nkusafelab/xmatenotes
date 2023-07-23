@@ -3,11 +3,15 @@ package com.example.xmatenotes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import android.R.string;
+import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 
+import com.example.xmatenotes.DotClass.MediaDot;
 import com.example.xmatenotes.DotClass.SimpleDot;
 import com.tqltech.tqlpencomm.bean.Dot;
 import android.util.Log;
@@ -24,16 +28,20 @@ public class Gesture {
 	
 	private long frontTSpan;//距离前一笔划的时间间隔，从前一笔画“PEN_UP”到该笔划“PEN_DOWN”
 
-	private int insId = -1;//命令ID
+	private int insId = 0;//命令ID
 	
 //	private double xMin, xMax, yMin, yMax;//刻画笔划的坐标范围
 	private RectF rectF;//刻画笔划的矩形坐标范围
 	 
-	private Map<String,ArrayList<SimpleDot>> strokes;//按时间顺序存储多笔划的笔迹点
+	private Map<String,ArrayList<MediaDot>> strokes;//按时间顺序存储多笔划的笔迹点
 	
-	private int strokesNumber;//记录该待定命令包含的笔划数		 	 
+	private int strokesNumber;//记录该待定命令包含的笔划数
 
-	public Gesture(long duration, long frontTSpan, RectF rectF, Map<String, ArrayList<SimpleDot>> strokes) {
+	private boolean isRes = true;//是否参加响应
+
+	public static final int INS_COLOR = Color.BLUE;//命令默认颜色
+
+	public Gesture(long duration, long frontTSpan, RectF rectF, Map<String, ArrayList<MediaDot>> strokes) {
 		super();
 		this.duration = duration;
 		this.frontTSpan = frontTSpan;
@@ -45,12 +53,12 @@ public class Gesture {
 		this.duration = ges.duration;
 		this.frontTSpan = ges.frontTSpan;
 		this.rectF = new RectF(ges.getRectF());
-		this.strokes = new HashMap<String, ArrayList<SimpleDot>>(ges.getStrokes());
+		this.strokes = new HashMap<String, ArrayList<MediaDot>>(ges.getStrokes());
 	}
 
 	public Gesture() {
 		super();
-		this.strokes = new HashMap<String, ArrayList<SimpleDot>>();
+		this.strokes = new HashMap<String, ArrayList<MediaDot>>();
 	}
 	
 	public int getStrokesNumber() {
@@ -94,6 +102,26 @@ public class Gesture {
 
 	public void setInsId(int insId) {
 		this.insId = insId;
+		if(isCharInstruction()){
+			Set<Map.Entry<String, ArrayList<MediaDot>>> set = this.getStrokes().entrySet();
+			for (Map.Entry<String, ArrayList<MediaDot>> node: set) {
+				for(MediaDot mDot: node.getValue()){
+					mDot.color = Color.BLUE;
+					mDot.width = MediaDot.DEFAULT_BOLD_WIDTH;
+					mDot.setIns(insId);
+					Log.e(TAG, "setInsId: insId: "+insId);
+					Log.e(TAG, "setInsId: isCharInstruction(): "+isCharInstruction());
+				}
+			}
+		}else {
+			Set<Map.Entry<String, ArrayList<MediaDot>>> set = this.getStrokes().entrySet();
+			for (Map.Entry<String, ArrayList<MediaDot>> node: set) {
+				for(MediaDot mDot: node.getValue()){
+					mDot.setIns(insId);
+				}
+			}
+		}
+
 	}
 
 	public float getWidth(){
@@ -110,12 +138,12 @@ public class Gesture {
 		return -1f;
 	}
 
-	public Map<String, ArrayList<SimpleDot>> getStrokes() {
+	public Map<String, ArrayList<MediaDot>> getStrokes() {
 		Log.e(TAG, "getStrokes()执行");
 		return strokes;
 	}
 
-	public void setStrokes(Map<String, ArrayList<SimpleDot>> strokes) {
+	public void setStrokes(Map<String, ArrayList<MediaDot>> strokes) {
 		this.strokes = strokes;
 	}
 	
@@ -126,5 +154,50 @@ public class Gesture {
 		this.strokes.clear();
 		this.strokesNumber = 0;
 	}
-     
+
+	/**
+	 * 是否为字符命令
+	 * @return
+	 */
+	public boolean isCharInstruction(){
+		if(isInstruction() && !isActInstruction()){
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 是否为动作命令
+	 * @return
+	 */
+	public boolean isActInstruction(){
+		if(insId == 1 || insId == 2 || insId == 3){
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 是否为命令
+	 * @return
+	 */
+	public boolean isInstruction(){
+		return insId > 0 && insId < 10;
+	}
+
+	public boolean isHandWriting(){
+		return insId == 0 || insId == 10;
+	}
+
+	public static Rect rectFToRect(RectF rectF){
+		return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
+	}
+
+	public boolean isRes() {
+		return isRes;
+	}
+
+	public void setRes(boolean res) {
+		isRes = res;
+	}
 }

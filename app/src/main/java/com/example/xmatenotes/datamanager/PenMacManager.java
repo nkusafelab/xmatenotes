@@ -1,6 +1,9 @@
 package com.example.xmatenotes.datamanager;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -143,6 +146,16 @@ public class PenMacManager {
      */
     public static byte getMacNumber() {
         return macNumber;
+    }
+
+    /**
+     * 通过Mac地址获取姓名
+     * @param mac
+     * @return
+     */
+    public String getNameByMac(String mac){
+        SharedPreferences pref = XApp.context.getSharedPreferences(XApp.peopleSharedPreferences, MODE_PRIVATE);
+        return pref.getString(mac, null);
     }
 
 }

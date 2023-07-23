@@ -8,19 +8,20 @@ import android.graphics.Region;
 import android.util.Log;
 
 import com.example.xmatenotes.DotClass.MediaDot;
-import com.example.xmatenotes.DotClass.SimpleDot;
 import com.example.xmatenotes.DotClass.TimelongDot;
 import com.example.xmatenotes.instruction.HandWriting;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
- * <p><strong>页码类</strong></p>
- * <p>真实纸张页码到计算设备中页码存储结构的映射，包含了每页必要的数据结构、属性特征和操作它们的相关方法</p>
+ * <p><strong>版面类</strong></p>
+ * <p>真实版面到计算设备中版面存储结构的映射，包含了每个版面必要的数据结构、属性特征和操作它们的相关方法</p>
  * @see PageManager
  */
 public class Page {
@@ -75,7 +76,7 @@ public class Page {
      * 笔迹点存储缓冲区
      * 按时间戳顺序存储该页笔迹点;若开始录音并普通书写，则先存入一个空点(横纵坐标均为-1)作为录音起始书写点，只记录录音开始时间戳
      */
-    private ArrayList<TimelongDot> dotsbuffer = new ArrayList<>();
+    private ArrayList<MediaDot> dotsbuffer = new ArrayList<>();
 
     /***********************数据结构**********************/
 
@@ -112,7 +113,7 @@ public class Page {
     /**
      * 上一个采样的笔迹点
      */
-    private TimelongDot lastTimelongDot = null;
+    private MediaDot lastMediaDot = null;
 
     /***********************动态成员**********************/
 
@@ -147,6 +148,34 @@ public class Page {
     private ExcelReader excelReader = null;
 
     /************************工具对象*********************/
+
+    /**
+     * 根据局域编码获取该局域上的笔迹人数
+     * @param localCode
+     * @return
+     */
+    public int getPeopleNum(String localCode){
+        Set<String> set = new HashSet<>();
+        if(!localHandwritings.containsKey(localCode)){
+            return 0;
+        }
+        for (LocalHandwritingsMap lhm :localHandwritings.get(localCode)) {
+            set.add(dotsbuffer.get(lhm.getBegin()+5).penMac);
+        }
+        return set.size();
+    }
+
+    /**
+     * 根据局域编码获取该局域上的笔迹次数
+     * @param localCode
+     * @return
+     */
+    public int getHandWritingsNum(String localCode){
+        if(!localHandwritings.containsKey(localCode)){
+            return 0;
+        }
+        return localHandwritings.get(localCode).size();
+    }
 
     /**
      * <p>单次笔迹类: 描述单次笔迹特征的数据结构</p>
@@ -225,6 +254,10 @@ public class Page {
         public boolean contains(int x, int y){
             return region.contains(x, y);
         }
+
+        public Rect getBounds(){
+            return region.getBounds();
+        }
     }
 
     public Page() {
@@ -258,6 +291,7 @@ public class Page {
         }
         MediaDot dotMedia = new MediaDot(x, y);
         HandWriting hw = handWritingsList.get(handWritingIDS[x][y]);
+        Log.e(TAG, "getDotMedia: hw: "+hw.toString());
 //        dotMedia.time = timeS[x][y];
 //        dotMedia.videoID = videoIDS[x][y];
 //        dotMedia.audioID = audioIDS[x][y];
@@ -316,7 +350,7 @@ public class Page {
 
         //一次普通书写笔迹结束
         if(x == -5 && y == -5){
-            dotsbuffer.add(new TimelongDot(mediaDot));
+            dotsbuffer.add(mediaDot);
             addHandwriting(handWriting);
             handWriting = null;
             return;
@@ -324,14 +358,14 @@ public class Page {
 
         //标志录音开始后的第一个普通书写笔迹点
         if (x == -1 && y == -1) {
-            dotsbuffer.add(new TimelongDot(mediaDot));//插入空点
+            dotsbuffer.add(mediaDot);//插入空点
             AudioManager.audioFirstDot = dotsbuffer.size() - 1;//记录录音开始标记空点在dotsbuffer中的索引
             return;
         }
 
         //标志录音结束
         if (x == -2 && y == -2) {
-            dotsbuffer.add(new TimelongDot(mediaDot));//录音结束前插入一个空点
+            dotsbuffer.add(mediaDot);//录音结束前插入一个空点
             Log.e(TAG, mediaDot.toString());
 
             AudioManager.setCurrentRecordAudioName(createRecordAudioName(mediaDot.audioID));
@@ -347,13 +381,13 @@ public class Page {
         if(x == -3 && y == -3){
             addLocalHwsMapBegin();
             once = true;
-            dotsbuffer.add(new TimelongDot(mediaDot));
+            dotsbuffer.add(mediaDot);
             return;
         }
 
         //标志单次笔迹结束
         if(x == -4 && y == -4){
-            dotsbuffer.add(new TimelongDot(mediaDot));
+            dotsbuffer.add(mediaDot);
             addLocalHwsMapEnd();
 //            if(pageNumber != -1){
 //                LocalRect lR = excelReader.getLocalRectByXY(pageNumber, shwMDotFirst.x, shwMDotFirst.y);
@@ -421,13 +455,13 @@ public class Page {
                 rectF.right = cx;
                 rectF.top = cy;
                 rectF.bottom = cy;
-                lastTimelongDot = new TimelongDot(mediaDot);
-                dotsbuffer.add(lastTimelongDot);
+                lastMediaDot = mediaDot;
+                dotsbuffer.add(lastMediaDot);
                 break;
             case PEN_UP:
                 rectF.union(cx, cy);
-                lastTimelongDot = new TimelongDot(mediaDot);
-                dotsbuffer.add(lastTimelongDot);
+                lastMediaDot = mediaDot;
+                dotsbuffer.add(lastMediaDot);
                 if(handWriting == null){
                     handWriting = new HandWriting();
                 }
@@ -435,21 +469,22 @@ public class Page {
                 handWriting.addAttribute(mediaDot);
                 Log.e(TAG, "writeDot: localHandwritings.get(currentLocalCode).size()-1 currentLocalCode:" + currentLocalCode);
                 handWriting.setLocalHWsMapID(localHandwritings.get(currentLocalCode).size()-1);
+                Log.e(TAG, "writeDot: handWriting: "+handWriting.toString());
                 break;
             case PEN_MOVE:
 //                if (SimpleDot.computeDistance(lastTimelongDot.x, lastTimelongDot.y, mediaDot.getCx(), mediaDot.getCy()) < RECORD_MIN_DISTANCE) {
 //                    break;
 //                }
                 rectF.union(cx, cy);
-                lastTimelongDot = new TimelongDot(mediaDot);
-                dotsbuffer.add(lastTimelongDot);
+                lastMediaDot = mediaDot;
+                dotsbuffer.add(lastMediaDot);
                 break;
             default:
         }
 
     }
 
-    public ArrayList<TimelongDot> getPageDotsBuffer() {
+    public ArrayList<MediaDot> getPageDotsBuffer() {
         return dotsbuffer;
     }
 

@@ -6,20 +6,16 @@
         android:name="android.hardware.bluetooth"
         android:required="true" />
 
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /><!--  允许应用程序发现和配对蓝牙设备  -->
-    <uses-permission android:name="android.permission.BLUETOOTH" /><!--  允许应用程序连接到配对的蓝牙设备  -->
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /><!--  需要能够连接到配对的蓝牙设备  -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/><!--  需要能够发现和配对附近的蓝牙设备  -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> <!-- 允许应用程序发现和配对蓝牙设备 -->
+    <uses-permission android:name="android.permission.BLUETOOTH" /> <!-- 允许应用程序连接到配对的蓝牙设备 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> <!-- 需要能够连接到配对的蓝牙设备 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" /> <!-- 需要能够发现和配对附近的蓝牙设备 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
-    <!-- 5.0之后蓝牙还需要位置权限 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 5.0之后蓝牙还需要位置权限 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
-    <!-- internet -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- internet -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 发送持久广播 -->
     <uses-permission android:name="android.permission.BROADCAST_STICKY" /> <!-- 阻止本机进入休眠状态 -->
@@ -45,6 +41,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".SetUpActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".ReplayActivity"
             android:exported="false"
             android:screenOrientation="portrait">
@@ -55,7 +58,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="同学笔记3.09"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

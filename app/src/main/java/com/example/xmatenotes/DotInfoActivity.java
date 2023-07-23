@@ -89,24 +89,8 @@ public class DotInfoActivity extends BaseActivity {
 				in = XApp.context.openFileInput(FILE_NAME);
 				reader = new BufferedReader(new InputStreamReader(in));
 				String line = "";
-				line = reader.readLine();
-				if(line.length() == 0) {
-					Log.e(TAG, "请求的文件内容为空");
-				}else if(line.indexOf(" ", 0) != -1){
-					Toast.makeText(XApp.context, "笔迹存储文件原有内容格式错误",Toast.LENGTH_SHORT).show();
-				}else if( Integer.valueOf(line) != 9){
-					Toast.makeText(XApp.context, "笔迹存储文件原有内容格式错误",Toast.LENGTH_SHORT).show();
-				}
-
-				if((line = reader.readLine()) == null){
-					Toast.makeText(XApp.context, "笔迹存储文件内容为空",Toast.LENGTH_SHORT).show();
-					Log.e(TAG, "笔迹存储文件内容为空");
-				}else{
-					processMediaDot(pageManager.parse(line));
-				}
-
 				while ((line = reader.readLine()) != null) {
-					processMediaDot(pageManager.parse(line));
+					processMediaDot(MediaDot.parse(line));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

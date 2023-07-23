@@ -308,19 +308,7 @@ public class PageManager {
                     page.writeDot(d);
 
                     //写入文件
-                    data = new StringBuilder();
-                    //点类型 点pageID 点横坐标 点纵坐标 点对应视频进度 点对应视频ID 点对应音频ID 点对应笔Mac地址 点的时间戳
-                    data.append(d.type + " ");
-                    data.append(d.pageID + " ");
-                    data.append(d.getCx() + " ");
-                    data.append(d.getCy() + " ");
-                    data.append(d.time + " ");
-                    data.append(d.videoID + " ");
-                    data.append(d.audioID + " ");
-                    data.append(d.penMac + " ");
-                    data.append(d.timelong);
-
-                    writer.write(data.toString());
+                    writer.write(d.storageFormat());
                     writer.newLine();
                     writer.flush();
 
@@ -358,19 +346,7 @@ public class PageManager {
             page.writeDot(mediaDot);
 
             //写入文件
-            data = new StringBuilder();
-            //点类型 点pageID 点横坐标 点纵坐标 点对应视频进度 点对应视频ID 点对应音频ID 点对应笔Mac地址 点的时间戳
-            data.append(mediaDot.type + " ");
-            data.append(mediaDot.pageID + " ");
-            data.append(mediaDot.getCx() + " ");
-            data.append(mediaDot.getCy() + " ");
-            data.append(mediaDot.time + " ");
-            data.append(mediaDot.videoID + " ");
-            data.append(mediaDot.audioID + " ");
-            data.append(mediaDot.penMac + " ");
-            data.append(mediaDot.timelong);
-
-            writer.write(data.toString());
+            writer.write(mediaDot.storageFormat());
             writer.newLine();
             writer.flush();
 
@@ -402,15 +378,17 @@ public class PageManager {
      */
     public void loadData() {
 
-        boolean isWrite9 = false;//记录是否需要清除文件后重新写入列数“9”
-        boolean isEmt = false;//记录文件内容是否为空
-
         File file = new File(XApp.context.getFilesDir().getAbsolutePath(), FILE_NAME);
         Log.e(TAG, XApp.context.getFilesDir().getAbsolutePath()+FILE_NAME);
 
         if(!file.exists()) {
-            createFile();
+//            createFile();
             Log.e(TAG, FILE_NAME+"文件不存在！");
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }else {
             FileInputStream in = null;
             BufferedReader reader = null;
@@ -418,30 +396,8 @@ public class PageManager {
                 in = XApp.context.openFileInput(FILE_NAME);
                 reader = new BufferedReader(new InputStreamReader(in));
                 String line = "";
-                line = reader.readLine();
-                if(line.length() == 0) {
-                    isWrite9 = true;
-                }else if(line.indexOf(" ", 0) != -1){
-                    Toast.makeText(XApp.context, "笔迹存储文件原有内容格式错误，清空后已升级为新格式，请重新书写存储",Toast.LENGTH_SHORT).show();
-                    isWrite9 = true;
-                }else if( Integer.valueOf(line) != 9){
-                    Toast.makeText(XApp.context, "笔迹存储文件原有内容格式错误，清空后已升级为新格式，请重新书写存储",Toast.LENGTH_SHORT).show();
-                    isWrite9 = true;
-                }
-
-                if(!isWrite9){
-                    if((line = reader.readLine()) == null){
-                        Toast.makeText(XApp.context, "笔迹存储文件内容为空",Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "笔迹存储文件内容为空");
-                        isEmt = true;
-                    }else{
-                        processMediaDot(parse(line));
-                    }
-                    if(!isEmt){
-                        while ((line = reader.readLine()) != null) {
-                            processMediaDot(parse(line));
-                        }
-                    }
+                while ((line = reader.readLine()) != null) {
+                    processMediaDot(MediaDot.parse(line));
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -457,14 +413,10 @@ public class PageManager {
                 in = null;
             }
 
-            if(isWrite9){
-                createFile();
-            }
         }
 
 //        Page.lockSaveBmpNumber = false;//关锁
         Toast.makeText(XApp.context, "笔迹数据加载完毕",Toast.LENGTH_SHORT).show();
-
     }
 
     /**
@@ -491,67 +443,6 @@ public class PageManager {
             writer = null;
             out = null;
         }
-    }
-
-    /**
-     * 将从本地笔迹数据存储文件中读出的单行“笔迹点”字符串解析为MediaDot类型对象
-     * @param line 本地笔迹数据存储文件中的某行“笔迹点”字符串
-     * @return 解析后的MediaDot类型对象
-     */
-    public MediaDot parse(String line){
-        int start=0,end=0;
-
-        MediaDot mediaDot = new MediaDot();
-
-        end = line.indexOf(" ", start);
-        String s = line.substring(start, end);
-        switch (s){
-            case "PEN_DOWN":
-                mediaDot.type = Dot.DotType.PEN_DOWN;
-                break;
-            case "PEN_MOVE":
-                mediaDot.type = Dot.DotType.PEN_MOVE;
-                break;
-            case "PEN_UP":
-                mediaDot.type = Dot.DotType.PEN_UP;
-                break;
-            default:
-        }
-//        mediaDot.type = Dot.DotType.valueOf(line.substring(start, end));//type
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.pageID = Integer.valueOf(line.substring(start, end));//PageID
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.setCx(Float.valueOf(line.substring(start, end)));//横坐标
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.setCy(Float.valueOf(line.substring(start, end)));//纵坐标
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.time = Float.valueOf(line.substring(start, end));//视频进度
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.videoID = Integer.valueOf(line.substring(start, end));//视频ID
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.audioID = Integer.valueOf(line.substring(start, end));//音频ID
-
-        start = end+1;
-        end = line.indexOf(" ", start);
-        mediaDot.penMac = line.substring(start, end);//笔mac地址
-
-        start = end+1;
-        mediaDot.timelong = Long.valueOf(line.substring(start));//时间戳
-
-        //笔划ID为程序内部生成，仅作用于内部，不存于文件，故在方法外面单独处理
-        return mediaDot;
     }
 
     private int lastAudioID = 0;
