@@ -387,19 +387,19 @@ public class CkplayerActivity extends BaseActivity {
 	}
 
 	@Override
-	public void receiveRecognizeResult(int i, int pageID, int firstX, int firstY) {
-		super.receiveRecognizeResult(i, pageID, firstX, firstY);
+	public void receiveRecognizeResult(Gesture ges, int pageID, int firstX, int firstY) {
+		super.receiveRecognizeResult(ges, pageID, firstX, firstY);
 
-		Log.e(TAG,"receiveRecognizeResult(): "+"i: "+i+" pageID: "+pageID+" firstX: "+firstX+" firstY: "+firstY);
+		Log.e(TAG,"receiveRecognizeResult(): "+"InsId: "+ges.getInsId()+" pageID: "+pageID+" firstX: "+firstX+" firstY: "+firstY);
 
-		if(i != 1){//除了单击，都可以关闭视频碎片计时器
+		if(ges.getInsId() != 1){//除了单击，都可以关闭视频碎片计时器
 			if(skRunnable != null && skRunnable.isAlive()){
 				skRunnable.stop();
 			}
 			Log.e(TAG,"视频碎片计时器关闭");
 		}
 
-		if(i == 0){//普通书写，包含在基础响应中
+		if(ges.getInsId() == 0){//普通书写，包含在基础响应中
 			Log.e(TAG,"普通书写响应开始");
 			byte penID = penMacManager.getPenIDByMac(XApp.mBTMac);
 			videoManager.getVideoByID(currentID).addMate(penID);
@@ -415,9 +415,9 @@ public class CkplayerActivity extends BaseActivity {
 				finish();
 			}
 
-		}else if(i == 1){//单击，包含在基础响应中
+		}else if(ges.getInsId() == 1){//单击，包含在基础响应中
 
-		}else if(i == 2) {//双击
+		}else if(ges.getInsId() == 2) {//双击
 			MediaDot mediaDot = pageManager.getDotMedia(pageID,firstX,firstY);
 			if(mediaDot != null){
 				if(mediaDot.isVideoDot() && mediaDot.penMac.equals(XApp.mBTMac)){//跳转
@@ -463,11 +463,11 @@ public class CkplayerActivity extends BaseActivity {
 //					}
 				}
 			}
-		}else if(i == 3) {//长压
+		}else if(ges.getInsId() == 3) {//长压
 
-		}else if(i == 4){
+		}else if(ges.getInsId() == 4){
 			//指令控制符
-		}else if(i == 5){
+		}else if(ges.getInsId() == 5){
 			//对钩
 		}
 	}

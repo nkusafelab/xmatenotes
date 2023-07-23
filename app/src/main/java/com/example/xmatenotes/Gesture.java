@@ -23,6 +23,8 @@ public class Gesture {
 	private long duration;//手势时间长度，从第一个笔划的“PEN_DOWN”点到最后一个笔划的“PEN_UP”点的时间
 	
 	private long frontTSpan;//距离前一笔划的时间间隔，从前一笔画“PEN_UP”到该笔划“PEN_DOWN”
+
+	private int insId = -1;//命令ID
 	
 //	private double xMin, xMax, yMin, yMax;//刻画笔划的坐标范围
 	private RectF rectF;//刻画笔划的矩形坐标范围
@@ -37,6 +39,13 @@ public class Gesture {
 		this.frontTSpan = frontTSpan;
 		this.rectF = new RectF(rectF);
 		this.strokes = strokes;
+	}
+
+	public Gesture(Gesture ges){
+		this.duration = ges.duration;
+		this.frontTSpan = ges.frontTSpan;
+		this.rectF = new RectF(ges.getRectF());
+		this.strokes = new HashMap<String, ArrayList<SimpleDot>>(ges.getStrokes());
 	}
 
 	public Gesture() {
@@ -77,6 +86,14 @@ public class Gesture {
 
 	public void setRectF(RectF rectF) {
 		this.rectF = new RectF(rectF);
+	}
+
+	public int getInsId() {
+		return insId;
+	}
+
+	public void setInsId(int insId) {
+		this.insId = insId;
 	}
 
 	public float getWidth(){

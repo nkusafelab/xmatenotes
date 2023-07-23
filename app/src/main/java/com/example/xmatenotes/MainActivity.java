@@ -784,12 +784,12 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    public void receiveRecognizeResult(int i, int pageID, int firstX, int firstY) {
-        super.receiveRecognizeResult(i, pageID, firstX, firstY);
+    public void receiveRecognizeResult(Gesture ges, int pageID, int firstX, int firstY) {
+        super.receiveRecognizeResult(ges, pageID, firstX, firstY);
 
-        Log.e(TAG,"receiveRecognizeResult(): i: "+i+" pageID: "+ pageID + " firstX: "+firstX+" firstY: "+firstY);
+        Log.e(TAG,"receiveRecognizeResult(): ges: "+ges.getInsId()+" pageID: "+ pageID + " firstX: "+firstX+" firstY: "+firstY);
 
-        if(i == 0){//普通书写，包含在基础响应中
+        if(ges.getInsId() == 0){//普通书写，包含在基础响应中
 //            Message message = new Message();
 //            message.what = 0;
 //            Bundle bundle = new Bundle();
@@ -799,9 +799,9 @@ public class MainActivity extends BaseActivity {
 
 //            Toast.makeText(MainActivity.this, "普通书写", Toast.LENGTH_SHORT).show();
 //            java.lang.RuntimeException: Can't toast on a thread that has not called Looper.prepare()
-        }else if(i == 1){//单击，包含在基础响应中
+        }else if(ges.getInsId() == 1){//单击，包含在基础响应中
 
-        }else if(i == 2){//双击
+        }else if(ges.getInsId() == 2){//双击
             handlerToast("双击命令");
 
             int pN = pageManager.getPageNumberByPageID(pageID);
@@ -882,7 +882,7 @@ public class MainActivity extends BaseActivity {
                 }
             }
 
-        }else if(i == 3){//长压
+        }else if(ges.getInsId() == 3){//长压
             handlerToast("长压命令");
 
 //            //如果正在录音，再次长压结束录音
@@ -907,15 +907,27 @@ public class MainActivity extends BaseActivity {
 //            audioRecorder = true;
 //            Log.e(TAG,"receiveRecognizeResult(): 开启录音");
 
-        }else if(i == 4){
+        }else if(ges.getInsId() == 4){
             //指令控制符
             Log.e(TAG, "receiveRecognizeResult: 指令控制符命令 ");
+            handlerToast("指令控制符命令");
             audioManager.startRATimer();
             audioRecorder = true;
             Log.e(TAG,"receiveRecognizeResult(): 开启录音");
-        }else if(i == 5){
+        }else if(ges.getInsId() == 5){
             //对钩
+            handlerToast("对钩命令");
             Log.e(TAG, "receiveRecognizeResult: 对钩命令 ");
+        }else if(ges.getInsId() == 6){
+            handlerToast("半对1命令");
+        }else if(ges.getInsId() == 7){
+            handlerToast("半对2命令");
+        }else if(ges.getInsId() == 8){
+            handlerToast("半对3命令");
+        }else if(ges.getInsId() == 9){
+            handlerToast("错命令");
+        }else if(ges.getInsId() == 10){
+            handlerToast("未识别命令");
         }
     }
 
