@@ -5,6 +5,9 @@
     <uses-feature
         android:name="android.hardware.bluetooth"
         android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> <!-- 允许应用程序发现和配对蓝牙设备 -->
     <uses-permission android:name="android.permission.BLUETOOTH" /> <!-- 允许应用程序连接到配对的蓝牙设备 -->
@@ -21,10 +24,11 @@
     <uses-permission android:name="android.permission.BROADCAST_STICKY" /> <!-- 阻止本机进入休眠状态 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- 设置手机震动权限 -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA" /><!--设置相机权限-->
     <uses-permission android:name="android.permission.FLASHLIGHT" /> <!-- 兼容11版本 -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" /> <!-- 录音 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
 
     <application
         android:name=".App.XApp"
@@ -48,11 +52,14 @@
                 android:value="" />
         </activity>
         <activity
+            android:name=".ScanActivity"
+            android:exported="false" />
+        <activity
             android:name=".ReplayActivity"
             android:exported="false"
             android:screenOrientation="portrait">
             <meta-data
-                android:name="android.app.lib_name"
+                android:name="android.qrcode.lib_name"
                 android:value="" />
         </activity>
         <activity
@@ -66,7 +73,7 @@
             </intent-filter>
 
             <meta-data
-                android:name="android.app.lib_name"
+                android:name="android.qrcode.lib_name"
                 android:value="" />
         </activity>
         <activity
@@ -79,6 +86,21 @@
             android:name=".DotInfoActivity"
             android:label="@string/dot_info"
             android:screenOrientation="landscape" />
+        <activity android:name=".StatusActivity" />
+        <activity android:name="com.king.wechat.qrcode.app.ScannerActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.king.wechat.qrcode.app.WeChatQRCodeActivity"
+            android:theme="@style/CameraScanTheme"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name="com.king.wechat.qrcode.app.WeChatMultiQRCodeActivity"
+            android:theme="@style/CameraScanTheme"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name="com.king.wechat.qrcode.app.OpenCVQRCodeActivity"
+            android:theme="@style/CameraScanTheme"
+            android:screenOrientation="portrait"
+            tools:ignore="Instantiatable" />
 
         <service
             android:name=".BluetoothLEService"

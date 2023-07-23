@@ -48,6 +48,9 @@ public class BluetoothLEService extends Service {
         return isPenConnected;
     }
 
+    private PenStatus penStatus;
+    private PenCommAgent penCommAgent;
+
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
@@ -181,6 +184,11 @@ public class BluetoothLEService extends Service {
             broadcastUpdate(intentAction);
             Log.i(TAG, "Connected to GATT server.");
             isPenConnected = true;
+
+
+            penCommAgent = PenCommAgent.GetInstance(getApplication());
+            penStatus = penCommAgent.getPenStatus();
+            onReceivePenAllStatus(penStatus);
         }
 
         @Override
