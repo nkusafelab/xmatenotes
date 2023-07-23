@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,8 @@ public class BaseActivity extends AppCompatActivity {
     public static BaseActivity baseActivity = null;
 
     private static BLEStatusReceiver bleStatusReceiver = null;
+
+    Toast mToast;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -123,6 +126,20 @@ public class BaseActivity extends AppCompatActivity {
                 getSupportActionBar().setTitle(getResources().getString(R.string.app_name)+"（蓝牙未连接）");
             }
         }
+    }
+
+    /**
+     * 全局的toast
+     *
+     * @param msg
+     */
+    public void showToast(String msg) {
+
+        if (mToast == null) {
+            mToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        }
+        mToast.setText(msg);
+        mToast.show();
     }
 
 }

@@ -9,6 +9,34 @@
     <string name="action_clear">清除数据</string>
     <string name="dot_info">本地笔迹信息</string>
     <string name="dot_info_intent">查看本地笔迹存储</string>
+    <string name="status_info">状态设置</string>
+
+    <string name="name">笔名</string>
+    <string name="address">蓝牙地址</string>
+
+    <!--未来可能实现的内容
+    <string name="pen_boot_version">BOOT版本</string>
+    <string name="bt_version">蓝牙固件版本</string>
+    <string name="mcu_version">MCU固件版本</string>
+    <string name="custom_id">客户ID</string>
+    <string name="battery">剩余电量</string>
+    <string name="parameters">OID</string>
+    <string name="used_memory">已用内存</string>
+    <string name="rtc_time">RTC时间</string>
+    <string name="beep">蜂鸣器</string>
+    <string name="pressure_switch_on">笔尖压力唤醒</string>
+    <string name="led">呼吸灯</string>
+    <string name="auto_close_time">自动关机时间</string>
+    <string name="sensitivity">灵敏度</string>
+    <string name="force_range">压力值范围</string>
+    -->
+
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="set_pen_name">设置笔名</string>
+    <string name="QR_scan">扫一扫</string>
+    <string name="take_photo">拍照</string>
+    <string name="select">相册</string>
 
 
 </resources>

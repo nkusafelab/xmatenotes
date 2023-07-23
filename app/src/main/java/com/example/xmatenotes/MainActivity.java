@@ -3,8 +3,10 @@ package com.example.xmatenotes;
 import static com.example.xmatenotes.Constants.A3_ABSCISSA_RANGE;
 import static com.example.xmatenotes.Constants.A3_ORDINATE_RANGE;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -30,6 +32,7 @@ import com.example.xmatenotes.datamanager.PageManager;
 import com.example.xmatenotes.datamanager.PenMacManager;
 import com.example.xmatenotes.instruction.Instruction;
 import com.google.common.collect.ArrayListMultimap;
+import com.king.wechat.qrcode.app.ScannerActivity;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import com.tqltech.tqlpencomm.PenCommAgent;
@@ -52,6 +55,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends BaseActivity {
 
@@ -113,6 +119,11 @@ public class MainActivity extends BaseActivity {
     private Intent serverIntent = null;
     private Intent ckplayerIntent = null;
     private Intent LogIntent = null;
+
+    private Intent statusIntent = null;
+
+    private Intent QRIntent = null;
+
     private PenCommAgent bleManager;
     private String penAddress;
 
@@ -157,7 +168,6 @@ public class MainActivity extends BaseActivity {
     private PenMacManager penMacManager = null;//管理所有mac地址的对象
     private PageManager pageManager = null;
     private ExcelReader excelReader = null;
-
     private String penMac = XApp.mBTMac;//存储笔mac地址
 
     private boolean wTimer = false;//普通书写完毕计时器开关
@@ -400,7 +410,6 @@ public class MainActivity extends BaseActivity {
 
         penMac = XApp.mBTMac;
         penMacManager = PenMacManager.getInstance();//必须在加载数据之前
-
 //        drawImageView = (DrawImageView)findViewById(R.id.drawImageView);
         drawImageSurfaceView = (DrawImageSurfaceView)findViewById(R.id.drawImageSurfaceView);
         switchPage(0);
@@ -545,6 +554,10 @@ public class MainActivity extends BaseActivity {
                 return true;
             case R.id.action_ckplayer:
                 ckplayerIntent = new Intent(this, CkplayerActivity.class);Log.e(TAG,"action_ckplayer");
+                ckplayerIntent.putExtra("time",0.0f);
+
+                Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(1));
+                ckplayerIntent.putExtra("videoID",1);
                 startActivity(ckplayerIntent);
                 return true;
             case R.id.action_clear:
@@ -556,6 +569,18 @@ public class MainActivity extends BaseActivity {
                 Intent dotInfoIntent = new Intent(this, DotInfoActivity.class);Log.e(TAG,"dot_info_intent");
                 startActivity(dotInfoIntent);
                 return true;
+            case R.id.status_info:
+                statusIntent = new Intent(this,StatusActivity.class);
+                Log.e(TAG,"status_info");
+                startActivity(statusIntent);
+                return true;
+            case R.id.QRCode_scan:
+                QRIntent = new Intent(this, ScannerActivity.class);
+//                QRIntent = new Intent(this,ScanActivity.class);
+                Log.e(TAG,"QR_scan");
+                startActivity(QRIntent);
+                return true;
+
             default:
 /*
             case R.id.clear:

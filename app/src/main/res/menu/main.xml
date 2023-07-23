@@ -13,6 +13,11 @@
     <item
         android:id="@+id/action_clear"
         android:title="@string/action_clear"/>
-
+    <item
+        android:id="@+id/status_info"
+        android:title="@string/status_info"/>
+    <item
+        android:id="@+id/QRCode_scan"
+        android:title="@string/QR_scan"/>
 
 </menu>
