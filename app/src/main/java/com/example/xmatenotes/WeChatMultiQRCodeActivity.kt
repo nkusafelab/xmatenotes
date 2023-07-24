@@ -1,4 +1,4 @@
-package com.king.wechat.qrcode.app
+package com.example.xmatenotes
 
 import android.content.Intent
 import android.graphics.Path

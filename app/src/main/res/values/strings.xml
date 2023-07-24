@@ -38,6 +38,7 @@
     <string name="QR_scan">扫一扫</string>
     <string name="take_photo">拍照</string>
     <string name="select">相册</string>
+    <string name="photo_notes">拍照笔记</string>
 
 
 </resources>

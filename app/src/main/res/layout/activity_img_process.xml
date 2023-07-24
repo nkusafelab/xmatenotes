@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ImgProcessActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_editor_absoluteY="0dp" />
+
+            <com.king.view.viewfinderview.ViewfinderView
+                android:id="@+id/viewfinderView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:vvLaserDrawable="@drawable/ic_laser_line"
+                app:vvLaserDrawableRatio="0.8"
+                app:vvLaserStyle="image"
+                app:vvViewfinderStyle="popular" />
+
+
+        </FrameLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/take_photo_again"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="重新拍照"
+                >
+
+            </Button>
+
+            <Button
+                android:id="@+id/scan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_margin="20dp"
+
+                android:text="识别图中二维码"
+                >
+
+            </Button>
+
+            <Button
+                android:id="@+id/record_audio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_margin="20dp"
+                android:text="录音">
+
+            </Button>
+        </RelativeLayout>
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            -->
+
+<!--        </LinearLayout>-->
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-package com.king.wechat.qrcode.app
+package com.example.xmatenotes
 
 import android.Manifest
 import android.content.Intent
@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.opencv.OpenCV
+
 
 /**
  * @author <a href="mailto:jenly1314@gmail.com">Jenly</a>

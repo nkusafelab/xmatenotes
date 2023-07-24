@@ -20,7 +20,7 @@
         android:id="@+id/status_info"
         android:title="@string/status_info"/>
     <item
-        android:id="@+id/QRCode_scan"
-        android:title="@string/QR_scan"/>
+        android:id="@+id/photo_notes"
+        android:title="@string/photo_notes"/>
 
 </menu>

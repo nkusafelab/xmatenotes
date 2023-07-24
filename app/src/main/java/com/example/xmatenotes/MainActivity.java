@@ -3,11 +3,10 @@ package com.example.xmatenotes;
 import static com.example.xmatenotes.App.XApp.videoManager;
 import static com.example.xmatenotes.Constants.A3_ABSCISSA_RANGE;
 import static com.example.xmatenotes.Constants.A3_ORDINATE_RANGE;
+import static com.example.xmatenotes.WeChatQRCodeActivity.REQUEST_CODE_QRCODE;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -36,7 +35,7 @@ import com.example.xmatenotes.datamanager.PageManager;
 import com.example.xmatenotes.datamanager.PenMacManager;
 import com.example.xmatenotes.instruction.Instruction;
 import com.google.common.collect.ArrayListMultimap;
-import com.king.wechat.qrcode.app.ScannerActivity;
+import com.king.wechat.qrcode.WeChatQRCodeDetector;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import com.tqltech.tqlpencomm.PenCommAgent;
@@ -60,8 +59,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityOptionsCompat;
+
+import org.opencv.OpenCV;
 
 public class MainActivity extends BaseActivity {
 
@@ -591,11 +591,15 @@ public class MainActivity extends BaseActivity {
                 Log.e(TAG,"status_info");
                 startActivity(statusIntent);
                 return true;
-            case R.id.QRCode_scan:
-                QRIntent = new Intent(this, ScannerActivity.class);
+            case R.id.photo_notes:
+//                QRIntent = new Intent(this, WeChatQRCodeActivity.class);
 //                QRIntent = new Intent(this,ScanActivity.class);
                 Log.e(TAG,"QR_scan");
-                startActivity(QRIntent);
+                // 初始化OpenCV
+                OpenCV.initAsync(this);
+                // 初始化WeChatQRCodeDetector
+                WeChatQRCodeDetector.init(this);
+                startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
 
             default:
@@ -615,6 +619,13 @@ public class MainActivity extends BaseActivity {
         }
         return false;
     }
+
+    private void startActivityForResult(Class<?> clazz) {
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeCustomAnimation(this, R.anim.alpha_in, R.anim.alpha_out);
+        Intent intent = new Intent(this, clazz);
+        startActivityForResult(intent, REQUEST_CODE_QRCODE, options.toBundle());
+    }
+
 
     public void copy(int para, String filename){
         InputStream in = null;
