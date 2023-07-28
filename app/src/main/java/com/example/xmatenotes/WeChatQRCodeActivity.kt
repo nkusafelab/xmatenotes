@@ -1,8 +1,14 @@
 package com.example.xmatenotes
 
+
 import android.Manifest
+import android.content.ContentUris
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Point
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.provider.MediaStore
@@ -11,6 +17,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.king.mlkit.vision.camera.AnalyzeResult
 import com.king.mlkit.vision.camera.CameraScan
@@ -26,7 +33,12 @@ import com.king.wechat.qrcode.scanning.analyze.WeChatScanningAnalyzer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.opencv.OpenCV
+import org.opencv.android.Utils
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.imgproc.Imgproc
+import java.io.File
+import org.opencv.core.Point as OpenCVPoint
 
 /**
  * 微信二维码扫描实现示例
@@ -37,6 +49,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     private lateinit var ivResult: ImageView
     private lateinit var viewfinderView: ViewfinderView
+
+    private lateinit var imageUri:Uri
+    private lateinit var outputImage: File
 
     /**
      * OpenCVQRCodeDetector
@@ -58,10 +73,11 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     private fun getContext() = this
 
 
+
     override fun initUI() {
         super.initUI()
         ivResult = findViewById(R.id.ivResult)
-        viewfinderView = findViewById(R.id.viewfinderView)
+        viewfinderView = findViewById(R.id.viewfinderView) //p-oijhgvcvxfu2
     }
 
     override fun onRequestPermissionsResult(
@@ -87,8 +103,11 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             when (requestCode) {
                 ScannerActivity.REQUEST_CODE_QRCODE -> processQRCodeResult(data)
                 ScannerActivity.REQUEST_CODE_PICK_PHOTO -> processPickPhotoResult(data)
+                REQUEST_CODE_TAKE_PHOTO -> processTakePhotoResult()
+
             }
         }
+
     }
 
     /**
@@ -98,7 +117,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         data?.let {
             try {
                 lifecycleScope.launch {
-                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it.data)
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it.data)
                     val result = withContext(Dispatchers.IO) {
                         // 通过WeChatQRCodeDetector识别图片中的二维码
                         WeChatQRCodeDetector.detectAndDecode(bitmap)
@@ -113,12 +132,91 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     } else {
                         // 为空表示识别失败
                         LogUtils.d("result = null")
+                        Toast.makeText(getContext(),"未识别到二维码", Toast.LENGTH_SHORT).show()
                     }
+                    // 检测结果：二维码的位置信息
+                    val points = ArrayList<Mat>()
+                    //通过WeChatQRCodeDetector识别图片中的二维码并返回二维码的位置信息
+                    val results = WeChatQRCodeDetector.detectAndDecode(bitmap, points)
+                    points.forEach { mat ->
+                        // 扫码结果二维码的四个点（一个矩形）
+                        Log.d(TAG, "point0: ${mat[0, 0][0]}, ${mat[0, 1][0]}")
+                        Log.d(TAG, "point1: ${mat[1, 0][0]}, ${mat[1, 1][0]}")
+                        Log.d(TAG, "point2: ${mat[2, 0][0]}, ${mat[2, 1][0]}")
+                        Log.d(TAG, "point3: ${mat[3, 0][0]}, ${mat[3, 1][0]}")
+                    }
+
+//                    // 将 Bitmap 转换为可变的 Mat
+//                    val mat = Mat(bitmap.height, bitmap.width, CvType.CV_8UC4)
+//                    Utils.bitmapToMat(bitmap, mat)
+//
+//                    // 创建一个红色 (BGR 格式，所以红色是 [0, 0, 255])
+//                    val redColor = org.opencv.core.Scalar(255.0, 0.0, 0.0)
+//
+//                    val point1 = OpenCVPoint(mat[0, 0][0], mat[0, 1][0])
+//                    val point2 = OpenCVPoint(mat[1, 0][0], mat[1, 1][0])
+//                    val point3 = OpenCVPoint(mat[2, 0][0], mat[2, 1][0])
+//                    val point4 = OpenCVPoint(mat[3, 0][0], mat[3, 1][0])
+//
+//                    // 在 Mat 上绘制红线
+//                    Imgproc.line(mat, point1, point2, redColor, 5)
+//                    Imgproc.line(mat, point2, point3, redColor, 5)
+//                    Imgproc.line(mat, point3, point4, redColor, 5)
+//                    Imgproc.line(mat, point4, point1, redColor, 5)
+//
+//
+//                    // 将绘制后的 Mat 转换回 Bitmap
+//                    Utils.matToBitmap(mat, bitmap)
+                    //跳转活动，传递bitmap参数
+                    val intent = Intent(getContext(), CropActivity::class.java)
+                    BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
+                    startActivity(intent)
                 }
             } catch (e: Exception) {
                 LogUtils.w(e)
             }
 
+        }
+    }
+
+    private  fun processTakePhotoResult(){
+        lifecycleScope.launch {
+            val bitmap=BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri))
+
+
+            val result = withContext(Dispatchers.IO) {
+                // 通过WeChatQRCodeDetector识别图片中的二维码
+                WeChatQRCodeDetector.detectAndDecode(bitmap)
+
+            }
+
+            if (result.isNotEmpty()) {// 不为空，则表示识别成功
+                // 打印所有结果
+                for ((index, text) in result.withIndex()) {
+                    LogUtils.d("result$index:$text")
+                }
+                // 一般需求都是识别一个码，所以这里取第0个就可以；有识别多个码的需求，可以取全部
+                Toast.makeText(getContext(), result[0], Toast.LENGTH_SHORT).show()
+            } else {
+                // 为空表示识别失败
+                LogUtils.d("result = null")
+                Toast.makeText(getContext(),"未识别到二维码", Toast.LENGTH_SHORT).show()
+            }
+            // 检测结果：二维码的位置信息
+            val points = ArrayList<Mat>()
+            //通过WeChatQRCodeDetector识别图片中的二维码并返回二维码的位置信息
+            val results = WeChatQRCodeDetector.detectAndDecode(bitmap, points)
+            points.forEach { mat ->
+                // 扫码结果二维码的四个点（一个矩形）
+                Log.d(TAG, "point0: ${mat[0, 0][0]}, ${mat[0, 1][0]}")
+                Log.d(TAG, "point1: ${mat[1, 0][0]}, ${mat[1, 1][0]}")
+                Log.d(TAG, "point2: ${mat[2, 0][0]}, ${mat[2, 1][0]}")
+                Log.d(TAG, "point3: ${mat[3, 0][0]}, ${mat[3, 1][0]}")
+            }
+            //跳转活动，传递bitmap参数
+            val intent = Intent(getContext(), CropActivity::class.java)
+            BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
+            startActivity(intent)
         }
     }
 
@@ -132,6 +230,20 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     private fun pickCameraClicked() {
 
+        outputImage = File(externalCacheDir,"output_image.jpg")
+        if(outputImage.exists()){
+            outputImage.delete()
+        }
+        outputImage.createNewFile()
+        imageUri = if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
+            FileProvider.getUriForFile(this,"com.example.cameraalbumtest.fileprovider",outputImage)
+        }else{
+            Uri.fromFile(outputImage)
+        }
+        //打开相机
+        val cameraIntent = Intent("android.media.action.IMAGE_CAPTURE")
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri)
+        startActivityForResult(cameraIntent, REQUEST_CODE_TAKE_PHOTO)
     }
 
     private fun pickPhotoClicked() {
@@ -145,6 +257,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             )
         }
     }
+
 
     private fun startPickPhoto() {
         val pickIntent = Intent(
@@ -268,6 +381,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         const val REQUEST_CODE_QRCODE = 0x10
         const val REQUEST_CODE_REQUEST_EXTERNAL_STORAGE = 0x11
         const val REQUEST_CODE_PICK_PHOTO = 0x12
+        const val REQUEST_CODE_TAKE_PHOTO = 0x13
     }
 
 }
