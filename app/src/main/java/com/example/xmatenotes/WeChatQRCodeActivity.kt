@@ -168,7 +168,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                    // 将绘制后的 Mat 转换回 Bitmap
 //                    Utils.matToBitmap(mat, bitmap)
                     //跳转活动，传递bitmap参数
-                    val intent = Intent(getContext(), CropActivity::class.java)
+//                    val intent = Intent(getContext(), CropActivity::class.java)
+                    val intent = Intent(getContext(), ImgProcessActivity::class.java)
                     BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
                     startActivity(intent)
                 }

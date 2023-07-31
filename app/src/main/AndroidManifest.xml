@@ -100,7 +100,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".WeChatQRCodeActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
             android:theme="@style/CameraScanTheme" />
         <activity
             android:name=".WeChatMultiQRCodeActivity"

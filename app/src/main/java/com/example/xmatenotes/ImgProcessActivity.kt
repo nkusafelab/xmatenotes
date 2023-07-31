@@ -6,12 +6,8 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.util.LruCache
 import org.opencv.android.Utils
-import org.opencv.core.Mat
-import org.opencv.core.MatOfPoint
-import org.opencv.core.MatOfPoint2f
+import org.opencv.core.*
 import org.opencv.core.Point
-import org.opencv.core.Scalar
-import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.lang.Math.abs
 import java.lang.Math.atan2
@@ -76,44 +72,44 @@ class ImgProcessActivity : AppCompatActivity() {
 
     fun findMaxContour(bitmap: Bitmap): Bitmap{
         // 将 Bitmap 转换为 OpenCV 的 Mat 对象
-        val inputMat = Mat()
-        Utils.bitmapToMat(bitmap, inputMat)
-
-        // 将 Mat 转换为灰度图像
-        val grayMat = Mat()
-        Imgproc.cvtColor(inputMat, grayMat, Imgproc.COLOR_BGR2GRAY)
-
-        val blurredMat = Mat()
-        val gausskernelSize = 7
-        Imgproc.GaussianBlur(grayMat, blurredMat, Size(gausskernelSize.toDouble(), gausskernelSize.toDouble()), 7.0)
-
-
-        // 图像增强（例如，直方图均衡化）
-        val enhancedMat = Mat()
-        Imgproc.equalizeHist(blurredMat, enhancedMat)
-
-        // 多尺度边缘检测
-        val edgesMat = Mat()
-        val thresholdLow = 50.0
-        val thresholdHigh = 150.0
-        Imgproc.Canny(enhancedMat, edgesMat, thresholdLow, thresholdHigh)
-
-        // 形态学操作（例如，闭运算）
-        val kernelSize = 3
-        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(kernelSize.toDouble(), kernelSize.toDouble()))
-        val morphedEdgesMat = Mat()
-        Imgproc.morphologyEx(edgesMat, morphedEdgesMat, Imgproc.MORPH_CLOSE, kernel)
-
-        // 自适应阈值
-        val adaptiveThresholdMat = Mat()
-        val blockSize = 11
-        val C = 2.0
-        Imgproc.adaptiveThreshold(morphedEdgesMat, adaptiveThresholdMat, 255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, blockSize, C)
-
-        //将 Mat 转换回 Bitmap
-        val resultBitmap = Bitmap.createBitmap(adaptiveThresholdMat.cols(), adaptiveThresholdMat.rows(), Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(adaptiveThresholdMat, resultBitmap)
-        return resultBitmap
+//        val inputMat = Mat()
+//        Utils.bitmapToMat(bitmap, inputMat)
+//
+//        // 将 Mat 转换为灰度图像
+//        val grayMat = Mat()
+//        Imgproc.cvtColor(inputMat, grayMat, Imgproc.COLOR_BGR2GRAY)
+//
+//        val blurredMat = Mat()
+//        val gausskernelSize = 7
+//        Imgproc.GaussianBlur(grayMat, blurredMat, Size(gausskernelSize.toDouble(), gausskernelSize.toDouble()), 7.0)
+//
+//
+//        // 图像增强（例如，直方图均衡化）
+//        val enhancedMat = Mat()
+//        Imgproc.equalizeHist(blurredMat, enhancedMat)
+//
+//        // 多尺度边缘检测
+//        val edgesMat = Mat()
+//        val thresholdLow = 50.0
+//        val thresholdHigh = 150.0
+//        Imgproc.Canny(enhancedMat, edgesMat, thresholdLow, thresholdHigh)
+//
+//        // 形态学操作（例如，闭运算）
+//        val kernelSize = 3
+//        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(kernelSize.toDouble(), kernelSize.toDouble()))
+//        val morphedEdgesMat = Mat()
+//        Imgproc.morphologyEx(edgesMat, morphedEdgesMat, Imgproc.MORPH_CLOSE, kernel)
+//
+//        // 自适应阈值
+//        val adaptiveThresholdMat = Mat()
+//        val blockSize = 11
+//        val C = 2.0
+//        Imgproc.adaptiveThreshold(morphedEdgesMat, adaptiveThresholdMat, 255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, blockSize, C)
+//
+//        //将 Mat 转换回 Bitmap
+//        val resultBitmap = Bitmap.createBitmap(adaptiveThresholdMat.cols(), adaptiveThresholdMat.rows(), Bitmap.Config.ARGB_8888)
+//        Utils.matToBitmap(adaptiveThresholdMat, resultBitmap)
+//        return resultBitmap
 
 
 //        // 使用霍夫直线变换来检测直线
@@ -192,143 +188,143 @@ class ImgProcessActivity : AppCompatActivity() {
 //        return resultBitmap
         // 将 Bitmap 转换为 OpenCV 的 Mat 对象
         // 将 Bitmap 转换为 OpenCV 的 Mat 对象
-//        val inputMat = Mat()
-//        Utils.bitmapToMat(bitmap, inputMat)
-//
-//        // 将 Mat 转换为灰度图像
-//        val grayMat = Mat()
-//        Imgproc.cvtColor(inputMat, grayMat, Imgproc.COLOR_BGR2GRAY)
-//
-////        // 高斯模糊去噪
-////        val denoisedMat = Mat()
-////        Imgproc.GaussianBlur(grayMat, denoisedMat, Size(5.0, 5.0), 5.0)
-////
-////        // 进行边缘检测
-////        val edgesMat = Mat()
-////        Imgproc.Laplacian(denoisedMat, edgesMat, CvType.CV_8U)
-//
-//        // 自适应阈值化进行图像二值化
-//        val binaryMat = Mat()
-//        Imgproc.adaptiveThreshold(
-//            grayMat,
-//            binaryMat,
-//            255.0,
-//            Imgproc.ADAPTIVE_THRESH_MEAN_C,
-//            Imgproc.THRESH_BINARY,
-//            11,
-//            2.0
-//        )
+        val inputMat = Mat()
+        Utils.bitmapToMat(bitmap, inputMat)
+
+        // 将 Mat 转换为灰度图像
+        val grayMat = Mat()
+        Imgproc.cvtColor(inputMat, grayMat, Imgproc.COLOR_BGR2GRAY)
+
+//        // 高斯模糊去噪
+//        val denoisedMat = Mat()
+//        Imgproc.GaussianBlur(grayMat, denoisedMat, Size(5.0, 5.0), 5.0)
 //
 //        // 进行边缘检测
 //        val edgesMat = Mat()
-//        Imgproc.Laplacian(binaryMat, edgesMat, CvType.CV_8U)
-//
-////        // 将 Mat 转换回 Bitmap
-////        val resultBitmap = Bitmap.createBitmap(edgesMat.cols(), edgesMat.rows(), Bitmap.Config.ARGB_8888)
-////        Utils.matToBitmap(edgesMat, resultBitmap)
-//
-////        // 膨胀操作填充边缘间的空隙
-////        val dilatedMat = Mat()
-////        val kernelSize = 3
-////        val kernel = Mat.ones(kernelSize, kernelSize, CvType.CV_8U)
-////        val anchor = Point(-1.0, -1.0)
-////        val iterations = 1 // 增加迭代次数
-////        Imgproc.dilate(edgesMat, dilatedMat, kernel, anchor, iterations)
-////
-////        // 将 Mat 转换回 Bitmap
-////        val resultBitmap = Bitmap.createBitmap(dilatedMat.cols(), dilatedMat.rows(), Bitmap.Config.ARGB_8888)
-////        Utils.matToBitmap(dilatedMat, resultBitmap)
-//
-//
-//        // 开运算去除边缘混叠问题
-//        val openedMat = Mat()
+//        Imgproc.Laplacian(denoisedMat, edgesMat, CvType.CV_8U)
+
+        // 自适应阈值化进行图像二值化
+        val binaryMat = Mat()
+        Imgproc.adaptiveThreshold(
+            grayMat,
+            binaryMat,
+            255.0,
+            Imgproc.ADAPTIVE_THRESH_MEAN_C,
+            Imgproc.THRESH_BINARY,
+            11,
+            2.0
+        )
+
+        // 进行边缘检测
+        val edgesMat = Mat()
+        Imgproc.Laplacian(binaryMat, edgesMat, CvType.CV_8U)
+
+//        // 将 Mat 转换回 Bitmap
+//        val resultBitmap = Bitmap.createBitmap(edgesMat.cols(), edgesMat.rows(), Bitmap.Config.ARGB_8888)
+//        Utils.matToBitmap(edgesMat, resultBitmap)
+
+//        // 膨胀操作填充边缘间的空隙
+//        val dilatedMat = Mat()
 //        val kernelSize = 3
-//        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(kernelSize.toDouble(), kernelSize.toDouble()))
-//        Imgproc.morphologyEx(edgesMat, openedMat, Imgproc.MORPH_OPEN, kernel)
+//        val kernel = Mat.ones(kernelSize, kernelSize, CvType.CV_8U)
+//        val anchor = Point(-1.0, -1.0)
+//        val iterations = 1 // 增加迭代次数
+//        Imgproc.dilate(edgesMat, dilatedMat, kernel, anchor, iterations)
 //
-////        // 将 Mat 转换回 Bitmap
-////        val resultBitmap = Bitmap.createBitmap(openedMat.cols(), openedMat.rows(), Bitmap.Config.ARGB_8888)
-////        Utils.matToBitmap(openedMat, resultBitmap)
-//
-//        // 寻找图像中的轮廓
-//        val contours = mutableListOf<MatOfPoint>()
-//        val hierarchy = Mat()
-//        Imgproc.findContours(edgesMat, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS)
-//
-//        // 找出最大的轮廓
-//        var maxContour: MatOfPoint? = null
-//        var maxArea = 0.0
-//        for (contour in contours) {
-//            val area = Imgproc.contourArea(contour)
-//            if (area > maxArea) {
-//                maxArea = area
-//                maxContour = contour
-//            }
-//        }
-//
-//        // 在新的 Mat 上绘制最大轮廓
-//        val contourImage = Mat.zeros(edgesMat.size(), CvType.CV_8UC3)
-//        if (maxContour != null) {
-//            val contourList = listOf(maxContour)
-//            Imgproc.drawContours(contourImage, contourList, -1, Scalar(255.0, 0.0, 0.0), 2)
-//        }
-//
+//        // 将 Mat 转换回 Bitmap
+//        val resultBitmap = Bitmap.createBitmap(dilatedMat.cols(), dilatedMat.rows(), Bitmap.Config.ARGB_8888)
+//        Utils.matToBitmap(dilatedMat, resultBitmap)
+
+
+        // 开运算去除边缘混叠问题
+        val openedMat = Mat()
+        val kernelSize = 3
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(kernelSize.toDouble(), kernelSize.toDouble()))
+        Imgproc.morphologyEx(edgesMat, openedMat, Imgproc.MORPH_OPEN, kernel)
+
+//        // 将 Mat 转换回 Bitmap
+//        val resultBitmap = Bitmap.createBitmap(openedMat.cols(), openedMat.rows(), Bitmap.Config.ARGB_8888)
+//        Utils.matToBitmap(openedMat, resultBitmap)
+
+        // 寻找图像中的轮廓
+        val contours = mutableListOf<MatOfPoint>()
+        val hierarchy = Mat()
+        Imgproc.findContours(edgesMat, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS)
+
+        // 找出最大的轮廓
+        var maxContour: MatOfPoint? = null
+        var maxArea = 0.0
+        for (contour in contours) {
+            val area = Imgproc.contourArea(contour)
+            if (area > maxArea) {
+                maxArea = area
+                maxContour = contour
+            }
+        }
+
+        // 在新的 Mat 上绘制最大轮廓
+        val contourImage = Mat.zeros(edgesMat.size(), CvType.CV_8UC3)
+        if (maxContour != null) {
+            val contourList = listOf(maxContour)
+            Imgproc.drawContours(contourImage, contourList, -1, Scalar(255.0, 0.0, 0.0), 2)
+        }
+
 //        // 将 Mat 转换回 Bitmap
 //        val resultBitmap = Bitmap.createBitmap(contourImage.cols(), contourImage.rows(), Bitmap.Config.ARGB_8888)
 //        Utils.matToBitmap(contourImage, resultBitmap)
 
-        // 求取最小外接矩形，得到梯形的顶点坐标
-//        val minRect = Imgproc.minAreaRect(MatOfPoint2f(*maxContour?.toArray()))
-//        val vertices = Array<Point>(4) { Point() }
-//        minRect.points(vertices)
+//         求取最小外接矩形，得到矩形的顶点坐标
+        val minRect = Imgproc.minAreaRect(MatOfPoint2f(*maxContour?.toArray()))
+        val vertices = Array<Point>(4) { Point() }
+        minRect.points(vertices)
 
-//        // 在新的 Mat 上绘制梯形
-//        val trapezoidImage = Mat.zeros(edgesMat.size(), CvType.CV_8UC3)
-//        val trapezoidContourList = listOf(maxContour)
-//        Imgproc.drawContours(trapezoidImage, trapezoidContourList, -1, Scalar(255.0, 0.0, 0.0), 2)
-//
-//        // 绘制梯形的顶点
-//        for (i in 0 until 4) {
-//            Imgproc.circle(trapezoidImage, vertices[i], 5, Scalar(0.0, 255.0, 0.0), -1)
-//        }
-//
-//        // 将 Mat 转换回 Bitmap
+        // 在新的 Mat 上绘制矩形
+        val trapezoidImage = Mat.zeros(edgesMat.size(), CvType.CV_8UC3)
+        val trapezoidContourList = listOf(maxContour)
+        Imgproc.drawContours(trapezoidImage, trapezoidContourList, -1, Scalar(255.0, 0.0, 0.0), 2)
+
+        // 绘制梯形的顶点
+        for (i in 0 until 4) {
+            Imgproc.circle(trapezoidImage, vertices[i], 5, Scalar(0.0, 255.0, 0.0), -1)
+        }
+
+        // 将 Mat 转换回 Bitmap
 //        val resultBitmap = Bitmap.createBitmap(trapezoidImage.cols(), trapezoidImage.rows(), Bitmap.Config.ARGB_8888)
 //        Utils.matToBitmap(trapezoidImage, resultBitmap)
 
 
-        // 定义原图中边框上的四个点
-//        val srcPoints = MatOfPoint2f(
-//            vertices[0], // 左上角
-//            vertices[1], // 右上角
-//            vertices[2], // 右下角
-//            vertices[3]  // 左下角
-//        )
+//         定义原图中边框上的四个点
+        val srcPoints = MatOfPoint2f(
+            vertices[0], // 左上角
+            vertices[1], // 右上角
+            vertices[2], // 右下角
+            vertices[3]  // 左下角
+        )
 
-//        // 定义目标图中的边框上的四个点
-//        val dstWidth = bitmap.width
-//        val dstHeight = bitmap.height
-//        val dstPoints = MatOfPoint2f(
-//            Point(0.0, 0.0),                     // 左上角
-//            Point(dstWidth.toDouble(), 0.0),     // 右上角
-//            Point(dstWidth.toDouble(), dstHeight.toDouble()), // 右下角
-//            Point(0.0, dstHeight.toDouble())     // 左下角
-//        )
-//
-//        // 计算透视变换矩阵
-//        val perspectiveTransform = Imgproc.getPerspectiveTransform(srcPoints, dstPoints)
-//
-//        // 进行透视变换
-//        val transformedMat = Mat()
-//        val inputMatResult = Mat()
-//        Utils.bitmapToMat(bitmap, inputMatResult)
-//        Imgproc.warpPerspective(inputMatResult, transformedMat, perspectiveTransform, Size(dstWidth.toDouble(), dstHeight.toDouble()))
+        // 定义目标图中的边框上的四个点
+        val dstWidth = bitmap.width
+        val dstHeight = bitmap.height
+        val dstPoints = MatOfPoint2f(
+            Point(0.0, 0.0),                     // 左上角
+            Point(dstWidth.toDouble(), 0.0),     // 右上角
+            Point(dstWidth.toDouble(), dstHeight.toDouble()), // 右下角
+            Point(0.0, dstHeight.toDouble())     // 左下角
+        )
 
-        // 将 Mat 转换回 Bitmap
-//        val resultBitmap = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ARGB_8888)
-//        Utils.matToBitmap(transformedMat, resultBitmap)
+        // 计算透视变换矩阵
+        val perspectiveTransform = Imgproc.getPerspectiveTransform(srcPoints, dstPoints)
 
-        //return resultBitmap
+        // 进行透视变换
+        val transformedMat = Mat()
+        val inputMatResult = Mat()
+        Utils.bitmapToMat(bitmap, inputMatResult)
+        Imgproc.warpPerspective(inputMatResult, transformedMat, perspectiveTransform, Size(dstWidth.toDouble(), dstHeight.toDouble()))
+
+//         将 Mat 转换回 Bitmap
+        val resultBitmap = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(transformedMat, resultBitmap)
+
+        return resultBitmap
         }
 
 
@@ -386,9 +382,11 @@ class ImgProcessActivity : AppCompatActivity() {
         return sortedIndices.map { quadrilateral.toList()[it] }
     }
 
-        companion object {
+
+    companion object {
         const val TAG = "ImgProcessActivity"
     }
+
     private fun isLineInRegion(line: Line, imageWidth: Int, imageHeight: Int): Boolean {
         val regionWidth = imageWidth / 2
         val regionHeight = imageHeight / 2
@@ -404,10 +402,7 @@ class ImgProcessActivity : AppCompatActivity() {
 
         return (pt1RegionX != pt2RegionX) && (pt1RegionY != pt2RegionY)
     }
-
-
 }
-
 
 data class Line(val pt1: Point, val pt2: Point) {
     // 计算直线的长度
