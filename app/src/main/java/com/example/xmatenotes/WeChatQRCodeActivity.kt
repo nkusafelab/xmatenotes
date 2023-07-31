@@ -2,22 +2,26 @@ package com.example.xmatenotes
 
 
 import android.Manifest
-import android.content.ContentUris
+import android.R.color
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Point
+import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.OrientationEventListener
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityOptionsCompat
-import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.king.mlkit.vision.camera.AnalyzeResult
 import com.king.mlkit.vision.camera.CameraScan
@@ -33,12 +37,9 @@ import com.king.wechat.qrcode.scanning.analyze.WeChatScanningAnalyzer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.opencv.android.Utils
-import org.opencv.core.CvType
 import org.opencv.core.Mat
-import org.opencv.imgproc.Imgproc
 import java.io.File
-import org.opencv.core.Point as OpenCVPoint
+
 
 /**
  * 微信二维码扫描实现示例
@@ -52,6 +53,40 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     private lateinit var imageUri:Uri
     private lateinit var outputImage: File
+    private lateinit var mOrientationListener: OrientationEventListener
+
+    private var nFlags = 0
+
+
+    private var codeString:String = "前置编码:"
+    private var subjectString:String = "学科名:"
+    private var unitString:String = "单元名:"
+    private var stageString:String = "阶段:"
+    private var classString:String = "课时:"
+    private var groupString:String = "小组:"
+    private var roomString:String = "班级:"
+    private var gradeString:String = "年级:"
+
+    private lateinit var codeText:TextView
+    private lateinit var subjectText:TextView
+    private lateinit var unitText:TextView
+    private lateinit var stageText:TextView
+    private lateinit var classText:TextView
+    private lateinit var weekText:TextView
+    private lateinit var groupText:TextView
+    private lateinit var roomText:TextView
+    private lateinit var gradeText:TextView
+    private lateinit var termText:TextView
+
+
+    private lateinit var backgroundLayout:RelativeLayout
+
+    private lateinit var captureButton:Button
+
+    private var map:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
+    "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
+
+
 
     /**
      * OpenCVQRCodeDetector
@@ -64,11 +99,84 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
 
+
 //        // 初始化OpenCV
 //        OpenCV.initAsync(this)
 //        // 初始化WeChatQRCodeDetector
 //        WeChatQRCodeDetector.init(this)
+
     }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //startOrientationChangeListener()
+        codeText = findViewById(R.id.code_text)
+        subjectText= findViewById(R.id.subject_text)
+        unitText= findViewById(R.id.unit_text)
+        stageText = findViewById(R.id.stage_text)
+        classText = findViewById(R.id.class_text)
+        weekText= findViewById(R.id.week_text)
+        groupText = findViewById(R.id.group_text)
+        roomText= findViewById(R.id.room_text)
+        gradeText = findViewById(R.id.grade_text)
+        termText= findViewById(R.id.term_text)
+
+        backgroundLayout = findViewById<RelativeLayout>(R.id.left_layout)
+
+        captureButton= findViewById<Button>(R.id.btnCapture)
+
+        captureButton.setOnClickListener(View.OnClickListener {
+            //此处写点击响应
+            setCodeText("01")
+            setSubjectText("语文")
+            setUnitText("智取生辰纲")
+            setStageText("期中")
+            setClassText("4课时")
+            setWeekText("八")
+            setGroupText("第十组")
+            setRoomText("一班")
+            setGradeText("六年级")
+            setTermText("秋","20230729")
+            backgroundColorChange("语文")
+            Log.d("WeChatQRCodeActivity","ButtonPressed")
+        })
+
+        setCodeText("01")
+        setSubjectText("语文")
+        setUnitText("智取生辰纲")
+        setStageText("期中")
+        setClassText("4课时")
+        setWeekText("八")
+        setGroupText("第十组")
+        setRoomText("一班")
+        setGradeText("六年级")
+        setTermText("秋","20230729")
+        backgroundColorChange("语文")
+        Log.d("WeChatQRCodeActivity","ButtonPressed")
+    }
+
+//    private fun startOrientationChangeListener() {
+//        mOrientationListener = object : OrientationEventListener(this) {
+//            override fun onOrientationChanged(rotation: Int) {
+//                Log.e(TAG, " $rotation")
+//
+//                // 计算偏移角度
+//                val absRotation = if (rotation > 180) 360 - rotation else rotation
+//
+//                if (absRotation > 15&&nFlags== 0 ) {
+//                    Toast.makeText(applicationContext, "偏转角度大于15度，请调整相机！", Toast.LENGTH_SHORT).show()
+//                    nFlags=1
+//                }
+//                if(absRotation < 15){
+//                    nFlags=0
+//                }
+//
+//
+//            }
+//        }
+//        mOrientationListener.enable()
+//    }
 
     private fun getContext() = this
 
@@ -78,6 +186,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         super.initUI()
         ivResult = findViewById(R.id.ivResult)
         viewfinderView = findViewById(R.id.viewfinderView) //p-oijhgvcvxfu2
+
+
+
     }
 
     override fun onRequestPermissionsResult(
@@ -230,20 +341,23 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     private fun pickCameraClicked() {
 
-        outputImage = File(externalCacheDir,"output_image.jpg")
-        if(outputImage.exists()){
-            outputImage.delete()
-        }
-        outputImage.createNewFile()
-        imageUri = if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
-            FileProvider.getUriForFile(this,"com.example.cameraalbumtest.fileprovider",outputImage)
-        }else{
-            Uri.fromFile(outputImage)
-        }
-        //打开相机
-        val cameraIntent = Intent("android.media.action.IMAGE_CAPTURE")
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri)
-        startActivityForResult(cameraIntent, REQUEST_CODE_TAKE_PHOTO)
+//        outputImage = File(externalCacheDir,"output_image.jpg")
+//        if(outputImage.exists()){
+//            outputImage.delete()
+//        }
+//        outputImage.createNewFile()
+//        imageUri = if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
+//            FileProvider.getUriForFile(this,"com.example.cameraalbumtest.fileprovider",outputImage)
+//        }else{
+//            Uri.fromFile(outputImage)
+//        }
+//        //打开相机
+//        val cameraIntent = Intent("android.media.action.IMAGE_CAPTURE")
+//        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri)
+//        startActivityForResult(cameraIntent, REQUEST_CODE_TAKE_PHOTO)
+        val cameraIntent = Intent(this,OpenCameraActivity::class.java)
+        startActivity(cameraIntent)
+
     }
 
     private fun pickPhotoClicked() {
@@ -276,10 +390,10 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     fun onClick(view: View) {
         when (view.id) {
 //            R.id.btnWeChatQRCodeScan -> startActivityForResult(WeChatQRCodeActivity::class.java)
-            R.id.back -> finish()
+            //R.id.back -> finish()
             R.id.Button_scan -> scanAgain()
             R.id.Button_photo -> pickCameraClicked()
-            R.id.Button_select -> pickPhotoClicked()
+            //R.id.Button_select -> pickPhotoClicked()
 //            R.id.btnWeChatMultiQRCodeScan -> startActivityForResult(WeChatMultiQRCodeActivity::class.java)
 //            R.id.btnWeChatQRCodeDecode -> pickPhotoClicked(true)
 //            R.id.btnOpenCVQRCodeScan -> startActivityForResult(OpenCVQRCodeActivity::class.java)
@@ -363,7 +477,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     }
 
     override fun getLayoutId(): Int {
-        return R.layout.activity_wechat_qrcode
+//        return R.layout.activity_wechat_qrcode
+        return R.layout.activity_opencamera
     }
 
     override fun onBackPressed() {
@@ -375,6 +490,88 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         }
         super.onBackPressed()
     }
+
+
+
+
+
+
+
+
+
+
+
+    fun setCodeText(string:String){
+        codeText.text = codeString+string
+    }
+    fun setSubjectText(string:String){
+        subjectText.text = subjectString+string
+    }
+    fun setUnitText(string:String){
+        unitText.text = unitString+string
+    }
+    fun setStageText(string:String){
+        stageText.text = stageString+string
+    }
+    fun setClassText(string:String){
+        classText.text = classString+string
+    }
+    fun setWeekText(string:String){
+        weekText.text = "第"+string+"周"
+    }
+    fun setGroupText(string:String){
+        groupText.text = groupString+string
+    }
+    fun setRoomText(string:String){
+        roomText.text = roomString+string
+    }
+    fun setGradeText(string:String){
+        gradeText.text = gradeString+string
+    }
+    fun setTermText(aString:String,bString:String){
+        termText.text = aString+"季学期"+bString
+    }
+
+    //改变背景颜色按钮颜色响应
+    fun backgroundColorChange(string: String){
+        var drawable:Drawable = getResources().getDrawable(R.drawable.camera_background)
+        if(map[string]!=null) {
+            var red: Int = map[string]!! and 0xff0000 shr 16
+            var green: Int = map[string]!! and 0x00ff00 shr 8
+            var blue: Int = map[string]!! and 0x0000ff
+            drawable.setColorFilter(Color.rgb(red,green, blue), PorterDuff.Mode.SRC_ATOP)
+
+            //backgroundLayout.setBackgroundDrawable(drawable)
+            backgroundLayout.background=drawable
+
+            captureButton.text = string
+            captureButton.setBackgroundColor(Color.rgb(if((red+10)>0xFF)0xFF else red+10,
+                if((green+10)>0xFF)0xFF else green+10,
+                if((blue+10)>0xFF)0xFF else blue+10))
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     companion object {
         const val TAG = "WeChatQRCodeActivity"

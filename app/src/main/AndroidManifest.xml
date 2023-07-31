@@ -44,6 +44,11 @@
         android:theme="@style/Theme.XmateNotes"
         android:usesCleartextTraffic="true"
         tools:targetApi="31" >
+
+        <activity
+            android:name=".OpenCameraActivity"
+            android:screenOrientation="landscape"
+        />
         <activity
             android:name=".ImgProcessActivity"
             android:exported="false" >
@@ -100,7 +105,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".WeChatQRCodeActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
             android:theme="@style/CameraScanTheme" />
         <activity
             android:name=".WeChatMultiQRCodeActivity"
@@ -114,6 +119,7 @@
         <activity
             android:name=".CropActivity"
             android:screenOrientation="portrait" />
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -28,6 +28,8 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat
@@ -183,7 +185,7 @@ class CropActivity : AppCompatActivity() {
         imageView = findViewById(R.id.crop_image)
         button_confirm= findViewById(R.id.crop_confirm)
         button_generate=findViewById(R.id.QR_generate)
-        val bitmap: Bitmap? = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
+        val bitmap: Bitmap? = BitmapCacheManager.getBitmap("OpenCameraBitmap")
 
         if(bitmap!=null) {
             imageView.setImageBitmap(bitmap)
@@ -199,17 +201,23 @@ class CropActivity : AppCompatActivity() {
 //                }
                 val intent = Intent(getContext(), ImgProcessActivity::class.java)
                 if (bitmap != null) {
-                    BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
+                    BitmapCacheManager.putBitmap("OpenCameraBitmap", bitmap)
                 }
                 startActivity(intent)
             }
         })
-        button_generate.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View) {
-                showSetPenNameDialog()
 
-            }
-        })
+//        button_generate.setOnClickListener(object : View.OnClickListener {
+//            override fun onClick(view: View) {
+//                //showSetPenNameDialog()
+//                val qrObject= QRObject("02","1810*1000","001","01","07",
+//                    "03","2100_150","00","037a","00GL","03","6","01","012","20230717150121")
+//                //val jsonString = Json.encodeToString(qrObject)
+//                val string = "hello"
+//                var resultBitmap=generateQRCode(string,500)
+//                imageView.setImageBitmap(resultBitmap)
+//            }
+//        })
 
 
 

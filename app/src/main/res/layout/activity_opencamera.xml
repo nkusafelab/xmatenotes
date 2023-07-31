@@ -1,0 +1,276 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WeChatQRCodeActivity"
+    >
+
+    <RelativeLayout
+        android:id="@+id/left_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="70dp"
+        android:background="@drawable/camera_background"
+        >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="10dp"
+            android:id="@+id/horizontalBar_layout"
+            android:background="#EFE4B0"
+            >
+
+            <TextView
+                android:id="@+id/code_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="前置编码:"
+                android:textSize="20dp"
+                />
+
+            <TextView
+                android:layout_toEndOf="@id/code_text"
+                android:layout_marginStart="50dp"
+                android:id="@+id/subject_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="学科名:"
+                android:textSize="20dp"
+                />
+
+            <TextView
+                android:layout_toEndOf="@id/subject_text"
+                android:layout_marginStart="50dp"
+                android:id="@+id/unit_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="单元名:"
+                android:textSize="20dp"
+                />
+
+            <TextView
+                android:layout_toEndOf="@id/unit_text"
+                android:layout_marginStart="50dp"
+                android:id="@+id/stage_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="阶段:"
+                android:textSize="20dp"
+                />
+
+            <TextView
+                android:layout_toEndOf="@id/stage_text"
+                android:layout_marginStart="50dp"
+                android:id="@+id/class_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="课时:"
+                android:textSize="20dp"
+                android:layout_marginEnd="40dp"
+                />
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/horizontalBar_layout"
+            android:layout_alignTop="@id/horizontalBar_layout"
+            android:layout_marginEnd="35dp"
+            android:id="@+id/verticalBar_layout"
+            >
+
+            <TextView
+                android:id="@+id/week_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="第 周"
+                android:textSize="18dp"
+                android:layout_above="@id/group_text"
+                />
+            <TextView
+                android:id="@+id/group_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="小组:"
+                android:textSize="18dp"
+                android:layout_above="@id/room_text"
+                />
+
+            <TextView
+                android:id="@+id/room_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="班级:"
+                android:textSize="18dp"
+                android:layout_above="@id/grade_text"
+                />
+            <TextView
+                android:id="@+id/grade_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="年级:"
+                android:textSize="18dp"
+                android:layout_above="@id/term_text"
+                />
+            <TextView
+                android:id="@+id/term_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="秋季学期20230729"
+                android:textSize="18dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="10dp"
+                />
+
+        </RelativeLayout>
+
+
+    <!--    <androidx.camera.view.PreviewView-->
+    <!--        android:id="@+id/previewView"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:layout_below="@id/horizontalBar_layout"-->
+    <!--        android:layout_toStartOf="@id/verticalBar_layout"-->
+    <!--        android:layout_alignStart="@id/horizontalBar_layout"-->
+    <!--        android:layout_marginBottom="10dp"-->
+    <!--        />-->
+
+        <FrameLayout
+            android:layout_below="@id/horizontalBar_layout"
+            android:layout_toStartOf="@id/verticalBar_layout"
+            android:layout_alignStart="@id/horizontalBar_layout"
+            android:layout_alignEnd="@id/horizontalBar_layout"
+            android:layout_marginBottom="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <androidx.camera.view.PreviewView
+                android:id="@+id/previewView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+            <ImageView
+                android:id="@+id/ivResult"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+            <com.king.view.viewfinderview.ViewfinderView
+                android:id="@+id/viewfinderView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:vvViewfinderStyle="popular"
+                app:vvLaserStyle="image"
+                app:vvLaserDrawableRatio="0.8"
+                app:vvLaserDrawable="@drawable/ic_laser_line"/>
+
+        </FrameLayout>
+
+
+        <Button
+            android:id="@+id/btnCapture"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="130dp"
+            android:background="@drawable/circle_shape"
+            android:text="数学"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="70dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        >
+
+        <Button
+            android:id="@+id/math_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#7F82BB"
+            android:text="数学"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"
+            />
+
+        <Button
+            android:id="@+id/chinese_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#B5E61D"
+            android:text="语文"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_below="@id/math_button"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"/>
+        <Button
+            android:id="@+id/english_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#9FFCFD"
+            android:text="英语"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_below="@id/chinese_button"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"/>
+        <Button
+            android:id="@+id/physical_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#EF88BE"
+            android:text="物理"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_below="@id/english_button"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"/>
+        <Button
+            android:id="@+id/chemistry_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#FFFD55"
+            android:text="化学"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_below="@id/physical_button"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"/>
+        <Button
+            android:id="@+id/biology_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#58135E"
+            android:text="生物"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_below="@id/chemistry_button"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"/>
+        <Button
+            android:id="@+id/politics_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:background="#16417C"
+            android:text="政治"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:layout_below="@id/biology_button"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"/>
+    </RelativeLayout>
+
+
+</RelativeLayout>
+
+
