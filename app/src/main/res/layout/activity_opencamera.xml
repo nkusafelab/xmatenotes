@@ -15,121 +15,165 @@
         android:background="@drawable/camera_background"
         >
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="10dp"
-            android:id="@+id/horizontalBar_layout"
-            android:background="#EFE4B0"
-            >
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/code_text"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="前置编码:"
-                android:textSize="20dp"
-                />
-
-            <TextView
-                android:layout_toEndOf="@id/code_text"
-                android:layout_marginStart="50dp"
-                android:id="@+id/subject_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="学科名:"
-                android:textSize="20dp"
-                />
-
-            <TextView
-                android:layout_toEndOf="@id/subject_text"
-                android:layout_marginStart="50dp"
-                android:id="@+id/unit_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="单元名:"
-                android:textSize="20dp"
-                />
-
-            <TextView
-                android:layout_toEndOf="@id/unit_text"
-                android:layout_marginStart="50dp"
-                android:id="@+id/stage_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="阶段:"
-                android:textSize="20dp"
-                />
-
-            <TextView
-                android:layout_toEndOf="@id/stage_text"
-                android:layout_marginStart="50dp"
-                android:id="@+id/class_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="课时:"
-                android:textSize="20dp"
-                android:layout_marginEnd="40dp"
-                />
-
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/horizontalBar_layout"
-            android:layout_alignTop="@id/horizontalBar_layout"
-            android:layout_marginEnd="35dp"
-            android:id="@+id/verticalBar_layout"
-            >
-
-            <TextView
-                android:id="@+id/week_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="第 周"
-                android:textSize="18dp"
-                android:layout_above="@id/group_text"
-                />
-            <TextView
-                android:id="@+id/group_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="小组:"
-                android:textSize="18dp"
-                android:layout_above="@id/room_text"
-                />
-
-            <TextView
-                android:id="@+id/room_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="班级:"
-                android:textSize="18dp"
-                android:layout_above="@id/grade_text"
-                />
-            <TextView
-                android:id="@+id/grade_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="年级:"
-                android:textSize="18dp"
-                android:layout_above="@id/term_text"
-                />
-            <TextView
-                android:id="@+id/term_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="秋季学期20230729"
-                android:textSize="18dp"
-                android:layout_alignParentBottom="true"
+                android:layout_weight="1"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                />
+                android:layout_marginStart="10dp"
+                android:orientation="vertical">
 
-        </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/horizontalBar_layout"
+                    android:background="#EFE4B0"
+                    >
 
+                    <TextView
+                        android:id="@+id/code_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="前置编码:"
+                        android:textSize="16dp"
+                        />
+
+                    <TextView
+                        android:layout_marginStart="100dp"
+                        android:id="@+id/subject_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="学科名:"
+                        android:textSize="16dp"
+                        />
+
+                    <TextView
+                        android:layout_marginStart="200dp"
+                        android:id="@+id/unit_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="单元名:"
+                        android:textSize="16dp"
+                        />
+
+                    <TextView
+                        android:layout_marginStart="380dp"
+                        android:id="@+id/stage_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="阶段:"
+                        android:textSize="16dp"
+                        />
+
+                    <TextView
+                        android:layout_marginStart="460dp"
+                        android:id="@+id/class_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="课时:"
+                        android:textSize="16dp"
+                        />
+
+
+                </RelativeLayout>
+
+                <FrameLayout
+                    android:layout_below="@id/horizontalBar_layout"
+                    android:layout_toStartOf="@id/verticalBar_layout"
+                    android:layout_alignStart="@id/horizontalBar_layout"
+                    android:layout_alignEnd="@id/horizontalBar_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_height="0dp">
+
+                    <androidx.camera.view.PreviewView
+                        android:id="@+id/previewView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                    <ImageView
+                        android:id="@+id/ivResult"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                    <com.example.xmatenotes.QRViewfinderView
+                        android:id="@+id/QRViewfinderView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:vvViewfinderStyle="popular"
+                        app:vvLaserStyle="image"
+                        app:vvLaserDrawableRatio="0.8"
+                        app:vvLaserDrawable="@drawable/ic_laser_line"/>
+
+                </FrameLayout>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="75dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="35dp"
+                android:layout_marginBottom="10dp"
+                android:id="@+id/verticalBar_layout"
+                >
+
+                <TextView
+                    android:id="@+id/week_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="第   周"
+                    android:textSize="16dp"
+                    android:layout_above="@id/group_text"
+                    />
+                <TextView
+                    android:id="@+id/group_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="小组:"
+                    android:textSize="16dp"
+                    android:layout_above="@id/room_text"
+                    />
+
+                <TextView
+                    android:id="@+id/room_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="班级:"
+                    android:textSize="16dp"
+                    android:layout_above="@id/grade_text"
+                    />
+                <TextView
+                    android:id="@+id/grade_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="年级:"
+                    android:textSize="16dp"
+                    android:layout_above="@id/term_text"
+                    />
+                <TextView
+                    android:id="@+id/term_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="秋季学期"
+                    android:textSize="16dp"
+                    android:layout_above="@id/day_text"
+                    />
+
+                <TextView
+                    android:id="@+id/day_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="20230729"
+                    android:textSize="16dp"
+                    android:layout_alignParentBottom="true"
+
+                    />
+            </RelativeLayout>
+
+        </LinearLayout>
 
     <!--    <androidx.camera.view.PreviewView-->
     <!--        android:id="@+id/previewView"-->
@@ -141,35 +185,6 @@
     <!--        android:layout_marginBottom="10dp"-->
     <!--        />-->
 
-        <FrameLayout
-            android:layout_below="@id/horizontalBar_layout"
-            android:layout_toStartOf="@id/verticalBar_layout"
-            android:layout_alignStart="@id/horizontalBar_layout"
-            android:layout_alignEnd="@id/horizontalBar_layout"
-            android:layout_marginBottom="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <androidx.camera.view.PreviewView
-                android:id="@+id/previewView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-            <ImageView
-                android:id="@+id/ivResult"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-            <com.king.view.viewfinderview.ViewfinderView
-                android:id="@+id/viewfinderView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:vvViewfinderStyle="popular"
-                app:vvLaserStyle="image"
-                app:vvLaserDrawableRatio="0.8"
-                app:vvLaserDrawable="@drawable/ic_laser_line"/>
-
-        </FrameLayout>
-
-
         <Button
             android:id="@+id/btnCapture"
             android:layout_width="70dp"
@@ -177,10 +192,11 @@
             android:layout_alignParentEnd="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="130dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/circle_shape"
-            android:text="数学"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
+            android:text=" "
+            android:textColor="#000000"
+            android:textSize="22sp" />
 
     </RelativeLayout>
 
@@ -197,7 +213,7 @@
             android:background="#7F82BB"
             android:text="数学"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_marginTop="10dp"
             android:padding="10dp"
             />
@@ -209,7 +225,7 @@
             android:background="#B5E61D"
             android:text="语文"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_below="@id/math_button"
             android:layout_marginTop="10dp"
             android:padding="10dp"/>
@@ -220,7 +236,7 @@
             android:background="#9FFCFD"
             android:text="英语"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_below="@id/chinese_button"
             android:layout_marginTop="10dp"
             android:padding="10dp"/>
@@ -231,7 +247,7 @@
             android:background="#EF88BE"
             android:text="物理"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_below="@id/english_button"
             android:layout_marginTop="10dp"
             android:padding="10dp"/>
@@ -242,7 +258,7 @@
             android:background="#FFFD55"
             android:text="化学"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_below="@id/physical_button"
             android:layout_marginTop="10dp"
             android:padding="10dp"/>
@@ -253,7 +269,7 @@
             android:background="#58135E"
             android:text="生物"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_below="@id/chemistry_button"
             android:layout_marginTop="10dp"
             android:padding="10dp"/>
@@ -264,7 +280,7 @@
             android:background="#16417C"
             android:text="政治"
             android:layout_centerHorizontal="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_below="@id/biology_button"
             android:layout_marginTop="10dp"
             android:padding="10dp"/>
