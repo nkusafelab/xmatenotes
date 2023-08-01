@@ -104,7 +104,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
 
-    implementation "com.github.jenly1314:viewfinderview:1.0.0"
+//    implementation "com.github.jenly1314:viewfinderview:1.0.0"
 
     implementation "com.github.jenly1314.AppUpdater:app-dialog:1.1.4"
 

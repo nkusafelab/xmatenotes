@@ -1026,6 +1026,7 @@ public class MainActivity extends BaseActivity {
         }else if(ges.getInsId() == 10){
             handlerToast("未识别命令");
         }
+
     }
 
     @Override
