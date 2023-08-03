@@ -17,12 +17,12 @@ import kotlin.math.pow
 /**
  * 图片处理的活动，包括二维码识别、降噪、纠偏、抠图等
  */
-class ImgProcessActivity : AppCompatActivity() {
+class CardProcessActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_img_process)
+        setContentView(R.layout.activity_card_process)
         imageView =findViewById(R.id.imageView)
         val bitmap: Bitmap? = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
 
@@ -65,8 +65,9 @@ class ImgProcessActivity : AppCompatActivity() {
 //            // 将绘制后的 Mat 转换回 Bitmap
 //            Utils.matToBitmap(mat, bitmap)
 
-            val contourBitmap:Bitmap = findMaxContour(bitmap)
-            imageView.setImageBitmap(contourBitmap)
+//            val contourBitmap:Bitmap = findMaxContour(bitmap)
+//            imageView.setImageBitmap(contourBitmap)
+            imageView.setImageBitmap(bitmap)
         }
     }
 

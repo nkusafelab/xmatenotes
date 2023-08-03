@@ -11,7 +11,6 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
