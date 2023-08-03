@@ -4,6 +4,7 @@ package com.example.xmatenotes
 import android.Manifest
 import android.content.Intent
 <<<<<<< HEAD
+<<<<<<< HEAD
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -11,9 +12,7 @@ import android.graphics.Path
 import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
-=======
 import android.graphics.*
->>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -48,7 +47,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 <<<<<<< HEAD
+<<<<<<< HEAD
 import org.opencv.OpenCV
+=======
+import org.opencv.android.Utils
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 =======
 import org.opencv.android.Utils
 >>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
@@ -63,6 +66,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 =======
 import java.util.*
+<<<<<<< HEAD
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
+=======
 >>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 
 
@@ -120,12 +126,18 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
     /**
      * 拍摄按键状态
      */
     private var keyDown:Boolean = false
 
+<<<<<<< HEAD
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
+=======
 >>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
     /**
      * OpenCVQRCodeDetector
@@ -350,6 +362,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 =======
 //                    val intent = Intent(getContext(), CropActivity::class.java)
                     val intent = Intent(getContext(), CardProcessActivity::class.java)
+<<<<<<< HEAD
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
+=======
 >>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
                     BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
                     startActivity(intent)
@@ -492,7 +507,12 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             //取预览当前帧图片并显示，为结果点提供参照
 //            ivResult.setImageBitmap(previewView.bitmap)
 <<<<<<< HEAD
+<<<<<<< HEAD
             var bitmapPoints = ArrayList<Point>()
+=======
+            var bitMapPoints = ArrayList<org.opencv.core.Point>()
+            var viewfinderViewPoints = ArrayList<android.graphics.Point>()
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 =======
             var bitMapPoints = ArrayList<org.opencv.core.Point>()
             var viewfinderViewPoints = ArrayList<android.graphics.Point>()
@@ -520,6 +540,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 } catch (e: JsonSyntaxException) {
                     println("JSON解析失败: ${e.message}")
                     isQRPToPageP = false
+<<<<<<< HEAD
                 }
             }
 
@@ -535,6 +556,14 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 centerPoints.add(calculateCenterPoint(points))
 //                bitmapPoints.addAll(processWeChatMat(mat, result, isTransform))
 =======
+            result.points?.forEach { mat ->
+                bitMapPoints.addAll(processWeChatMat(mat, result, isQRPToPageP))
+                viewfinderViewPoints.addAll(transformPoint(bitMapPoints, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height))
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
+=======
+                }
+            }
+
             result.points?.forEach { mat ->
                 bitMapPoints.addAll(processWeChatMat(mat, result, isQRPToPageP))
                 viewfinderViewPoints.addAll(transformPoint(bitMapPoints, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height))
@@ -647,7 +676,11 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 finish()
             }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 
 >>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 
