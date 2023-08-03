@@ -3,6 +3,7 @@ package com.example.xmatenotes
 
 import android.Manifest
 import android.content.Intent
+<<<<<<< HEAD
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -10,6 +11,9 @@ import android.graphics.Path
 import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+=======
+import android.graphics.*
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -43,11 +47,23 @@ import com.lark.oapi.service.bitable.v1.model.ListAppTableRecordReq
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+<<<<<<< HEAD
 import org.opencv.OpenCV
+=======
+import org.opencv.android.Utils
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 import org.opencv.core.Mat
+import org.opencv.core.MatOfPoint2f
+import org.opencv.core.Point
+import org.opencv.core.Size
+import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.text.SimpleDateFormat
+<<<<<<< HEAD
 import java.util.Date
+=======
+import java.util.*
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 
 
 /**
@@ -103,6 +119,14 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     private var map:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
     "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
 
+<<<<<<< HEAD
+=======
+    /**
+     * 拍摄按键状态
+     */
+    private var keyDown:Boolean = false
+
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
     /**
      * OpenCVQRCodeDetector
      */
@@ -113,9 +137,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
-
-
-//        // 初始化OpenCV
+    //        // 初始化OpenCV
 //        OpenCV.initAsync(this)
 //        // 初始化WeChatQRCodeDetector
 //        WeChatQRCodeDetector.init(this)
@@ -160,13 +182,13 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         viewfinderView = findViewById(R.id.QRViewfinderView) //p-oijhgvcvxfu2
         viewfinderView.isShowScanner = false
 
-        Thread({
-            while (true){
-                if(System.currentTimeMillis()-timeLastUpDate > 500){
+        Thread {
+            while (true) {
+                if (System.currentTimeMillis() - timeLastUpDate > 500) {
                     viewfinderView.isShowPoints = false
                 }
             }
-        }).start()
+        }.start()
 
         codeText = findViewById(R.id.code_text)
         subjectText= findViewById(R.id.subject_text)
@@ -185,18 +207,26 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         captureButton= findViewById<Button>(R.id.btnCapture)
 
         captureButton.setOnClickListener(View.OnClickListener {
+
+            if(keyDown){
+                scanAgain()
+                keyDown = false
+            } else {
+                keyDown = true
+            }
+
             //此处写点击响应
-            setCodeText("01")
-            setUnitText("二元一次方程")
-            setStageText("期中")
-            setClassText("4")
-            setWeekText("八")
-            setGroupText("10")
-            setRoomText("1")
-            setGradeText("6")
-            setDayText("20230731")
-            backgroundColorChange("英语")
-            Log.d("WeChatQRCodeActivity","ButtonPressed")
+//            setCodeText("01")
+//            setUnitText("二元一次方程")
+//            setStageText("期中")
+//            setClassText("4")
+//            setWeekText("八")
+//            setGroupText("10")
+//            setRoomText("1")
+//            setGradeText("6")
+//            setDayText("20230731")
+//            backgroundColorChange("英语")
+//            Log.d("WeChatQRCodeActivity","ButtonPressed")
         })
 
 //        setCodeText("01")
@@ -209,21 +239,21 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //        setRoomText("1")
 //        setGradeText("6")
 //        setDayText("20230729")
-        Thread({
-            while (true){
+        Thread {
+            while (true) {
                 getSubject(object : CallBack {
                     override fun onCallBack(string: String) {
                         backgroundColorChange(string)
                     }
                 })
 
-                runOnUiThread({
+                runOnUiThread {
                     setDayText(getTime())
-                })
+                }
 
                 Thread.sleep(1000)
             }
-        }).start()
+        }.start()
 
     }
 
@@ -315,7 +345,12 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                    // 将绘制后的 Mat 转换回 Bitmap
 //                    Utils.matToBitmap(mat, bitmap)
                     //跳转活动，传递bitmap参数
+<<<<<<< HEAD
                     val intent = Intent(getContext(), CropActivity::class.java)
+=======
+//                    val intent = Intent(getContext(), CropActivity::class.java)
+                    val intent = Intent(getContext(), CardProcessActivity::class.java)
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
                     BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
                     startActivity(intent)
                 }
@@ -438,7 +473,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     }
 
     fun scanAgain(){
-        viewfinderView.showScanner()
+//        viewfinderView.showScanner()
         ivResult.setImageBitmap(null)
         cameraScan.setAnalyzeImage(true) // 继续扫码分析
     }
@@ -446,7 +481,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     private var maxRatio:Double = 3.0
     override fun onScanResultCallback(result: AnalyzeResult<List<String>>) {
         // 停止分析
-//        cameraScan.setAnalyzeImage(false)
+        if(keyDown){
+            cameraScan.setAnalyzeImage(false)
+        }
         Log.d(TAG, result.result.toString())
 
         // 当初始化 WeChatScanningAnalyzer 时，如果是需要二维码的位置信息，则会返回 WeChatScanningAnalyzer.QRCodeAnalyzeResult
@@ -454,7 +491,12 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //        if (result is OpenCVScanningAnalyzer.QRCodeAnalyzeResult) { // 如果需要处理结果二维码的位置信息
             //取预览当前帧图片并显示，为结果点提供参照
 //            ivResult.setImageBitmap(previewView.bitmap)
+<<<<<<< HEAD
             var bitmapPoints = ArrayList<Point>()
+=======
+            var bitMapPoints = ArrayList<org.opencv.core.Point>()
+            var viewfinderViewPoints = ArrayList<android.graphics.Point>()
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 //            val resultOpenCV = withContext(Dispatchers.IO) {
 //                // 通过OpenCVQRCodeDetector识别图片中的二维码
 //                openCVQRCodeDetector.detectAndDecode(result.bitmap)
@@ -468,19 +510,20 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                LogUtils.d("result = null")
 //            }
             val gson = Gson()
-            var isTransform = true
+            var isQRPToPageP = true //是否将二维码四角点坐标转换为版面四角点坐标
             result.result.forEach {
                 //将二维码字符串解析为数据对象
                 try {
                     qrObject = gson.fromJson<QRObject>(it, QRObject::class.java)
-//                setTopActionBar(qrO.)
+//                setTopActionBar()
                     setOrganInfor(null, qrObject.gn, qrObject.cl, qrObject.gr, null, getTime())
                 } catch (e: JsonSyntaxException) {
                     println("JSON解析失败: ${e.message}")
-                    isTransform = false
+                    isQRPToPageP = false
                 }
             }
 
+<<<<<<< HEAD
             val centerPoints = ArrayList<Point>()
             result.points?.forEach { mat ->
                 var points = weChatMatToPoints(mat)
@@ -491,6 +534,11 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
                 centerPoints.add(calculateCenterPoint(points))
 //                bitmapPoints.addAll(processWeChatMat(mat, result, isTransform))
+=======
+            result.points?.forEach { mat ->
+                bitMapPoints.addAll(processWeChatMat(mat, result, isQRPToPageP))
+                viewfinderViewPoints.addAll(transformPoint(bitMapPoints, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height))
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
             }
 
 
@@ -529,11 +577,67 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
 //            for (i in 0 until result.points.rows()) {
 //                result.points.row(i).let { mat ->
-//                    points.addAll(processOpenCVMat(mat, result, isTransform))
+//                    bitMapPoints.addAll(processOpenCVMat(mat, result, isQRPToPageP))
+//                    viewfinderViewPoints.addAll(transformPoint(bitMapPoints, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height))
 //                }
 //            }
+            if(keyDown){
+                var desPoints = ArrayList<org.opencv.core.Point>()
+                var srcPWidth = qrObject.psx.toInt()
+                var srcPHeight = qrObject.psy.toInt()
+//                var srcVWidth = previewView.bitmap?.width
+//                var srcVHeight = previewView.bitmap?.height
+                var srcVWidth = viewfinderView.width
+                var srcVHeight = viewfinderView.height
+                Log.e(TAG, "result.bitmap.width: "+(result.bitmap.width) +" viewfinderView.width: "+viewfinderView.width+" previewView.bitmap?.width: "+previewView.bitmap?.width+" ivResult.width: "+ivResult.width)
+                Log.e(TAG, "result.bitmap.height: "+(result.bitmap.height) +" viewfinderView.height: "+viewfinderView.height+" previewView.bitmap?.height: "+previewView.bitmap?.height+" ivResult.height: "+ivResult.height)
 
-            viewfinderView.setPointRadius(5.0f)
+                var desWidth : Int = srcPWidth
+                var desHeight: Int = srcPHeight
+                if ((srcPWidth / srcPHeight) > (srcVWidth!! / srcVHeight!!)) {
+                    desWidth = srcVWidth
+                    desHeight = desWidth*srcPHeight/srcPWidth
+                    desPoints.add(Point(0.0, ((srcVHeight-desHeight)/2).toDouble()))
+                    desPoints.add(Point(desWidth.toDouble(), ((srcVHeight-desHeight)/2).toDouble()))
+                    desPoints.add(Point(desWidth.toDouble(), ((srcVHeight-desHeight)/2+desHeight).toDouble()))
+                    desPoints.add(Point(0.0, ((srcVHeight-desHeight)/2).toDouble()))
+                } else {
+                    desWidth = srcVHeight*srcPWidth/srcPHeight
+                    desHeight = srcVHeight
+                    desPoints.add(Point(((srcVWidth-desWidth)/2).toDouble(), 0.0))
+                    desPoints.add(Point(((srcVWidth-desWidth)/2+desWidth).toDouble(), 0.0))
+                    desPoints.add(Point(((srcVWidth-desWidth)/2+desWidth).toDouble(), desHeight.toDouble()))
+                    desPoints.add(Point(((srcVWidth-desWidth)/2).toDouble(), desHeight.toDouble()))
+                }
+                var bMap = result.bitmap?.let { warpPerspective(it, bitMapPoints, desPoints, srcVWidth, srcVHeight) }
+                ivResult.setImageBitmap(bMap)
+                if (bMap != null) {
+                    viewfinderView.isShowPoints = false
+                    //截屏
+                    // 找到当前Activity的根视图
+                    val rootView = window.decorView.rootView
+                    // 创建一个Bitmap，大小为要截屏的View的宽高
+                    val bitmap = Bitmap.createBitmap(
+                        rootView.getWidth(),
+                        rootView.getHeight(),
+                        Bitmap.Config.ARGB_8888
+                    )
+                    // 将View绘制到Bitmap上
+                    rootView.draw(Canvas(bitmap))
+//                    ivResult.setImageBitmap(bitmap)
+                    BitmapCacheManager.putBitmap("WeChatQRCodeBitmap",bitmap)
+                    val intent = Intent(getContext(), CardProcessActivity::class.java)
+                    startActivity(intent)
+                }
+
+            } else {
+                viewfinderView.setPointRadius(5.0f)
+                //显示结果点信息
+                viewfinderView.showResultPoints(viewfinderViewPoints)
+                timeLastUpDate = System.currentTimeMillis()
+            }
+
+
             //设置Item点击监听
             viewfinderView.setOnItemClickListener {
                 //显示点击Item将所在位置扫码识别的结果返回
@@ -542,6 +646,10 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 setResult(RESULT_OK, intent)
                 finish()
             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4559ffd (更新：版面纠偏，短按卡片生成)
 
             if(i <= maxRatio){
                 for(point in bitmapPoints){
@@ -572,104 +680,113 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         }
     }
 
-    fun openCVMatToPoints(mat: Mat): ArrayList<Point> {
-        var points = ArrayList<Point>()
+    fun processOpenCVMat(mat:Mat, result: AnalyzeResult<List<String>>, isQRPToPageP: Boolean) : ArrayList<org.opencv.core.Point> {
+
+        var points = openCVMatToPoints(mat)
+
+        if(isQRPToPageP){
+            QRPointsToPagePoints(points, qrObject, result.bitmap.width, result.bitmap.height)
+        }
+
+//        val centerPonit = calculateCenterPoint(points)
+
+        //将实际的结果中心点坐标转换成界面预览的坐标
+//                    val point = PointUtils.transform(
+//                        centerX,
+//                        centerY,
+//                        result.bitmap.width,
+//                        result.bitmap.height,
+//                        viewfinderView.width,
+//                        viewfinderView.height
+//                    )
+
+        return points
+    }
+
+    fun openCVMatToPoints(mat: Mat): ArrayList<org.opencv.core.Point> {
+        var points = ArrayList<org.opencv.core.Point>()
         // 扫码结果二维码的四个点（一个四边形）；需要注意的是：OpenCVQRCode识别的二维码和WeChatQRCode的识别的二维码记录在Mat中的点位方式是不一样的
         for( i in 0..3){
-            points.add(Point(mat[0, i][0].toInt(), mat[0, i][1].toInt()))
+            points.add(org.opencv.core.Point(mat[0, i][0], mat[0, i][1]))
             Log.d(OpenCVQRCodeActivity.TAG, "point$i: ${mat[0, i][0]}, ${mat[0, i][1]}")
         }
         return points
     }
 
-    fun calculateCenterPoint(points: ArrayList<Point>): Point {
+    fun processWeChatMat(mat:Mat, result: AnalyzeResult<List<String>>, isQRPToPageP: Boolean) : ArrayList<org.opencv.core.Point> {
+
+        var points = weChatMatToPoints(mat)
+
+        if(isQRPToPageP){
+            QRPointsToPagePoints(points, qrObject, result.bitmap.width, result.bitmap.height)
+        }
+
+//        val centerPonit = calculateCenterPoint(points)
+
+        //将实际的结果中心点坐标转换成界面预览的坐标
+//                    val point = PointUtils.transform(
+//                        centerX,
+//                        centerY,
+//                        result.bitmap.width,
+//                        result.bitmap.height,
+//                        viewfinderView.width,
+//                        viewfinderView.height
+//                    )
+        return points
+    }
+
+    fun weChatMatToPoints(mat: Mat): ArrayList<org.opencv.core.Point> {
+        var points = ArrayList<org.opencv.core.Point>()
+        // 扫码结果二维码的四个点（一个矩形）
+        for( i in 0..3){
+            points.add(org.opencv.core.Point(mat[i, 0][0], mat[i, 1][0]))
+            Log.d(TAG, "point$i: ${mat[i, 0][0]}, ${mat[i, 1][0]}")
+        }
+        return points
+    }
+
+    /**
+     * 计算中心点
+     */
+    fun calculateCenterPoint(points: ArrayList<android.graphics.Point>): android.graphics.Point {
         var centerX = 0;
         var centerY = 0;
         for(point in points){
             centerX += point.x
             centerY += point.y
         }
-        return Point(centerX/points.size, centerY/points.size)
+        return android.graphics.Point(centerX/points.size, centerY/points.size)
     }
 
-    fun transformPoint(points: ArrayList<Point>, srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int): ArrayList<Point> {
-        var newPoints = ArrayList<Point>()
+    /**
+     * 将bitmap上的坐标转换为viewfinderView上的坐标,以生成新Point的方式返回,不改变传入的points
+     */
+    fun transformPoint(points: ArrayList<org.opencv.core.Point>, srcWidth: Int, srcHeight: Int, desWidth: Int, desHeight: Int): ArrayList<android.graphics.Point> {
+        var newPoints = ArrayList<android.graphics.Point>()
         for( point in points){
-            newPoints.add(PointUtils.transform(point.x, point.y, srcWidth, srcHeight, destWidth, destHeight))
+            newPoints.add(PointUtils.transform(point.x.toInt(), point.y.toInt(), srcWidth, srcHeight, desWidth, desHeight))
         }
         return newPoints
     }
 
-    fun processOpenCVMat(mat:Mat, result: AnalyzeResult<List<String>>, isTransforma: Boolean) : ArrayList<Point> {
-
-        var points = openCVMatToPoints(mat)
-
-        if(isTransforma){
-            QRPointsToPagePoints(points, qrObject, result.bitmap.width, result.bitmap.height)
-        }
-
-        val centerPonit = calculateCenterPoint(points)
-
-        //将实际的结果中心点坐标转换成界面预览的坐标
-//                    val point = PointUtils.transform(
-//                        centerX,
-//                        centerY,
-//                        result.bitmap.width,
-//                        result.bitmap.height,
-//                        viewfinderView.width,
-//                        viewfinderView.height
-//                    )
-
-        return transformPoint(points, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height)
-    }
-
-    fun weChatMatToPoints(mat: Mat): ArrayList<Point> {
-        var points = ArrayList<Point>()
-        // 扫码结果二维码的四个点（一个矩形）
-        for( i in 0..3){
-            points.add(Point(mat[i, 0][0].toInt(), mat[i, 1][0].toInt()))
-            Log.d(TAG, "point$i: ${mat[i, 0][0]}, ${mat[i, 1][0]}")
-        }
-        return points
-    }
-
-    fun processWeChatMat(mat:Mat, result: AnalyzeResult<List<String>>, isTransforma: Boolean) : ArrayList<Point> {
-
-        var points = weChatMatToPoints(mat)
-
-        if(isTransforma){
-            QRPointsToPagePoints(points, qrObject, result.bitmap.width, result.bitmap.height)
-        }
-
-        val centerPonit = calculateCenterPoint(points)
-
-        //将实际的结果中心点坐标转换成界面预览的坐标
-//                    val point = PointUtils.transform(
-//                        centerX,
-//                        centerY,
-//                        result.bitmap.width,
-//                        result.bitmap.height,
-//                        viewfinderView.width,
-//                        viewfinderView.height
-//                    )
-        return transformPoint(points, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height)
-    }
-
-    fun QRPointsToPagePoints(points: ArrayList<Point>, qrO: QRObject, width: Int, height: Int): ArrayList<Point>? {
+    /**
+     * 二维码四角坐标转换为版面四角坐标,前提是识别出的二维码信息是有效的;会改变传入的points
+     */
+    fun QRPointsToPagePoints(points: ArrayList<org.opencv.core.Point>, qrO: QRObject, width: Int, height: Int): ArrayList<org.opencv.core.Point>? {
         if(qrO != null){
             var offSetX = Integer.parseInt(qrO.qx)
             var offSetY = Integer.parseInt(qrO.qy)
 
-            var ratioOffX : Float = offSetX * (1.0f / Integer.parseInt(qrO.ql))
-            var ratioOffY : Float = offSetY * (1.0f / Integer.parseInt(qrO.ql))
+            var ratioOffX : Double = offSetX * (1.0 / Integer.parseInt(qrO.ql))
+            var ratioOffY : Double = offSetY * (1.0 / Integer.parseInt(qrO.ql))
 
-            var pOff1X : Float = points.get(1).x.toFloat()
-            var pOff1Y : Float = points.get(1).y.toFloat()
+            var pOff1X : Double = points.get(1).x
+            var pOff1Y : Double = points.get(1).y
             pOff1X = (pOff1X - points.get(0).x) * ratioOffX
             pOff1Y = (pOff1Y - points.get(0).y) * ratioOffX
 
-            var pOff3X : Float = points.get(3).x.toFloat()
-            var pOff3Y : Float = points.get(3).y.toFloat()
+            var pOff3X : Double = points.get(3).x
+            var pOff3Y : Double = points.get(3).y
             pOff3X = (pOff3X - points.get(0).x) * ratioOffY
             pOff3Y = (pOff3Y - points.get(0).y) * ratioOffY
             var pOff2X = pOff3X + pOff1X
@@ -677,23 +794,23 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
             //平移至版面左上角
             for(i in 0..3){
-                points.get(i).x -= pOff2X.toInt()
-                points.get(i).y -= pOff2Y.toInt()
+                points.get(i).x -= pOff2X
+                points.get(i).y -= pOff2Y
             }
 
-            var ratioX : Float = Integer.parseInt(qrO.psx) *(1.0f/ Integer.parseInt(qrO.ql))
-            var ratioY : Float = Integer.parseInt(qrO.psy) *(1.0f/ Integer.parseInt(qrO.ql))
+            var ratioX : Double = Integer.parseInt(qrO.psx) *(1.0/ Integer.parseInt(qrO.ql))
+            var ratioY : Double = Integer.parseInt(qrO.psy) *(1.0/ Integer.parseInt(qrO.ql))
 //            var ratioX : Float = 6.296296f
 //            var ratioY : Float = 8.481481f
 
             var point0 = points.get(0)
             var p1 = points.get(1)
-            p1.x = ((p1.x - point0.x)*ratioX + point0.x).toInt()
-            p1.y = ((p1.y - point0.y)*ratioX + point0.y).toInt()
+            p1.x = (p1.x - point0.x)*ratioX + point0.x
+            p1.y = (p1.y - point0.y)*ratioX + point0.y
 
             var p3 = points.get(3)
-            p3.x = ((p3.x - point0.x)*ratioY + point0.x).toInt()
-            p3.y = ((p3.y - point0.y)*ratioY + point0.y).toInt()
+            p3.x = (p3.x - point0.x)*ratioY + point0.x
+            p3.y = (p3.y - point0.y)*ratioY + point0.y
 
             var p2 = points.get(2)
             p2.x = p3.x + p1.x - point0.x
@@ -715,18 +832,58 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                }
 //            }
 
-            return points
-
-        } else{
-            return null
         }
+        return points
     }
 
-    fun contain(point: Point, width: Int, height: Int) : Boolean {
-        if(point.x >=0 && point.x <=width && point.y >= 0 &&  point.y <= height){
+    /**
+     * 目标区域是否包含目标点
+     */
+    fun contain(point: org.opencv.core.Point, width: Int, height: Int) : Boolean {
+        if(point.x.toInt() in 0..width && point.y.toInt() in 0..height){
             return true
         }
         return false
+    }
+
+    /**
+     * 透视变换
+     */
+    fun warpPerspective(bitmap:Bitmap, srcPoints:ArrayList<org.opencv.core.Point>, desPoints: ArrayList<org.opencv.core.Point>, width: Int, height: Int): Bitmap {
+        //定义原图中边框上的四个点
+        val srcPoints = MatOfPoint2f(
+            srcPoints.get(0), // 左上角
+            srcPoints.get(1), // 右上角
+            srcPoints.get(2), // 右下角
+            srcPoints.get(3)  // 左下角
+        )
+
+        // 定义目标图中的边框上的四个点
+//        val dstWidth = bitmap.width
+//        val dstHeight = bitmap.height
+        val dstWidth = width
+        val dstHeight = height
+        val dstPoints = MatOfPoint2f(
+            desPoints.get(0),
+            desPoints.get(1),
+            desPoints.get(2),
+            desPoints.get(3)
+        )
+
+        // 计算透视变换矩阵
+        val perspectiveTransform = Imgproc.getPerspectiveTransform(srcPoints, dstPoints)
+
+        // 进行透视变换
+        val transformedMat = Mat()
+        val inputMatResult = Mat()
+        Utils.bitmapToMat(bitmap, inputMatResult)
+        Imgproc.warpPerspective(inputMatResult, transformedMat, perspectiveTransform, Size(dstWidth.toDouble(), dstHeight.toDouble()))
+
+//         将 Mat 转换回 Bitmap
+        val resultBitmap = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(transformedMat, resultBitmap)
+
+        return resultBitmap
     }
 
     override fun createAnalyzer(): Analyzer<MutableList<String>>? {
@@ -765,7 +922,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         // 构建client
 //        client = Client.newBuilder("cli_a4ac1c99553b9013", "dJnppJxBQQKd4QGmXSrP3fwdvcT5iNZ6").build()
 
-        Thread({
+        Thread {
             // 创建请求对象
             val req = ListAppTableRecordReq.newBuilder()
                 .appToken("bascn3zrUMtRbKme8rlcyRKfDSc")
@@ -785,15 +942,25 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
             // 处理服务端错误
             if (!resp.success()) {
-                println(String.format("code:%s,msg:%s,reqId:%s", resp.code, resp.msg, resp.requestId))
+                println(
+                    String.format(
+                        "code:%s,msg:%s,reqId:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId
+                    )
+                )
             }
 
             callBack.onCallBack(resp.getData().getItems().get(0).getFields().get("科目").toString())
 
-        }).start()
+        }.start()
 
     }
 
+    /**
+     * 获取当前时间并转换为特定格式
+     */
     fun getTime() : String {
         val sdf = SimpleDateFormat("yyyyMMdd")
         val datetime: Date = Date(System.currentTimeMillis())
@@ -879,18 +1046,21 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             setDayText(day)
         }
     }
-    //改变背景颜色按钮颜色响应
+
+    /**
+     * 改变背景颜色按钮颜色响应
+     */
     fun backgroundColorChange(string: String){
-        runOnUiThread({
-            var drawable:Drawable = getResources().getDrawable(R.drawable.camera_background)
-            if(map[string]!=null) {
+        runOnUiThread {
+            var drawable: Drawable = getResources().getDrawable(R.drawable.camera_background)
+            if (map[string] != null) {
                 var red: Int = map[string]!! and 0xff0000 shr 16
                 var green: Int = map[string]!! and 0x00ff00 shr 8
                 var blue: Int = map[string]!! and 0x0000ff
-                drawable.setColorFilter(Color.rgb(red,green, blue), PorterDuff.Mode.SRC_ATOP)
+                drawable.setColorFilter(Color.rgb(red, green, blue), PorterDuff.Mode.SRC_ATOP)
 
                 //backgroundLayout.setBackgroundDrawable(drawable)
-                backgroundLayout.background=drawable
+                backgroundLayout.background = drawable
 
                 setSubjectText(string)
 
@@ -898,36 +1068,18 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
                 val background: Drawable = captureButton.getBackground().mutate()
                 var offset = 50 //颜色整体偏移量
-                background.colorFilter = PorterDuffColorFilter(Color.rgb(if((red+offset)>0xFF)0xFF else red+offset,
-                    if((green+offset)>0xFF)0xFF else green+offset,
-                    if((blue+offset)>0xFF)0xFF else blue+offset), PorterDuff.Mode.SRC_IN)
+                background.colorFilter = PorterDuffColorFilter(
+                    Color.rgb(
+                        if ((red + offset) > 0xFF) 0xFF else red + offset,
+                        if ((green + offset) > 0xFF) 0xFF else green + offset,
+                        if ((blue + offset) > 0xFF) 0xFF else blue + offset
+                    ), PorterDuff.Mode.SRC_IN
+                )
                 captureButton.setBackground(background)
             }
-        })
+        }
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     companion object {
         const val TAG = "WeChatQRCodeActivity"

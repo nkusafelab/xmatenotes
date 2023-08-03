@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ImgProcessActivity">
+    tools:context=".CardProcessActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,8 +19,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:layout_editor_absoluteX="0dp"
-                tools:layout_editor_absoluteY="0dp" />
+                android:rotation="90"/>
 
             <com.example.xmatenotes.QRViewfinderView
                 android:id="@+id/viewfinderView"

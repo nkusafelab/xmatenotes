@@ -28,8 +28,6 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat
@@ -199,7 +197,7 @@ class CropActivity : AppCompatActivity() {
 //                if(bitmap!=null) {
 //                    imageView.setImageBitmap(perspectivetTransform(bitmap))
 //                }
-                val intent = Intent(getContext(), ImgProcessActivity::class.java)
+                val intent = Intent(getContext(), CardProcessActivity::class.java)
                 if (bitmap != null) {
                     BitmapCacheManager.putBitmap("OpenCameraBitmap", bitmap)
                 }
