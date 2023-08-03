@@ -490,12 +490,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 } catch (e: JsonSyntaxException) {
                     println("JSON解析失败: ${e.message}")
                     isQRPToPageP = false
-            result.points?.forEach { mat ->
-                bitMapPoints.addAll(processWeChatMat(mat, result, isQRPToPageP))
-                viewfinderViewPoints.addAll(transformPoint(bitMapPoints, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height))
-
                 }
-            }
+
 
             result.points?.forEach { mat ->
                 bitMapPoints.addAll(processWeChatMat(mat, result, isQRPToPageP))
@@ -608,7 +604,6 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 setResult(RESULT_OK, intent)
                 finish()
             }
-
             if(i <= maxRatio){
                 for(point in bitmapPoints){
                     point.x = (point.x/i).toInt()
