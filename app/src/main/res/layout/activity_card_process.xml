@@ -1,81 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".CardProcessActivity">
-
-    <LinearLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        tools:context=".CardProcessActivity">
 
-        <FrameLayout
+    <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:rotation="90"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <com.example.xmatenotes.QRViewfinderView
-                android:id="@+id/viewfinderView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:vvLaserDrawable="@drawable/ic_laser_line"
-                app:vvLaserDrawableRatio="0.8"
-                app:vvLaserStyle="image"
-                app:vvViewfinderStyle="popular" />
-
-
-        </FrameLayout>
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/take_photo_again"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="重新拍照"
-                >
+                android:layout_above="@id/button_layout">
+            <!--            <com.example.xmatenotes.DrawingImageView-->
+            <!--                android:id="@+id/imageView"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                android:layout_marginTop="20dp" />-->
 
-            </Button>
+            <com.example.xmatenotes.DrawingImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="20dp"
+                    android:scaleType="fitCenter"
+                    />
 
-            <Button
-                android:id="@+id/scan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_margin="20dp"
-
-                android:text="识别图中二维码"
-                >
-
-            </Button>
-
-            <Button
-                android:id="@+id/record_audio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_margin="20dp"
-                android:text="录音">
-
-            </Button>
         </RelativeLayout>
-<!--        <LinearLayout-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:orientation="horizontal">-->
 
-<!--            -->
+        <RelativeLayout
+                android:id="@+id/button_layout"
+                android:layout_alignParentBottom="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-<!--        </LinearLayout>-->
-    </LinearLayout>
+<!--            <Button-->
+<!--                    android:id="@+id/take_photo_again"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="重新拍照"-->
+<!--                    android:layout_centerHorizontal="true"-->
+<!--                    android:layout_marginTop="20dp"-->
+<!--                    android:layout_marginStart="20dp"-->
+<!--                    android:layout_marginEnd="20dp"-->
+<!--                    android:layout_marginBottom="20dp">-->
+
+<!--            </Button>-->
+
+<!--            <Button-->
+<!--                    android:id="@+id/scan"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_alignParentLeft="true"-->
+<!--                    android:layout_margin="20dp"-->
+
+<!--                    android:text="识别图中二维码"-->
+<!--                    >-->
+
+<!--            </Button>-->
+
+<!--            <Button-->
+<!--                    android:id="@+id/record_audio"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_alignParentRight="true"-->
+<!--                    android:layout_margin="20dp"-->
+<!--                    android:text="录音">-->
+
+<!--            </Button>-->
+
+            <Button
+                    android:id="@+id/clear_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_margin="20dp"
+                    android:text="清空">
+            </Button>
+
+            <Button
+                    android:id="@+id/undo_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:text="撤销">
+            </Button>
+
+            <Button
+                    android:id="@+id/commit_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="20dp"
+                    android:text="提交">
+            </Button>
+
+
+        </RelativeLayout>
+        <!--        <LinearLayout-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:orientation="horizontal">-->
+
+        <!--            -->
+
+        <!--        </LinearLayout>-->
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
