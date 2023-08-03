@@ -95,8 +95,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     private lateinit var qrObject: QRObject
 
     private var map:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
-    "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
-
+        "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
     /**
      * 拍摄按键状态
      */
@@ -112,7 +111,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
-    //        // 初始化OpenCV
+          // 初始化OpenCV
 //        OpenCV.initAsync(this)
 //        // 初始化WeChatQRCodeDetector
 //        WeChatQRCodeDetector.init(this)

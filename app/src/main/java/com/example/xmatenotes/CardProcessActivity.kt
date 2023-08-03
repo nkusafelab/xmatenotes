@@ -1,29 +1,50 @@
 package com.example.xmatenotes
 
+import android.R.attr
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Matrix
 import android.os.Bundle
-import android.widget.ImageView
 import android.util.LruCache
+import android.view.View
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.core.Point
+
 import org.opencv.imgproc.Imgproc
 import java.lang.Math.abs
 import java.lang.Math.atan2
 import java.lang.Math.sqrt
 import kotlin.math.pow
 
+
 /**
  * 图片处理的活动，包括二维码识别、降噪、纠偏、抠图等
  */
+
 class CardProcessActivity : AppCompatActivity() {
 
-    private lateinit var imageView: ImageView
+    private lateinit var imageView: DrawingImageView
+
+    private lateinit var undoButton:Button
+    private lateinit var commitButton:Button
+    private lateinit var clearButton:Button
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_process)
         imageView =findViewById(R.id.imageView)
+        undoButton= findViewById(R.id.undo_button)
+        commitButton= findViewById(R.id.commit_button)
+        clearButton = findViewById(R.id.clear_button)
+        undoButton.setOnClickListener { imageView.undo() }
+        commitButton.setOnClickListener { imageView.commit() }
+
+
+
+
         val bitmap: Bitmap? = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
 
 
@@ -67,7 +88,36 @@ class CardProcessActivity : AppCompatActivity() {
 
 //            val contourBitmap:Bitmap = findMaxContour(bitmap)
 //            imageView.setImageBitmap(contourBitmap)
-            imageView.setImageBitmap(bitmap)
+
+//            val width = bitmap.width
+//            val height = bitmap.height
+//            val matrix1 = Matrix()
+//            matrix1.postScale(0.8F, 0.8F)
+//            val newBitmap: Bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix1, false)
+//
+            val rotatedBitmap: Bitmap
+
+            val matrix = Matrix()
+            matrix.postRotate(90F) // 顺时针旋转90度
+
+
+            rotatedBitmap = Bitmap.createBitmap(
+                bitmap,
+                0,
+                0,
+                bitmap.getWidth(),
+                bitmap.getHeight(),
+                matrix,
+                true
+            )
+
+
+
+            clearButton.setOnClickListener(View.OnClickListener {
+                imageView.setImageBitmap(rotatedBitmap)
+            })
+
+            imageView.setImageBitmap(rotatedBitmap)
         }
     }
 
@@ -499,4 +549,7 @@ object BitmapCacheManager {
     fun putBitmap(key: String, bitmap: Bitmap) {
         bitmapCache.put(key, bitmap)
     }
+
+    //清理内存
+
 }
