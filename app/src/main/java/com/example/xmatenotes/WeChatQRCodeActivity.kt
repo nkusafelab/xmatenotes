@@ -3,10 +3,14 @@ package com.example.xmatenotes
 
 import android.Manifest
 import android.content.Intent
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Path
 import android.graphics.Point
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
-import android.icu.number.IntegerWidth
 import android.net.Uri
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -14,7 +18,11 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.OrientationEventListener
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
@@ -26,7 +34,6 @@ import com.king.mlkit.vision.camera.util.LogUtils
 import com.king.mlkit.vision.camera.util.PermissionUtils
 import com.king.mlkit.vision.camera.util.PointUtils
 import com.king.opencv.qrcode.OpenCVQRCodeDetector
-import com.king.opencv.qrcode.scanning.analyze.OpenCVScanningAnalyzer
 import com.king.wechat.qrcode.WeChatQRCodeDetector
 import com.king.wechat.qrcode.scanning.WeChatCameraScanActivity
 import com.king.wechat.qrcode.scanning.analyze.WeChatScanningAnalyzer
@@ -36,11 +43,11 @@ import com.lark.oapi.service.bitable.v1.model.ListAppTableRecordReq
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.opencv.OpenCV
 import org.opencv.core.Mat
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Date
 
 
 /**
@@ -95,8 +102,6 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     private var map:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
     "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
-
-
 
     /**
      * OpenCVQRCodeDetector
@@ -438,6 +443,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         cameraScan.setAnalyzeImage(true) // 继续扫码分析
     }
 
+    private var maxRatio:Double = 3.0
     override fun onScanResultCallback(result: AnalyzeResult<List<String>>) {
         // 停止分析
 //        cameraScan.setAnalyzeImage(false)
@@ -448,7 +454,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //        if (result is OpenCVScanningAnalyzer.QRCodeAnalyzeResult) { // 如果需要处理结果二维码的位置信息
             //取预览当前帧图片并显示，为结果点提供参照
 //            ivResult.setImageBitmap(previewView.bitmap)
-            var points = ArrayList<Point>()
+            var bitmapPoints = ArrayList<Point>()
 //            val resultOpenCV = withContext(Dispatchers.IO) {
 //                // 通过OpenCVQRCodeDetector识别图片中的二维码
 //                openCVQRCodeDetector.detectAndDecode(result.bitmap)
@@ -473,11 +479,54 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     println("JSON解析失败: ${e.message}")
                     isTransform = false
                 }
+            }
 
-            }
+            val centerPoints = ArrayList<Point>()
             result.points?.forEach { mat ->
-                points.addAll(processWeChatMat(mat, result, isTransform))
+                var points = weChatMatToPoints(mat)
+
+                if(isTransform){
+                    QRPointsToPagePoints(points, qrObject, result.bitmap.width, result.bitmap.height)
+                }
+
+                centerPoints.add(calculateCenterPoint(points))
+//                bitmapPoints.addAll(processWeChatMat(mat, result, isTransform))
             }
+
+
+            var bMap0 = Bitmap.createBitmap(result.bitmap, 0,0,result.bitmap.width, result.bitmap.height)
+            var i = 1.0
+            var step = 0.5
+            while (i <= maxRatio){
+                var bMap = Bitmap.createScaledBitmap(bMap0,
+                    (bMap0.width*i).toInt(), (bMap0.height*i).toInt(), true)
+                // 如果需要返回二维码的各个顶点
+                val points = Mat()
+                var res = openCVQRCodeDetector.detectAndDecode(bMap, points)
+                if (res != null && !res.isEmpty()) {
+                    for (i in 0 until points.rows()) {
+                        points.row(i).let { mat ->
+                            // 扫码结果二维码的四个点（一个四边形）；需要注意的是：OpenCVQRCode识别的二维码和WeChatQRCode的识别的二维码记录在Mat中的点位方式是不一样的
+                            Log.d(OpenCVQRCodeActivity.TAG, "point0: ${mat[0, 0][0]}, ${mat[0, 0][1]}")
+                            Log.d(OpenCVQRCodeActivity.TAG, "point1: ${mat[0, 1][0]}, ${mat[0, 1][1]}")
+                            Log.d(OpenCVQRCodeActivity.TAG, "point2: ${mat[0, 2][0]}, ${mat[0, 2][1]}")
+                            Log.d(OpenCVQRCodeActivity.TAG, "point3: ${mat[0, 3][0]}, ${mat[0, 3][1]}")
+                            var points = openCVMatToPoints(mat)
+
+                            if(isTransform){
+                                QRPointsToPagePoints(points, qrObject, result.bitmap.width, result.bitmap.height)
+                            }
+
+                            bitmapPoints.addAll(points)
+                        }
+                    }
+                    break
+                } else {
+                    i += step
+                }
+            }
+
+
 //            for (i in 0 until result.points.rows()) {
 //                result.points.row(i).let { mat ->
 //                    points.addAll(processOpenCVMat(mat, result, isTransform))
@@ -493,16 +542,27 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 setResult(RESULT_OK, intent)
                 finish()
             }
-            //显示结果点信息
-            viewfinderView.showResultPoints(points)
-            timeLastUpDate = System.currentTimeMillis()
 
-//            if(result.result.size == 1) {
-//                val intent = Intent()
-//                intent.putExtra(CameraScan.SCAN_RESULT, result.result[0])
-//                setResult(RESULT_OK, intent)
-//                finish()
-//            }
+            if(i <= maxRatio){
+                for(point in bitmapPoints){
+                    point.x = (point.x/i).toInt()
+                    point.y = (point.y/i).toInt()
+                }
+                //显示结果点信息
+                viewfinderView.showResultPoints(transformPoint(bitmapPoints, result.bitmap.width, result.bitmap. height, viewfinderView.width, viewfinderView.height))
+                timeLastUpDate = System.currentTimeMillis()
+            } else {
+//                Toast.makeText(this, "")
+            }
+
+
+
+            if(result.result.size == 1) {
+                val intent = Intent()
+                intent.putExtra(CameraScan.SCAN_RESULT, result.result[0])
+                setResult(RESULT_OK, intent)
+                finish()
+            }
         } else {
             // 一般需求都是识别一个码，所以这里取第0个就可以；有识别多个码的需求，可以取全部
             val intent = Intent()
