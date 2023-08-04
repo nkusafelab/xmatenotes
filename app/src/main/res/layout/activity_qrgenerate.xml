@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="版面信息"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextPage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="版面信息" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="版面尺寸x"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextPageSizeX"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="版面尺寸x" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="版面尺寸y"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextPageSizeY"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="版面尺寸y" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="版面页码"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextPageNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="版面页码" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="学校编号"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextSchoolCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="学校编号" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="年级编号"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextGradeCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="年级编号" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="班级编号"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextClassCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="班级编号" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="拍摄尺寸"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextCameraSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="拍摄尺寸" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="数据来源"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextDataSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="数据来源" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="教师编号"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextTeacherCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="教师编号" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="学生编号"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextStudentCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="学生编号" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="小组编号"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextGroupCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="小组编号" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="小组组型"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextGroupType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="小组组型" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="科目"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextSubject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="科目" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="数据"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="数据" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="时间"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="时间" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="二维码左上角坐标x"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editQRCodeX"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="二维码左上角坐标x" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="二维码左上角坐标y"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editQRCodeY"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="二维码左上角坐标y" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="二维码大小"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editQRCodeLength"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="二维码大小" />
+
+        <Button
+            android:id="@+id/buttonGenerateQRCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="生成二维码"
+            android:onClick="generateQRCode" />
+
+    </LinearLayout>
+</ScrollView>

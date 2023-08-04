@@ -445,7 +445,13 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     fun scanAgain(){
 //        viewfinderView.showScanner()
         ivResult.setImageBitmap(null)
-        cameraScan.setAnalyzeImage(true) // 继续扫码分析
+        //cameraScan.setAnalyzeImage(true) // 继续扫码分析
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        ivResult.setImageBitmap(null)
+        cameraScan.setAnalyzeImage(true)
     }
 
     override fun onScanResultCallback(result: AnalyzeResult<List<String>>) {
@@ -543,6 +549,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     rootView.draw(Canvas(bitmap))
 //                    ivResult.setImageBitmap(bitmap)
                     BitmapCacheManager.putBitmap("WeChatQRCodeBitmap",bitmap)
+
+                    //初始化回false为下次做准备
+                    keyDown=false
                     val intent = Intent(getContext(), CardProcessActivity::class.java)
                     startActivity(intent)
                 }
