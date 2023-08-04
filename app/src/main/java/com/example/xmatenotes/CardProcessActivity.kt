@@ -1,12 +1,15 @@
 package com.example.xmatenotes
 
-import android.R.attr
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.LruCache
-import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Button
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import org.opencv.android.Utils
 import org.opencv.core.Mat
@@ -31,6 +34,8 @@ class CardProcessActivity : AppCompatActivity() {
     private lateinit var undoButton:Button
     private lateinit var commitButton:Button
     private lateinit var clearButton:Button
+    private lateinit var recameraButton: Button
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,8 +45,18 @@ class CardProcessActivity : AppCompatActivity() {
         undoButton= findViewById(R.id.undo_button)
         commitButton= findViewById(R.id.commit_button)
         clearButton = findViewById(R.id.clear_button)
+        recameraButton = findViewById(R.id.recamera_button)
         undoButton.setOnClickListener { imageView.undo() }
         commitButton.setOnClickListener { imageView.commit() }
+        clearButton.setOnClickListener{ imageView.clear() }
+        recameraButton.setOnClickListener{ finish() }
+
+
+        val actionBar: ActionBar? = supportActionBar
+        if (actionBar != null) {
+            actionBar.hide()
+        }
+
 
 
 
@@ -114,11 +129,14 @@ class CardProcessActivity : AppCompatActivity() {
 
 
 
-            clearButton.setOnClickListener(View.OnClickListener {
-                imageView.setImageBitmap(rotatedBitmap)
-            })
 
-            imageView.setImageBitmap(rotatedBitmap)
+            //测试接口用
+            imageView.setPaintSize(40F)
+            imageView.setPaintTypeface(Typeface.MONOSPACE)
+            //imageView.setPaintColor(Color.RED)
+
+
+            imageView.setImageBitmap(bitmap)
         }
     }
 

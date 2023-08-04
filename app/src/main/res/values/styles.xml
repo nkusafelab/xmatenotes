@@ -40,4 +40,9 @@
         <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
 
     </style>
+
+    <style name="TransparentDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">#20000000</item>
+    </style>
+
 </resources>

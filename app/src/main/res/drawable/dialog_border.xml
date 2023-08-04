@@ -1,0 +1,10 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 设置边框颜色和宽度 -->
+    <stroke android:color="#55FFFFFF" android:width="2dp" />
+
+    <!-- 设置背景为半透明 -->
+    <solid android:color="#20000000" />
+
+    <!-- 设置边框圆角大小 -->
+    <corners android:radius="10dp" />
+</shape>
