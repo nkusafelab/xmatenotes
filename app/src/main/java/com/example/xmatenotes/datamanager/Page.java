@@ -12,6 +12,7 @@ import com.example.xmatenotes.DotClass.TimelongDot;
 import com.example.xmatenotes.instruction.HandWriting;
 import com.tqltech.tqlpencomm.bean.Dot;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,11 +25,13 @@ import java.util.Set;
  * <p>真实版面到计算设备中版面存储结构的映射，包含了每个版面必要的数据结构、属性特征和操作它们的相关方法</p>
  * @see PageManager
  */
-public class Page {
+public class Page implements Serializable {
 
     /***********************重要常量**********************/
 
     private static final String TAG = "Page";
+
+    private static final long serialVersionUID = -7015148013025862034L;
 
     /**
      * 笔迹存储 1/3 宽度

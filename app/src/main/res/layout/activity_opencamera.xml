@@ -11,7 +11,6 @@
         android:id="@+id/left_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="70dp"
         android:background="@drawable/camera_background"
         >
 
@@ -45,7 +44,7 @@
                         />
 
                     <TextView
-                        android:layout_marginStart="100dp"
+                        android:layout_marginStart="120dp"
                         android:id="@+id/subject_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -54,7 +53,7 @@
                         />
 
                     <TextView
-                        android:layout_marginStart="200dp"
+                        android:layout_marginStart="220dp"
                         android:id="@+id/unit_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -63,7 +62,7 @@
                         />
 
                     <TextView
-                        android:layout_marginStart="380dp"
+                        android:layout_marginStart="460dp"
                         android:id="@+id/stage_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -72,7 +71,7 @@
                         />
 
                     <TextView
-                        android:layout_marginStart="460dp"
+                        android:layout_marginStart="540dp"
                         android:id="@+id/class_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -109,8 +108,19 @@
                         app:vvLaserDrawableRatio="0.8"
                         app:vvLaserDrawable="@drawable/ic_laser_line"/>
 
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="后置编码:"
+                            android:textSize="16dp"
+                            android:textColor="@color/white"
+                            android:layout_marginEnd="30dp"
+                            android:layout_gravity="right|bottom">
+
+                    </TextView>
+
                 </FrameLayout>
-            </LinearLayout>
+                </LinearLayout>
 
             <RelativeLayout
                 android:layout_width="75dp"
@@ -200,91 +210,91 @@
 
     </RelativeLayout>
 
-    <RelativeLayout
-        android:layout_width="70dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentEnd="true"
-        >
+<!--    <RelativeLayout-->
+<!--        android:layout_width="70dp"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        >-->
 
-        <Button
-            android:id="@+id/math_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#7F82BB"
-            android:text="数学"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"
-            />
+<!--        <Button-->
+<!--            android:id="@+id/math_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#7F82BB"-->
+<!--            android:text="数学"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"-->
+<!--            />-->
 
-        <Button
-            android:id="@+id/chinese_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#B5E61D"
-            android:text="语文"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_below="@id/math_button"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"/>
-        <Button
-            android:id="@+id/english_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#9FFCFD"
-            android:text="英语"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_below="@id/chinese_button"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"/>
-        <Button
-            android:id="@+id/physical_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#EF88BE"
-            android:text="物理"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_below="@id/english_button"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"/>
-        <Button
-            android:id="@+id/chemistry_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#FFFD55"
-            android:text="化学"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_below="@id/physical_button"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"/>
-        <Button
-            android:id="@+id/biology_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#58135E"
-            android:text="生物"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_below="@id/chemistry_button"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"/>
-        <Button
-            android:id="@+id/politics_button"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:background="#16417C"
-            android:text="政治"
-            android:layout_centerHorizontal="true"
-            android:textSize="16sp"
-            android:layout_below="@id/biology_button"
-            android:layout_marginTop="10dp"
-            android:padding="10dp"/>
-    </RelativeLayout>
+<!--        <Button-->
+<!--            android:id="@+id/chinese_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#B5E61D"-->
+<!--            android:text="语文"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_below="@id/math_button"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"/>-->
+<!--        <Button-->
+<!--            android:id="@+id/english_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#9FFCFD"-->
+<!--            android:text="英语"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_below="@id/chinese_button"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"/>-->
+<!--        <Button-->
+<!--            android:id="@+id/physical_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#EF88BE"-->
+<!--            android:text="物理"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_below="@id/english_button"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"/>-->
+<!--        <Button-->
+<!--            android:id="@+id/chemistry_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#FFFD55"-->
+<!--            android:text="化学"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_below="@id/physical_button"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"/>-->
+<!--        <Button-->
+<!--            android:id="@+id/biology_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#58135E"-->
+<!--            android:text="生物"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_below="@id/chemistry_button"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"/>-->
+<!--        <Button-->
+<!--            android:id="@+id/politics_button"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:background="#16417C"-->
+<!--            android:text="政治"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_below="@id/biology_button"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:padding="10dp"/>-->
+<!--    </RelativeLayout>-->
 
 
 </RelativeLayout>

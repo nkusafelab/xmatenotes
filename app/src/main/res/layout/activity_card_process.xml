@@ -11,10 +11,13 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+<!--        <RelativeLayout-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_toStartOf="@id/button_layout">-->
         <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/button_layout">
+                android:layout_height="wrap_content">
             <!--            <com.example.xmatenotes.DrawingImageView-->
             <!--                android:id="@+id/imageView"-->
             <!--                android:layout_width="match_parent"-->
@@ -30,63 +33,63 @@
 
         </RelativeLayout>
 
-        <LinearLayout
-                android:id="@+id/button_layout"
-                android:layout_alignParentEnd="true"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:weightSum="6"
-                android:layout_margin="15dp">
+<!--        <LinearLayout-->
+<!--                android:id="@+id/button_layout"-->
+<!--                android:layout_alignParentEnd="true"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:orientation="vertical"-->
+<!--                android:gravity="center"-->
+<!--                android:weightSum="6"-->
+<!--                android:layout_margin="15dp">-->
 
-            <Button
-                    android:id="@+id/save_audio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="保存"
-                    />
+<!--            <Button-->
+<!--                    android:id="@+id/save_audio"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="保存"-->
+<!--                    />-->
 
-            <Button
-                    android:id="@+id/record_audio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="录音" />
+<!--            <Button-->
+<!--                    android:id="@+id/record_audio"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="录音" />-->
 
-            <Button
-                    android:id="@+id/clear_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="清空"
-                    />
+<!--            <Button-->
+<!--                    android:id="@+id/clear_button"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="清空"-->
+<!--                    />-->
 
-            <Button
-                    android:id="@+id/undo_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="撤销" />
+<!--            <Button-->
+<!--                    android:id="@+id/undo_button"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="撤销" />-->
 
-            <Button
-                    android:id="@+id/commit_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="提交"
-                    />
+<!--            <Button-->
+<!--                    android:id="@+id/commit_button"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="提交"-->
+<!--                    />-->
 
-            <Button
-                    android:id="@+id/recamera_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="重拍"
-                    />
+<!--            <Button-->
+<!--                    android:id="@+id/recamera_button"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="重拍"-->
+<!--                    />-->
 
-        </LinearLayout>
+<!--        </LinearLayout>-->
 
 
         <!--        <LinearLayout-->

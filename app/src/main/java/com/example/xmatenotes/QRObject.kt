@@ -1,23 +1,23 @@
 package com.example.xmatenotes
 
 data class QRObject(
-    val p:String,//版面信息
-    val psx:String,//版面尺寸x
-    val psy:String,//版面尺寸y
-    val pn:String,//版面页码
-    val sc:String,//学校编号
-    val gr:String,//年级编号
-    val cl:String,//班级编号
-    val ca:String,//拍摄尺寸
-    val au:String,//数据来源
-    val te:String,//教师编号
-    val st:String,//学生编号
-    val gn:String,//小组编号
-    val gl:String,//小组组型
-    val sub:String,//科目?
-    val data:String,//数据?
-    val time:String,//时间
-    val qx:String,//左上坐标x
-    val qy:String,//左上坐标y
-    val ql:String//边长
+    var p:String,//版面信息
+    var psx:String,//版面尺寸x
+    var psy:String,//版面尺寸y
+    var pn:String,//版面页码
+    var sc:String,//学校编号
+    var gr:String,//年级编号
+    var cl:String,//班级编号
+    var ca:String,//拍摄尺寸
+    var au:String,//数据来源
+    var te:String,//教师编号
+    var st:String,//学生编号
+    var gn:String,//小组编号
+    var gl:String,//小组组型
+    var sub:String,//科目?
+    var data:String,//数据?
+    var time:String,//时间
+    var qx:String,//左上坐标x
+    var qy:String,//左上坐标y
+    var ql:String//边长
 )

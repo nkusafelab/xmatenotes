@@ -1,24 +1,19 @@
 package com.example.xmatenotes
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.LruCache
-import android.view.Window
-import android.view.WindowManager
+import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.core.Point
-
 import org.opencv.imgproc.Imgproc
-import java.lang.Math.abs
-import java.lang.Math.atan2
-import java.lang.Math.sqrt
+import java.lang.Math.*
 import kotlin.math.pow
 
 
@@ -41,19 +36,24 @@ class CardProcessActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_process)
         imageView =findViewById(R.id.imageView)
-        undoButton= findViewById(R.id.undo_button)
-        commitButton= findViewById(R.id.commit_button)
-        clearButton = findViewById(R.id.clear_button)
-        recameraButton = findViewById(R.id.recamera_button)
-        undoButton.setOnClickListener { imageView.undo() }
-        commitButton.setOnClickListener { imageView.commit() }
-        clearButton.setOnClickListener{ imageView.clear() }
-        recameraButton.setOnClickListener{ finish() }
+//        undoButton= findViewById(R.id.undo_button)
+//        commitButton= findViewById(R.id.commit_button)
+//        clearButton = findViewById(R.id.clear_button)
+//        recameraButton = findViewById(R.id.recamera_button)
+//        undoButton.setOnClickListener { imageView.undo() }
+//        commitButton.setOnClickListener { imageView.commit() }
+//        clearButton.setOnClickListener{ imageView.clear() }
+//        recameraButton.setOnClickListener{ finish() }
 
 
         val actionBar: ActionBar? = supportActionBar
         if (actionBar != null) {
             actionBar.hide()
+//            actionBar.setDisplayShowTitleEnabled(true)
+//            actionBar.title = "拍照迭代"
+//            //actionBar.setTitle(ApplicationResources.getLocalVersionName(this));
+//            //actionBar.setTitle(ApplicationResources.getLocalVersionName(this));
+//            actionBar.setDisplayHomeAsUpEnabled(true)
         }
 
 
@@ -137,6 +137,14 @@ class CardProcessActivity : AppCompatActivity() {
 
             imageView.setImageBitmap(bitmap)
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> finish()
+            else -> {}
+        }
+        return true
     }
 
     fun findMaxContour(bitmap: Bitmap): Bitmap{
