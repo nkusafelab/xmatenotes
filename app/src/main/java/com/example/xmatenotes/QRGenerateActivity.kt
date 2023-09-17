@@ -7,11 +7,11 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
-import android.util.LruCache
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.xmatenotes.logic.model.Page.QRObject
 import com.google.gson.Gson
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
@@ -26,8 +26,8 @@ class QRGenerateActivity : AppCompatActivity() {
         val generateButton: Button = findViewById(R.id.buttonGenerateQRCode)
         val qrObject = QRObject(
             p = "01",
-            psx = "2290",
-            psy = "1700",
+            psx = 2290,
+            psy = 1700,
             pn = "003",
             sc = "01",
             gr = "07",
@@ -41,9 +41,9 @@ class QRGenerateActivity : AppCompatActivity() {
             sub = "01",
             data = "011",
             time = "20230717155323",
-            qx = "60",
-            qy = "60",
-            ql = "270"
+            qx = 60,
+            qy = 60,
+            ql = 270
         )
         findViewById<EditText>(R.id.editTextPage).setText(qrObject.p)
         findViewById<EditText>(R.id.editTextPageSizeX).setText(qrObject.psx)
@@ -76,8 +76,8 @@ class QRGenerateActivity : AppCompatActivity() {
 
         val qrObject = QRObject(
             p = findViewById<EditText>(R.id.editTextPage).text.toString(),
-            psx = findViewById<EditText>(R.id.editTextPageSizeX).text.toString(),
-            psy = findViewById<EditText>(R.id.editTextPageSizeY).text.toString(),
+            psx = Integer.parseInt(findViewById<EditText>(R.id.editTextPageSizeX).text.toString()),
+            psy = Integer.parseInt(findViewById<EditText>(R.id.editTextPageSizeY).text.toString()),
             pn = findViewById<EditText>(R.id.editTextPageNumber).text.toString(),
             sc = findViewById<EditText>(R.id.editTextSchoolCode).text.toString(),
             gr = findViewById<EditText>(R.id.editTextGradeCode).text.toString(),
@@ -91,9 +91,9 @@ class QRGenerateActivity : AppCompatActivity() {
             sub = findViewById<EditText>(R.id.editTextSubject).text.toString(),
             data = findViewById<EditText>(R.id.editTextData).text.toString(),
             time = findViewById<EditText>(R.id.editTextTime).text.toString(),
-            qx = findViewById<EditText>(R.id.editQRCodeX).text.toString(),
-            qy = findViewById<EditText>(R.id.editQRCodeY).text.toString(),
-            ql = findViewById<EditText>(R.id.editQRCodeLength).text.toString(),
+            qx = Integer.parseInt(findViewById<EditText>(R.id.editQRCodeX).text.toString()),
+            qy = Integer.parseInt(findViewById<EditText>(R.id.editQRCodeY).text.toString()),
+            ql = Integer.parseInt(findViewById<EditText>(R.id.editQRCodeLength).text.toString()),
         )
 
         val gson = Gson()

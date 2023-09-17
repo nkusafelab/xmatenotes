@@ -6,12 +6,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
 
-import com.example.xmatenotes.DotClass.MediaDot;
-import com.example.xmatenotes.DotClass.SimpleDot;
-import com.example.xmatenotes.DotClass.TimelongDot;
-import com.example.xmatenotes.datamanager.AudioManager;
-import com.example.xmatenotes.datamanager.Page;
-import com.example.xmatenotes.datamanager.PageManager;
+import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.logic.manager.AudioManager;
+import com.example.xmatenotes.logic.model.Page.Page;
+import com.example.xmatenotes.logic.manager.PageManager;
 
 import java.util.ArrayList;
 
@@ -147,12 +147,12 @@ public class ReplayActivity extends BaseActivity {
                                     pageSurfaceView.setPenColor(getColor());//更换画笔颜色
                                     for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
                                         MediaDot tD = mediaDots.get(i);
-                                        Log.e(TAG, "tD.x: "+ tD.x);
-                                        Log.e(TAG, "tD.y: "+ tD.y);
+                                        Log.e(TAG, "tD.x: "+ tD.getIntX());
+                                        Log.e(TAG, "tD.y: "+ tD.getIntY());
                                         Log.e(TAG,"tD.timelong: "+tD.timelong);
 
                                         //遇到附加音频信息的笔迹
-                                        if(tD.x == -1 && tD.y == -1){
+                                        if(tD.getIntX() == -1 && tD.getIntY() == -1){
                                             Log.e(TAG, "tD.x == -1 && tD.y == -1");
                                             if(lhmnumber >= localHWsMapID){
                                                 isPlayingAudio = true;
@@ -168,7 +168,7 @@ public class ReplayActivity extends BaseActivity {
                                             continue;
                                         }
 
-                                        if(tD.x == -2 && tD.y == -2){
+                                        if(tD.getIntX() == -2 && tD.getIntY() == -2){
                                             if(isPlayingAudio){
                                                 isPlayingAudio = false;
                                                 Log.e(TAG,"音频笔迹结束");
@@ -187,7 +187,7 @@ public class ReplayActivity extends BaseActivity {
                                             }
                                         }
 
-                                        Log.e(TAG,"(float)tD.x: "+(float)tD.x+" (float)tD.y: "+(float)tD.y+" tD.type: "+tD.type);
+                                        Log.e(TAG,"(float)tD.x: "+(float)tD.getFloatX()+" (float)tD.y: "+(float)tD.getFloatY()+" tD.type: "+tD.type);
                                         pageSurfaceView.drawSDot(new SimpleDot(tD), rectXY);//等主线程结束才会绘制
 
                                         if(lhmnumber >= localHWsMapID){

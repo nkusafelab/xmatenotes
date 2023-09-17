@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".WeChatQRCodeActivity"
+    tools:context=".ui.qrcode.WeChatQRCodeActivity"
     >
 
     <RelativeLayout
@@ -36,7 +36,7 @@
                     >
 
                     <TextView
-                        android:id="@+id/code_text"
+                        android:id="@+id/precode_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="前置编码:"
@@ -62,7 +62,7 @@
                         />
 
                     <TextView
-                        android:layout_marginStart="460dp"
+                        android:layout_marginStart="420dp"
                         android:id="@+id/stage_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -71,8 +71,8 @@
                         />
 
                     <TextView
-                        android:layout_marginStart="540dp"
-                        android:id="@+id/class_text"
+                        android:layout_marginStart="560dp"
+                        android:id="@+id/classtime_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="课时:"
@@ -109,12 +109,13 @@
                         app:vvLaserDrawable="@drawable/ic_laser_line"/>
 
                     <TextView
+                            android:id="@+id/postcode_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="后置编码:"
                             android:textSize="16dp"
                             android:textColor="@color/white"
-                            android:layout_marginEnd="30dp"
+                            android:layout_marginEnd="60dp"
                             android:layout_gravity="right|bottom">
 
                     </TextView>

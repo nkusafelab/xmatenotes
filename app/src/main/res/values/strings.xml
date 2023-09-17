@@ -14,6 +14,7 @@
 
     <string name="name">笔名</string>
     <string name="address">蓝牙地址</string>
+    <string name="page">幅面</string>
 
     <!--未来可能实现的内容
     <string name="pen_boot_version">BOOT版本</string>

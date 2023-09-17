@@ -113,7 +113,7 @@ public class QRViewfinderView extends View {
     /**
      * 提示文本的位置
      */
-    private com.example.xmatenotes.QRViewfinderView.TextLocation labelTextLocation;
+    private TextLocation labelTextLocation;
     /**
      * 扫描区域提示文本
      */
@@ -147,7 +147,7 @@ public class QRViewfinderView extends View {
     /**
      * 激光扫描风格
      */
-    private com.example.xmatenotes.QRViewfinderView.LaserStyle laserStyle;
+    private LaserStyle laserStyle;
 
     /**
      * 网格列数
@@ -205,7 +205,7 @@ public class QRViewfinderView extends View {
     /**
      * 扫描框对齐方式
      */
-    private com.example.xmatenotes.QRViewfinderView.FrameGravity frameGravity;
+    private FrameGravity frameGravity;
 
     private Bitmap frameBitmap;
 
@@ -246,22 +246,22 @@ public class QRViewfinderView extends View {
 
     private float laserBitmapWidth;
 
-    private int viewfinderStyle = com.example.xmatenotes.QRViewfinderView.ViewfinderStyle.CLASSIC;
+    private int viewfinderStyle = ViewfinderStyle.CLASSIC;
 
-    private List<android.graphics.Point> pointList;
+    private List<Point> pointList;
 
     private boolean isShowPoints = false;
 
     private boolean isShowScanner = false;
 
-    private com.example.xmatenotes.QRViewfinderView.OnItemClickListener onItemClickListener;
+    private OnItemClickListener onItemClickListener;
 
     private GestureDetector gestureDetector;
 
     /**
      * 取景框样式
      */
-    @IntDef({com.example.xmatenotes.QRViewfinderView.ViewfinderStyle.CLASSIC, com.example.xmatenotes.QRViewfinderView.ViewfinderStyle.POPULAR})
+    @IntDef({ViewfinderStyle.CLASSIC, ViewfinderStyle.POPULAR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewfinderStyle {
         /**
@@ -301,13 +301,13 @@ public class QRViewfinderView extends View {
             mValue = value;
         }
 
-        private static com.example.xmatenotes.QRViewfinderView.LaserStyle getFromInt(int value) {
-            for (com.example.xmatenotes.QRViewfinderView.LaserStyle style : com.example.xmatenotes.QRViewfinderView.LaserStyle.values()) {
+        private static LaserStyle getFromInt(int value) {
+            for (LaserStyle style : LaserStyle.values()) {
                 if (style.mValue == value) {
                     return style;
                 }
             }
-            return com.example.xmatenotes.QRViewfinderView.LaserStyle.LINE;
+            return LaserStyle.LINE;
         }
     }
 
@@ -323,13 +323,13 @@ public class QRViewfinderView extends View {
             mValue = value;
         }
 
-        private static com.example.xmatenotes.QRViewfinderView.TextLocation getFromInt(int value) {
-            for (com.example.xmatenotes.QRViewfinderView.TextLocation location : com.example.xmatenotes.QRViewfinderView.TextLocation.values()) {
+        private static TextLocation getFromInt(int value) {
+            for (TextLocation location : TextLocation.values()) {
                 if (location.mValue == value) {
                     return location;
                 }
             }
-            return com.example.xmatenotes.QRViewfinderView.TextLocation.TOP;
+            return TextLocation.TOP;
         }
     }
 
@@ -345,8 +345,8 @@ public class QRViewfinderView extends View {
             mValue = value;
         }
 
-        private static com.example.xmatenotes.QRViewfinderView.FrameGravity getFromInt(int value) {
-            for (com.example.xmatenotes.QRViewfinderView.FrameGravity gravity : values()) {
+        private static FrameGravity getFromInt(int value) {
+            for (FrameGravity gravity : values()) {
                 if (gravity.mValue == value) {
                     return gravity;
                 }
@@ -380,7 +380,7 @@ public class QRViewfinderView extends View {
 
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
 
-        viewfinderStyle = array.getInt(R.styleable.QRViewfinderView_vvViewfinderStyle, com.example.xmatenotes.QRViewfinderView.ViewfinderStyle.CLASSIC);
+        viewfinderStyle = array.getInt(R.styleable.QRViewfinderView_vvViewfinderStyle, ViewfinderStyle.CLASSIC);
 
         maskColor = array.getColor(R.styleable.QRViewfinderView_vvMaskColor, getColor(context, R.color.viewfinder_mask));
 
@@ -393,7 +393,7 @@ public class QRViewfinderView extends View {
         framePaddingTop = array.getDimension(R.styleable.QRViewfinderView_vvFramePaddingTop, 0);
         framePaddingRight = array.getDimension(R.styleable.QRViewfinderView_vvFramePaddingRight, 0);
         framePaddingBottom = array.getDimension(R.styleable.QRViewfinderView_vvFramePaddingBottom, 0);
-        frameGravity = com.example.xmatenotes.QRViewfinderView.FrameGravity.getFromInt(array.getInt(R.styleable.QRViewfinderView_vvFrameGravity, com.example.xmatenotes.QRViewfinderView.FrameGravity.CENTER.mValue));
+        frameGravity = FrameGravity.getFromInt(array.getInt(R.styleable.QRViewfinderView_vvFrameGravity, FrameGravity.CENTER.mValue));
         frameCornerColor = array.getColor(R.styleable.QRViewfinderView_vvFrameCornerColor, getColor(context, R.color.viewfinder_corner));
         frameCornerSize = (int) array.getDimension(R.styleable.QRViewfinderView_vvFrameCornerSize, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, displayMetrics));
         frameCornerStrokeWidth = (int) array.getDimension(R.styleable.QRViewfinderView_vvFrameCornerStrokeWidth, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, displayMetrics));
@@ -407,7 +407,7 @@ public class QRViewfinderView extends View {
         laserGridHeight = (int) array.getDimension(R.styleable.QRViewfinderView_vvLaserGridHeight, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, displayMetrics));
 
         laserColor = array.getColor(R.styleable.QRViewfinderView_vvLaserColor, getColor(context, R.color.viewfinder_laser));
-        laserStyle = com.example.xmatenotes.QRViewfinderView.LaserStyle.getFromInt(array.getInt(R.styleable.QRViewfinderView_vvLaserStyle, com.example.xmatenotes.QRViewfinderView.LaserStyle.LINE.mValue));
+        laserStyle = LaserStyle.getFromInt(array.getInt(R.styleable.QRViewfinderView_vvLaserStyle, LaserStyle.LINE.mValue));
         laserBitmapRatio = array.getFloat(R.styleable.QRViewfinderView_vvLaserDrawableRatio, 0.625f);
         Drawable laserDrawable = array.getDrawable(R.styleable.QRViewfinderView_vvLaserDrawable);
 
@@ -416,7 +416,7 @@ public class QRViewfinderView extends View {
         labelTextSize = array.getDimension(R.styleable.QRViewfinderView_vvLabelTextSize, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, displayMetrics));
         labelTextPadding = array.getDimension(R.styleable.QRViewfinderView_vvLabelTextPadding, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, displayMetrics));
         labelTextWidth = array.getDimensionPixelSize(R.styleable.QRViewfinderView_vvLabelTextWidth, 0);
-        labelTextLocation = com.example.xmatenotes.QRViewfinderView.TextLocation.getFromInt(array.getInt(R.styleable.QRViewfinderView_vvLabelTextLocation, 0));
+        labelTextLocation = TextLocation.getFromInt(array.getInt(R.styleable.QRViewfinderView_vvLabelTextLocation, 0));
 
         pointColor = array.getColor(R.styleable.QRViewfinderView_vvPointColor, getColor(context, R.color.viewfinder_point));
         pointStrokeColor = array.getColor(R.styleable.QRViewfinderView_vvPointStrokeColor, getColor(context, R.color.viewfinder_point_stroke));
@@ -572,7 +572,7 @@ public class QRViewfinderView extends View {
         }
 
         if(isShowScanner){
-            if (viewfinderStyle == com.example.xmatenotes.QRViewfinderView.ViewfinderStyle.CLASSIC) {// CLASSIC样式：经典样式（带扫描框）
+            if (viewfinderStyle == ViewfinderStyle.CLASSIC) {// CLASSIC样式：经典样式（带扫描框）
                 // 绘制模糊区域
                 drawExterior(canvas, frame, getWidth(), getHeight());
                 // 绘制扫描动画
@@ -583,7 +583,7 @@ public class QRViewfinderView extends View {
                 drawTextInfo(canvas, frame);
                 // 间隔更新取景区域
                 postInvalidateDelayed(laserAnimationInterval, frame.left, frame.top, frame.right, frame.bottom);
-            } else if (viewfinderStyle == com.example.xmatenotes.QRViewfinderView.ViewfinderStyle.POPULAR) {// POPULAR样式：类似于新版的微信全屏扫描（不带扫描框）
+            } else if (viewfinderStyle == ViewfinderStyle.POPULAR) {// POPULAR样式：类似于新版的微信全屏扫描（不带扫描框）
                 // 绘制扫描动画
                 drawLaserScanner(canvas, frame);
                 // 绘制提示信息
@@ -608,7 +608,7 @@ public class QRViewfinderView extends View {
             textPaint.setTextAlign(Paint.Align.CENTER);
 
             StaticLayout staticLayout = new StaticLayout(labelText, textPaint, labelTextWidth, Layout.Alignment.ALIGN_NORMAL, 1.2f, 0.0f, true);
-            if (labelTextLocation == com.example.xmatenotes.QRViewfinderView.TextLocation.BOTTOM) {
+            if (labelTextLocation == TextLocation.BOTTOM) {
                 canvas.translate(frame.left + frame.width() / 2, frame.bottom + labelTextPadding);
             } else {
                 canvas.translate(frame.left + frame.width() / 2, frame.top - labelTextPadding - staticLayout.getHeight());
@@ -818,7 +818,7 @@ public class QRViewfinderView extends View {
      * @param canvas
      * @param points
      */
-    private void drawResultPoints(Canvas canvas, List<android.graphics.Point> points) {
+    private void drawResultPoints(Canvas canvas, List<Point> points) {
 //        paint.setColor(Color.WHITE);
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
@@ -879,7 +879,7 @@ public class QRViewfinderView extends View {
      * @param canvas
      * @param point
      */
-    private void drawResultPoint(Canvas canvas, android.graphics.Point point, float currentZoomRatio) {
+    private void drawResultPoint(Canvas canvas, Point point, float currentZoomRatio) {
         if (pointBitmap != null) {
             float left = point.x - pointBitmap.getWidth() / 2.0f;
             float top = point.y - pointBitmap.getHeight() / 2.0f;
@@ -916,7 +916,7 @@ public class QRViewfinderView extends View {
     private boolean checkSingleTap(float x, float y) {
         if (pointList != null) {
             for (int i = 0; i < pointList.size(); i++) {
-                android.graphics.Point point = pointList.get(i);
+                Point point = pointList.get(i);
                 float distance = getDistance(x, y, point.x, point.y);
                 if (distance <= pointRangeRadius) {
                     if (onItemClickListener != null) {
@@ -1035,7 +1035,7 @@ public class QRViewfinderView extends View {
      *
      * @param labelTextLocation
      */
-    public void setLabelTextLocation(com.example.xmatenotes.QRViewfinderView.TextLocation labelTextLocation) {
+    public void setLabelTextLocation(TextLocation labelTextLocation) {
         this.labelTextLocation = labelTextLocation;
     }
 
@@ -1080,7 +1080,7 @@ public class QRViewfinderView extends View {
      *
      * @param laserStyle
      */
-    public void setLaserStyle(com.example.xmatenotes.QRViewfinderView.LaserStyle laserStyle) {
+    public void setLaserStyle(LaserStyle laserStyle) {
         this.laserStyle = laserStyle;
     }
 
@@ -1262,7 +1262,7 @@ public class QRViewfinderView extends View {
      *
      * @param listener
      */
-    public void setOnItemClickListener(com.example.xmatenotes.QRViewfinderView.OnItemClickListener listener) {
+    public void setOnItemClickListener(OnItemClickListener listener) {
         onItemClickListener = listener;
     }
 

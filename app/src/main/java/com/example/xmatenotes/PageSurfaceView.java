@@ -1,7 +1,7 @@
 package com.example.xmatenotes;
 
-import static com.example.xmatenotes.Constants.A3_ABSCISSA_RANGE;
-import static com.example.xmatenotes.Constants.A3_ORDINATE_RANGE;
+import static com.example.xmatenotes.App.A3.ABSCISSA_RANGE;
+import static com.example.xmatenotes.App.A3.ORDINATE_RANGE;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -27,12 +27,15 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
-import com.example.xmatenotes.App.XApp;
-import com.example.xmatenotes.DotClass.MediaDot;
-import com.example.xmatenotes.DotClass.SimpleDot;
-import com.example.xmatenotes.DotClass.TimelongDot;
-import com.example.xmatenotes.datamanager.LocalRect;
-import com.example.xmatenotes.datamanager.Page;
+import com.example.xmatenotes.App.A3;
+import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.logic.model.handwriting.TimelongDot;
+import com.example.xmatenotes.logic.manager.LocalRect;
+import com.example.xmatenotes.logic.model.Page.Page;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.File;
@@ -306,8 +309,8 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         drawlRInforPaint.setTextSize(20);
         drawlRInforTextPaint.setTextSize(15);
         drawlRInforPaint.setColor(Color.YELLOW);
-        hwNumber = XApp.pageManager.getPageByPageID(pageId).getHandWritingsNum(lR.getLocalCode());
-        peoNumber = XApp.pageManager.getPageByPageID(pageId).getPeopleNum(lR.getLocalCode());
+        hwNumber = XmateNotesApplication.pageManager.getPageByPageID(pageId).getHandWritingsNum(lR.getLocalCode());
+        peoNumber = XmateNotesApplication.pageManager.getPageByPageID(pageId).getPeopleNum(lR.getLocalCode());
 //        canvas.drawRect(new Rect(500,500,1000,1000),paint);
         Log.e(TAG, "drawlRInfor: hwNumRect: "+hwNumRect);
         Log.e(TAG, "drawlRInfor: peoNumRect: "+peoNumRect);
@@ -356,7 +359,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * @param lR
      */
     public void drawlROnPeoNum(LocalRect lR, Canvas canvas){
-        Page page = XApp.pageManager.getPageByPageID(pageId);
+        Page page = XmateNotesApplication.pageManager.getPageByPageID(pageId);
         ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(lR.getLocalCode());
         ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
         if(mediaDots == null || localHwsMapList == null){
@@ -380,25 +383,25 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                         map.put(d.penMac,getColor());
 
                     }
-                    drawDot(d.getCx(), d.getCy(), d.type, map.get(d.penMac), 2, null);
-                    if(d.getCy() > maxY){
-                        maxY = d.getCy();
+                    drawDot(d.getFloatX(), d.getFloatY(), d.type, map.get(d.penMac), 2, null);
+                    if(d.getFloatY() > maxY){
+                        maxY = d.getFloatY();
                     }
-                    if(d.getCx() < minX){
-                        minX = d.getCx();
+                    if(d.getFloatX() < minX){
+                        minX = d.getFloatX();
 
                     }
                     preD = d;
                 }
             }
             if(d != null && !d.isEmptyDot()){
-                String s = XApp.penMacManager.getNameByMac(d.penMac);
+                String s = XmateNotesApplication.penMacManager.getNameByMac(d.penMac);
                 if(s != null){
                     canvas.drawText(s, mapX(bitmap.getWidth(), minX), mapY(bitmap.getHeight(), maxY)+15, p);
                 }
             } else {
                 if(preD != null){
-                    String s = XApp.penMacManager.getNameByMac(preD.penMac);
+                    String s = XmateNotesApplication.penMacManager.getNameByMac(preD.penMac);
                     if(s != null){
                         canvas.drawText(s, mapX(bitmap.getWidth(), minX), mapY(bitmap.getHeight(), maxY)+15, p);
                     }
@@ -414,7 +417,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * @param lR
      */
     public void drawlROnHwNum(LocalRect lR, Canvas canvas){
-        Page page = XApp.pageManager.getPageByPageID(pageId);
+        Page page = PageManager.getPageByPageID(pageId);
         ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(lR.getLocalCode());
         ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
         if(mediaDots == null || localHwsMapList == null){
@@ -434,12 +437,12 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
                 d = mediaDots.get(i);
                 if(!d.isEmptyDot()){
-                    drawDot(d.getCx(), d.getCy(), d.type, color, 2, null);
-                    if(d.getCy() > maxY){
-                        maxY = d.getCy();
+                    drawDot(d.getFloatX(), d.getFloatY(), d.type, color, 2, null);
+                    if(d.getFloatY() > maxY){
+                        maxY = d.getFloatY();
                     }
-                    if(d.getCx() < minX){
-                        minX = d.getCx();
+                    if(d.getFloatX() < minX){
+                        minX = d.getFloatX();
                     }
                     preD = d;
                 }
@@ -463,7 +466,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * @param lR
      */
     public void drawlR(LocalRect lR){
-        Page page = XApp.pageManager.getPageByPageID(pageId);
+        Page page = PageManager.getPageByPageID(pageId);
         ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(lR.getLocalCode());
         ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
         if(mediaDots == null || localHwsMapList == null){
@@ -496,18 +499,18 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         for (int i = lhwm.getBegin();i <= lhwm.getEnd();i++){
             d = mediaDots.get(i);
             if(!d.isEmptyDot()){
-                drawDot(d.getCx(), d.getCy(), d.type, d.color, 3, null);
+                drawDot(d.getFloatX(), d.getFloatY(), d.type, d.color, 3, null);
                 if(rectF == null){
-                    rectF = new RectF(d.getCx(),d.getCy(), d.getCx(), d.getCy());
+                    rectF = new RectF(d.getFloatX(),d.getFloatY(), d.getFloatX(), d.getFloatY());
                 }
-                rectF.union(d.getCx(), d.getCy());
+                rectF.union(d.getFloatX(), d.getFloatY());
                 preD = d;
             }
         }
         rectF = mapRect(rectF);rectF.left -= 5;rectF.top -= 5;rectF.right += 5;rectF.bottom += 5;
         mCanvas.drawRect(rectF, p);
         p.setTextSize(15);p.setColor(Color.BLACK);p.setStrokeWidth(1);
-        mCanvas.drawText(XApp.penMacManager.getNameByMac(preD.penMac)+"|"+MediaDot.timelongFormat2(preD.timelong), rectF.left, rectF.bottom+15, p);
+        mCanvas.drawText(XmateNotesApplication.penMacManager.getNameByMac(preD.penMac)+"|"+MediaDot.timelongFormat2(preD.timelong), rectF.left, rectF.bottom+15, p);
     }
 
     private int[] color = new int[]{Color.RED, 0xFFFFA500, Color.YELLOW, Color.GREEN, 0xFF008F8F, Color.BLUE, 0xFF8F008F};
@@ -853,7 +856,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }
 
     public void drawSDot(SimpleDot simpleDot, Rect rect) {
-        drawDot(simpleDot.x, simpleDot.y, simpleDot.type, -1,-1 , rect);
+        drawDot(simpleDot.getFloatX(), simpleDot.getFloatY(), simpleDot.type, -1,-1 , rect);
     }
 
     public void drawMDot(MediaDot mediaDot) {
@@ -894,7 +897,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         }
 
         if(curMediaDot.isCharInstruction() && curMediaDot.type == Dot.DotType.PEN_DOWN){
-            insRectF = new RectF(curMediaDot.getCx(), curMediaDot.getCy(), curMediaDot.getCx(), curMediaDot.getCy());
+            insRectF = new RectF(curMediaDot.getFloatX(), curMediaDot.getFloatY(), curMediaDot.getFloatX(), curMediaDot.getFloatY());
         }
 //        if(lastMediaDot == null){
 //            if(curMediaDot.isCharInstruction()){
@@ -909,7 +912,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //        }
         if(curMediaDot.isCharInstruction()){
             Log.e(TAG, "drawMDot: union: insRectF: "+insRectF);
-            insRectF.union(curMediaDot.getCx(), curMediaDot.getCy());
+            insRectF.union(curMediaDot.getFloatX(), curMediaDot.getFloatY());
         }
         if(curMediaDot.isCharInstruction() && curMediaDot.type == Dot.DotType.PEN_UP){
             paint.setColor(Color.RED);
@@ -932,7 +935,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
         drawIcon(curMediaDot, lastMediaDot);
 
-        drawDot(mediaDot.getCx(), mediaDot.getCy(), mediaDot.type, mediaDot.color, mediaDot.width, rect);
+        drawDot(mediaDot.getFloatX(), mediaDot.getFloatY(), mediaDot.type, mediaDot.color, mediaDot.width, rect);
     }
 
     private Rect cRect(float x, float y, int diam, Bitmap bmp){
@@ -943,8 +946,8 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
         int diam = 20;
         //坐标换算
-        float x = mapX(bitmap.getWidth(), curMediaDot.getCx());
-        float y = mapY(bitmap.getHeight(), curMediaDot.getCy());
+        float x = mapX(bitmap.getWidth(), curMediaDot.getFloatX());
+        float y = mapY(bitmap.getHeight(), curMediaDot.getFloatY());
 
         if(lastMediaDot == null){
             if(curMediaDot.isAudioDot()){
@@ -1019,9 +1022,9 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                     continue;
                 }
             }
-            Log.e(TAG, "drawDots(): sDot.x: " + sDot.x + " sDot.y: " + sDot.y + " sDot.type: " + sDot.type);
+            Log.e(TAG, "drawDots(): sDot.x: " + sDot.getFloatX() + " sDot.y: " + sDot.getFloatY() + " sDot.type: " + sDot.type);
 //            drawPath(sDot.x, sDot.y, sDot.type, rect);
-            drawLine(sDot.x, sDot.y, sDot.type, rect);
+            drawLine(sDot.getFloatX(), sDot.getFloatY(), sDot.type, rect);
         }
 
 //        //把所有对bitmap的操作原子化，否则可能会绘制出一些过渡状态的bitmap，而导致绘制闪烁
@@ -1047,7 +1050,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                     continue;
                 }
             }
-            Log.e(TAG, "drawDots(): sDot.x: " + sDot.x + " sDot.y: " + sDot.y + " sDot.type: " + sDot.type);
+            Log.e(TAG, "drawDots(): sDot.x: " + sDot.getFloatX() + " sDot.y: " + sDot.getFloatY() + " sDot.type: " + sDot.type);
 //            drawPath(sDot.x, sDot.y, sDot.type, rect);
 //            drawLine(sDot.getCx(), sDot.getCy(), sDot.type, sDot.color, sDot.width, rect);
             drawMDot(sDot, rect);
@@ -1092,14 +1095,14 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }
 
     public SimpleDot touchDotToBmpDot(SimpleDot simpleDot){
-        float x = simpleDot.x;
-        float y = simpleDot.y;
+        float x = simpleDot.getFloatX();
+        float y = simpleDot.getFloatY();
         if(y < offsetY || y >offsetY+bitmap.getWidth()){//超出范围
             return null;
         }
 
-        simpleDot.x = y - offsetY;
-        simpleDot.y = getWidth() - x;
+        simpleDot.setX(y - offsetY);
+        simpleDot.setY(getWidth() - x);
         return simpleDot;
     }
 
@@ -1119,7 +1122,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             case MotionEvent.ACTION_DOWN:
                 simpleDot.type = Dot.DotType.PEN_DOWN;
                 if(isLRInforShow){
-                    if(hwNumRect.contains(Math.round(simpleDot.x), Math.round(simpleDot.y))){
+                    if(hwNumRect.contains(Math.round(simpleDot.getFloatX()), Math.round(simpleDot.getFloatY()))){
                         if(peoOrHW != 2){
                             peoOrHW = 2;
                         }else {
@@ -1130,7 +1133,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                         return true;
 
                     }
-                    if(peoNumRect.contains(Math.round(simpleDot.x), Math.round(simpleDot.y))){
+                    if(peoNumRect.contains(Math.round(simpleDot.getFloatX()), Math.round(simpleDot.getFloatY()))){
                         if(peoOrHW != 1){
                             peoOrHW = 1;
                         }else {
@@ -1160,19 +1163,19 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                 return false;
         }
 
-        simpleDot.x = simpleDot.x*A3_ABSCISSA_RANGE/bitmap.getWidth();
-        simpleDot.y = simpleDot.y*A3_ORDINATE_RANGE/bitmap.getHeight();
+        simpleDot.setX(simpleDot.getFloatX()* A3.ABSCISSA_RANGE/bitmap.getWidth());
+        simpleDot.setY(simpleDot.getFloatY()*A3.ORDINATE_RANGE/bitmap.getHeight());
 
         MediaDot mediaDot = new MediaDot(simpleDot);
-        mediaDot.pageID = XApp.pageManager.currentPageID;
-        mediaDot.penMac = XApp.mBTMac;
+        mediaDot.pageID = XmateNotesApplication.pageManager.currentPageID;
+        mediaDot.penMac = XmateNotesApplication.mBTMac;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 if("MainActivity".equals(BaseActivity.baseActivity.getClass().getSimpleName())){
                     BaseActivity.baseActivity.processEachDot(mediaDot);
                 }else {
-                    XApp.instruction.processEachDot(mediaDot);
+                    XmateNotesApplication.instruction.processEachDot(mediaDot);
                 }
             }
         }).start();
@@ -1191,7 +1194,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //            return (fx-rect.left)*width/rect.width();
             return (fx - rect.left) * width / rect.width();
         } else {
-            return fx * width / A3_ABSCISSA_RANGE;
+            return fx * width / A3.ABSCISSA_RANGE;
         }
     }
 
@@ -1203,7 +1206,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         if (rect != null) {
             return (fy - rect.top) * height / rect.height();
         } else {
-            return fy * height / A3_ORDINATE_RANGE;
+            return fy * height / A3.ORDINATE_RANGE;
         }
     }
     public static float mapY ( int height, float fy){

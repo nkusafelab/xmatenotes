@@ -6,13 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.xmatenotes.App.XApp;
+import com.example.xmatenotes.App.XmateNotesApplication;
 
 public class SetUpActivity extends AppCompatActivity {
 
@@ -33,10 +32,10 @@ public class SetUpActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editTextTextPersonName);
         button = (Button) findViewById(R.id.button2);
 
-        if("00:00:00:00:00:00".equals(XApp.mBTMac)){
+        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
             Toast.makeText(SetUpActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
         } else {
-            String name = XApp.penMacManager.getNameByMac(XApp.mBTMac);
+            String name = XmateNotesApplication.penMacManager.getNameByMac(XmateNotesApplication.mBTMac);
             if(name != null){
                 editText.setText(name);
             }
@@ -47,12 +46,12 @@ public class SetUpActivity extends AppCompatActivity {
             public void onClick(View v) {
                 switch (v.getId()){
                     case R.id.button2:
-                        if("00:00:00:00:00:00".equals(XApp.mBTMac)){
+                        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
                             Toast.makeText(SetUpActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
                         } else {
                             String s = String.valueOf(editText.getText());
-                            SharedPreferences.Editor editor = getSharedPreferences(XApp.peopleSharedPreferences, MODE_PRIVATE).edit();
-                            editor.putString(XApp.mBTMac, s);
+                            SharedPreferences.Editor editor = getSharedPreferences(XmateNotesApplication.peopleSharedPreferences, MODE_PRIVATE).edit();
+                            editor.putString(XmateNotesApplication.mBTMac, s);
                             editor.apply();
                             Toast.makeText(SetUpActivity.this, "已保存", Toast.LENGTH_SHORT).show();
                         }

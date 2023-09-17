@@ -19,6 +19,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SimpleAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +27,14 @@ import androidx.appcompat.app.AlertDialog;
 
 
 import androidx.appcompat.widget.AppCompatImageView;
+
+import com.example.xmatenotes.logic.manager.Writer;
+import com.example.xmatenotes.logic.model.handwriting.HandWriting;
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
+import com.example.xmatenotes.logic.model.handwriting.Stroke;
+import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +45,8 @@ public class DrawingImageView extends AppCompatImageView {
     private Matrix mMatrix;
     private Paint mPaint;
     private Path mPath;
+    private Writer writer = null;
+    private CardProcessActivity cardProcessActivity = null;
 
     private List<Draw> mDraws = new ArrayList<>();
     private List<Draw> mUndoneDraws = new ArrayList<>();
@@ -110,46 +121,73 @@ public class DrawingImageView extends AppCompatImageView {
         }
 
         //初始化设置属性等
-        for (Draw d : mDraws) {
-            if (d instanceof PathDraw) {
-                PathDraw pd = (PathDraw) d;
-                int originalColor = mPaint.getColor();
-                float originalSize = mPaint.getTextSize();
-                Typeface originalTypeface = mPaint.getTypeface();
-
-                mPaint.setColor(pd.color);
-                mPaint.setTextSize(pd.textSize);
-                mPaint.setTypeface(pd.typeface);
-
-                canvas.drawPath(pd.path, mPaint);
-
-                mPaint.setColor(originalColor);
-                mPaint.setTextSize(originalSize);
-                mPaint.setTypeface(originalTypeface);
-            } else if (d instanceof TextDraw) {
-                TextDraw t = (TextDraw) d;
-                int originalColor = mPaint.getColor();
-                float originalSize = mPaint.getTextSize();
-                Typeface originalTypeface = mPaint.getTypeface();
-
-                mPaint.setColor(t.color);
-                mPaint.setTextSize(t.textSize);
-                mPaint.setTypeface(t.typeface);
-
-                canvas.save();
-                canvas.drawText(t.text, t.x, t.y, mPaint);
-                canvas.restore();
-
-                mPaint.setColor(originalColor);
-                mPaint.setTextSize(originalSize);
-                mPaint.setTypeface(originalTypeface);
-            }
-        }
+//        for (Draw d : mDraws) {
+//            if (d instanceof PathDraw) {
+//                PathDraw pd = (PathDraw) d;
+//                int originalColor = mPaint.getColor();
+//                float originalSize = mPaint.getTextSize();
+//                Typeface originalTypeface = mPaint.getTypeface();
+//
+//                mPaint.setColor(pd.color);
+//                mPaint.setTextSize(pd.textSize);
+//                mPaint.setTypeface(pd.typeface);
+//
+//                canvas.drawPath(pd.path, mPaint);
+//
+//                mPaint.setColor(originalColor);
+//                mPaint.setTextSize(originalSize);
+//                mPaint.setTypeface(originalTypeface);
+//            } else if (d instanceof TextDraw) {
+//                TextDraw t = (TextDraw) d;
+//                int originalColor = mPaint.getColor();
+//                float originalSize = mPaint.getTextSize();
+//                Typeface originalTypeface = mPaint.getTypeface();
+//
+//                mPaint.setColor(t.color);
+//                mPaint.setTextSize(t.textSize);
+//                mPaint.setTypeface(t.typeface);
+//
+//                canvas.save();
+//                canvas.drawText(t.text, t.x, t.y, mPaint);
+//                canvas.restore();
+//
+//                mPaint.setColor(originalColor);
+//                mPaint.setTextSize(originalSize);
+//                mPaint.setTypeface(originalTypeface);
+//            }
+//        }
 
         //绘画正在画的路径
         if (mPath != null) {
             canvas.drawPath(mPath, mPaint);
         }
+    }
+
+    public void drawDots(List<SingleHandWriting> singleHandWritingList){
+        mPath = new Path();
+        for (SingleHandWriting singleHandWriting: singleHandWritingList) {
+            for (HandWriting handWriting: singleHandWriting.getHandWritings()) {
+                for (Stroke stroke: handWriting.getStrokes()) {
+                    for (SimpleDot simpleDot : stroke.getDots()) {
+                        if(simpleDot instanceof MediaDot){
+
+                        }
+                        switch (simpleDot.type){
+                            case PEN_DOWN:
+                                mPath.moveTo(simpleDot.getFloatX(), simpleDot.getFloatY());
+                                break;
+                            case PEN_MOVE:
+                                mPath.lineTo(simpleDot.getFloatX(), simpleDot.getFloatY());
+                                break;
+                            case PEN_UP:
+                                mPath.lineTo(simpleDot.getFloatX(), simpleDot.getFloatY());
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        invalidate();
     }
 
 
@@ -160,6 +198,14 @@ public class DrawingImageView extends AppCompatImageView {
         mBitmap = bm;
         calculateMatrix();
         invalidate();
+    }
+
+    /**
+     * 绑定writer
+     * @param writer
+     */
+    public void bindWriter(Writer writer){
+        this.writer = writer;
     }
 
     //利用矩阵缩放位图至合适大小
@@ -194,30 +240,45 @@ public class DrawingImageView extends AppCompatImageView {
         float x = event.getX();
         float y = event.getY();
 
+        SimpleDot simpleDot = new SimpleDot(x, y);
+        simpleDot.timelong = System.currentTimeMillis();
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                mDownX = x;
-                mDownY = y;
-                mMoveEventTriggered = false;
-                touchStart(x, y);
+                simpleDot.type = Dot.DotType.PEN_DOWN;
+//                mDownX = x;
+//                mDownY = y;
+//                mMoveEventTriggered = false;
+//                touchStart(x, y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                touchMove(x, y);
-                if (distance(x, y, mDownX, mDownY) > TOUCH_TOLERANCE) {
-                    mMoveEventTriggered = true;
-                }
+                simpleDot.type = Dot.DotType.PEN_MOVE;
+//                touchMove(x, y);
+//                if (distance(x, y, mDownX, mDownY) > TOUCH_TOLERANCE) {
+//                    mMoveEventTriggered = true;
+//                }
                 break;
             case MotionEvent.ACTION_UP:
-                if (!mMoveEventTriggered) {
-                    showDialog(x, y);
-                } else {
-                    touchUp();
-                }
-                mPath = null;
+                simpleDot.type = Dot.DotType.PEN_UP;
+//                if (!mMoveEventTriggered) {
+//                    showDialog(x, y);
+//                } else {
+//                    touchUp();
+//                }
+//                mPath = null;
                 break;
         }
-        invalidate();
+
+        if(this.cardProcessActivity != null){
+            this.cardProcessActivity.processEachDot(simpleDot);
+        }
+
+//        invalidate();
         return true;
+    }
+
+    public void bindActivity(CardProcessActivity cardProcessActivity ){
+        this.cardProcessActivity = cardProcessActivity;
     }
 
     //弹出对话框输入文本，并进行实时绘制
@@ -234,7 +295,7 @@ public class DrawingImageView extends AppCompatImageView {
         AlertDialog dialog = alert.create();
         dialog.show();
 
-        buttonOk.setOnClickListener(new View.OnClickListener() {
+        buttonOk.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 String value = input.getText().toString();
@@ -246,7 +307,7 @@ public class DrawingImageView extends AppCompatImageView {
             }
         });
 
-        buttonCancel.setOnClickListener(new View.OnClickListener() {
+        buttonCancel.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!mDraws.isEmpty() && mDraws.get(mDraws.size() - 1) instanceof TextDraw) {
@@ -291,7 +352,7 @@ public class DrawingImageView extends AppCompatImageView {
 
             View dialogRootView = dialogWindow.getDecorView();
 
-            dialogRootView.setOnTouchListener(new View.OnTouchListener() {
+            dialogRootView.setOnTouchListener(new OnTouchListener() {
                 private float dx; // 记录点击位置在窗口中的位置
                 private float dy;
 

@@ -3,13 +3,13 @@ package com.example.xmatenotes;
 
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.view.View;
 
+import com.example.xmatenotes.ui.BaseActivity;
 
 
 //新建一个类继承View

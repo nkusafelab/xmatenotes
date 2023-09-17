@@ -3,10 +3,8 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/app/src/main/cpp/ComputeCharacter.cpp" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/cpp/ComputeCharacter.h" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/app/src/main/cpp/InstructionController.cpp" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/cpp/algorithm.h" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/cpp/inc/common.h" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/cpp/stdafx.cpp" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/build.gradle" charset="UTF-8" />
   </component>
 </project>

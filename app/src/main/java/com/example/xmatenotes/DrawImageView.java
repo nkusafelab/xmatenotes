@@ -17,8 +17,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-import com.example.xmatenotes.DotClass.SimpleDot;
-import com.example.xmatenotes.DotClass.TimelongDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.logic.model.handwriting.TimelongDot;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import androidx.annotation.NonNull;
@@ -458,7 +458,7 @@ public class DrawImageView extends View {
     }
 
     public void drawDot(SimpleDot simpleDot){
-        drawDot(simpleDot.x, simpleDot.y, simpleDot.type);
+        drawDot(simpleDot.getFloatX(), simpleDot.getFloatY(), simpleDot.type);
     }
 
     //绘制一组点
@@ -471,8 +471,8 @@ public class DrawImageView extends View {
                     continue;
                 }
             }
-            Log.e(TAG,"drawDots(): sDot.x: "+sDot.x+" sDot.y: "+sDot.y+" sDot.type: "+sDot.type);
-            drawPath(sDot.x, sDot.y, sDot.type);
+            Log.e(TAG,"drawDots(): sDot.x: "+sDot.getFloatX()+" sDot.y: "+sDot.getFloatY()+" sDot.type: "+sDot.type);
+            drawPath(sDot.getFloatX(), sDot.getFloatY(), sDot.type);
         }
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);//清空bitmap，否则会有锯齿
         mCanvas.drawBitmap(backupBitmap, 0, 0,paint);

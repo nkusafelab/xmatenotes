@@ -1,35 +1,26 @@
 package com.example.xmatenotes;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import com.example.xmatenotes.App.XApp;
-import com.example.xmatenotes.DotClass.MediaDot;
-import com.example.xmatenotes.datamanager.PageManager;
-import com.example.xmatenotes.datamanager.PenMacManager;
+import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.tqltech.tqlpencomm.bean.Dot;
 
-import android.app.Activity;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * 本地笔迹数据存储文件内容呈现活动
@@ -52,10 +43,10 @@ public class DotInfoActivity extends BaseActivity {
 //	private int xMin, xMax, yMin, yMax;//刻画当前笔划的坐标范围
 	private Rect rect = null;
 	private int xD,yD;//当前笔迹点坐标
-	private int page = XApp.DEFAULT_INT;//当前页码
-	private float time = XApp.DEFAULT_FLOAT;//存储当前视频碎片时刻信息
-	private int videoID = XApp.DEFAULT_INT;//存储当前视频碎片ID信息
-	private byte penID = XApp.DEFAULT_INT;//存储当前笔ID
+	private int page = XmateNotesApplication.DEFAULT_INT;//当前页码
+	private float time = XmateNotesApplication.DEFAULT_FLOAT;//存储当前视频碎片时刻信息
+	private int videoID = XmateNotesApplication.DEFAULT_INT;//存储当前视频碎片ID信息
+	private byte penID = XmateNotesApplication.DEFAULT_INT;//存储当前笔ID
 	private String timelong = null;//存储当前时间戳
 	
 	@Override
@@ -77,8 +68,8 @@ public class DotInfoActivity extends BaseActivity {
 	}
 
 	public void loadData() {
-		File file = new File(XApp.context.getFilesDir().getAbsolutePath(), FILE_NAME);
-		Log.e(TAG, XApp.context.getFilesDir().getAbsolutePath()+FILE_NAME);
+		File file = new File(XmateNotesApplication.context.getFilesDir().getAbsolutePath(), FILE_NAME);
+		Log.e(TAG, XmateNotesApplication.context.getFilesDir().getAbsolutePath()+FILE_NAME);
 
 		if(!file.exists()) {
 			Log.e(TAG, FILE_NAME+"文件不存在！");
@@ -86,7 +77,7 @@ public class DotInfoActivity extends BaseActivity {
 			FileInputStream in = null;
 			BufferedReader reader = null;
 			try {
-				in = XApp.context.openFileInput(FILE_NAME);
+				in = XmateNotesApplication.context.openFileInput(FILE_NAME);
 				reader = new BufferedReader(new InputStreamReader(in));
 				String line = "";
 				while ((line = reader.readLine()) != null) {
@@ -106,7 +97,7 @@ public class DotInfoActivity extends BaseActivity {
 				in = null;
 			}
 		}
-		Toast.makeText(XApp.context, "笔迹数据加载完毕",Toast.LENGTH_SHORT).show();
+		Toast.makeText(XmateNotesApplication.context, "笔迹数据加载完毕",Toast.LENGTH_SHORT).show();
 	}
 
 	//初始化
@@ -143,14 +134,14 @@ public class DotInfoActivity extends BaseActivity {
 			return;
 		}
 
-		xD = mediaDot.x;
-		yD = mediaDot.y;
+		xD = mediaDot.getIntX();
+		yD = mediaDot.getIntY();
 		
 		if(mediaDot.type == Dot.DotType.PEN_DOWN){
 			bufferInit(xD, yD);
 			penID = penMacManager.getPenIDByMac(mediaDot.penMac);
 			page = mediaDot.pageID;
-        	time = mediaDot.time;
+        	time = mediaDot.videoTime;
 			videoID = mediaDot.videoID;
     		strokesNumber++;
     		timelong = MediaDot.timelongFormat(mediaDot.timelong);

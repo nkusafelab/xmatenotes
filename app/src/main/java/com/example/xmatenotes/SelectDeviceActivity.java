@@ -26,8 +26,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.app.ActivityCompat;
 
-import com.example.xmatenotes.App.XApp;
-import com.example.xmatenotes.datamanager.PenMacManager;
+import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.tqltech.tqlpencomm.BLEException;
 import com.tqltech.tqlpencomm.BLEScanner;
 import com.tqltech.tqlpencomm.PenCommAgent;
@@ -134,7 +135,7 @@ public class SelectDeviceActivity extends BaseActivity {
             };
             for (int j = 0; j < permission.length; j++) {
                 //判断是否有权限
-                if (XApp.context.checkSelfPermission(permission[j]) != PackageManager.PERMISSION_GRANTED) {
+                if (XmateNotesApplication.context.checkSelfPermission(permission[j]) != PackageManager.PERMISSION_GRANTED) {
                     SelectDeviceActivity.this.requestPermissions(permission, j);
                 }
             }
@@ -197,8 +198,8 @@ public class SelectDeviceActivity extends BaseActivity {
             try {
                 bleManager.stopFindAllDevices();
                 Bundle b = new Bundle();
-                XApp.mBTMac = device.getAddress();
-                penMacManager.putMac(XApp.mBTMac);
+                XmateNotesApplication.mBTMac = device.getAddress();
+                penMacManager.putMac(XmateNotesApplication.mBTMac);
 //                Toast.makeText(SelectDeviceActivity.this, "选中了device.getAddress(): "+device.getAddress(),Toast.LENGTH_SHORT).show();
                 b.putString(BluetoothDevice.EXTRA_DEVICE, mLeDeviceListAdapter.getDevice(position).getAddress());
 

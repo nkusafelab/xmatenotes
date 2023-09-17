@@ -1,9 +1,7 @@
 package com.example.xmatenotes;
 
-import static com.example.xmatenotes.App.XApp.videoManager;
-import static com.example.xmatenotes.Constants.A3_ABSCISSA_RANGE;
-import static com.example.xmatenotes.Constants.A3_ORDINATE_RANGE;
-import static com.example.xmatenotes.WeChatQRCodeActivity.REQUEST_CODE_QRCODE;
+import static com.example.xmatenotes.App.XmateNotesApplication.videoManager;
+import static com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity.REQUEST_CODE_QRCODE;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -25,15 +23,21 @@ import java.util.Map;
 import java.util.Set;
 
 
-import com.example.xmatenotes.App.XApp;
-import com.example.xmatenotes.DotClass.MediaDot;
-import com.example.xmatenotes.datamanager.AudioManager;
-import com.example.xmatenotes.datamanager.ExcelReader;
-import com.example.xmatenotes.datamanager.LocalRect;
-import com.example.xmatenotes.datamanager.Page;
-import com.example.xmatenotes.datamanager.PageManager;
-import com.example.xmatenotes.datamanager.PenMacManager;
-import com.example.xmatenotes.instruction.Instruction;
+import com.example.xmatenotes.App.A3;
+import com.example.xmatenotes.logic.model.handwriting.Dots;
+import com.example.xmatenotes.logic.model.handwriting.Gesture;
+import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.manager.AudioManager;
+import com.example.xmatenotes.logic.manager.ExcelReader;
+import com.example.xmatenotes.logic.manager.LocalRect;
+import com.example.xmatenotes.logic.model.Page.Page;
+import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.PenMacManager;
+import com.example.xmatenotes.logic.model.instruction.Instruction;
+import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
+import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity;
 import com.google.common.collect.ArrayListMultimap;
 import com.king.wechat.qrcode.WeChatQRCodeDetector;
 import com.tqltech.tqlpencomm.bean.Dot;
@@ -84,16 +88,16 @@ public class MainActivity extends BaseActivity {
 
     private int penType = 1;                                 //笔类型（0：TQL-101  1：TQL-111  2：TQL-112 3: TQL-101A）
 
-    private double XDIST_PERUNIT = Constants.XDIST_PERUNIT;  //码点宽
-    private double YDIST_PERUNIT = Constants.YDIST_PERUNIT;  //码点高
-    private double A5_WIDTH = Constants.A5_WIDTH;            //本子宽
-    private double A5_HEIGHT = Constants.A5_HEIGHT;          //本子高
-    public double A4_WIDTH = Constants.A4_WIDTH; // 本子宽
-    public double A4_HEIGHT = Constants.A4_HEIGHT; // 本子高
-    private double  A5_BG_REAL_WIDTH = Constants.A5_BG_REAL_WIDTH;     //资源背景图宽
-    private double A5_BG_REAL_HEIGHT = Constants.A5_BG_REAL_HEIGHT;   //资源背景图高
-    private double A4_BG_REAL_WIDTH = Constants.A4_BG_REAL_WIDTH;     //资源背景图宽
-    private double A4_BG_REAL_HEIGHT = Constants.A4_BG_REAL_HEIGHT;   //资源背景图高
+//    private double XDIST_PERUNIT = Constants.XDIST_PERUNIT;  //码点宽
+//    private double YDIST_PERUNIT = Constants.YDIST_PERUNIT;  //码点高
+//    private double A5_WIDTH = Constants.A5_WIDTH;            //本子宽
+//    private double A5_HEIGHT = Constants.A5_HEIGHT;          //本子高
+//    public double A4_WIDTH = Constants.A4_WIDTH; // 本子宽
+//    public double A4_HEIGHT = Constants.A4_HEIGHT; // 本子高
+//    private double  A5_BG_REAL_WIDTH = Constants.A5_BG_REAL_WIDTH;     //资源背景图宽
+//    private double A5_BG_REAL_HEIGHT = Constants.A5_BG_REAL_HEIGHT;   //资源背景图高
+//    private double A4_BG_REAL_WIDTH = Constants.A4_BG_REAL_WIDTH;     //资源背景图宽
+//    private double A4_BG_REAL_HEIGHT = Constants.A4_BG_REAL_HEIGHT;   //资源背景图高
 
     private int BG_WIDTH;                                    //显示背景图宽
     private int BG_HEIGHT;                                   //显示背景图高
@@ -172,7 +176,7 @@ public class MainActivity extends BaseActivity {
     private PenMacManager penMacManager = null;//管理所有mac地址的对象
     private PageManager pageManager = null;
     private ExcelReader excelReader = null;
-    private String penMac = XApp.mBTMac;//存储笔mac地址
+    private String penMac = XmateNotesApplication.mBTMac;//存储笔mac地址
 
     private boolean wTimer = false;//普通书写完毕计时器开关
     private long wStartTime = 0;//普通书写完毕计时起点
@@ -422,7 +426,7 @@ public class MainActivity extends BaseActivity {
         pageManager = PageManager.getInstance();
         Log.e(TAG,"PageManager.getInstance()");
 
-        penMac = XApp.mBTMac;
+        penMac = XmateNotesApplication.mBTMac;
         penMacManager = PenMacManager.getInstance();//必须在加载数据之前
 //        drawImageView = (DrawImageView)findViewById(R.id.drawImageView);
         pageSurfaceView = (PageSurfaceView)findViewById(R.id.drawImageSurfaceView);
@@ -469,17 +473,18 @@ public class MainActivity extends BaseActivity {
 //        this.addContentView(mreLayout, param);
 //        drawInit();
 
-        copy(R.raw.characterstroke, "characterstroke.txt");
-        copy(R.raw.collectdatastroke, "collectdatastroke.txt");
-        copy(R.raw.modelstroke, "modelstroke.txt");
-        copy(R.raw.outpoint, "outpoint.txt");
-        copy(R.raw.point, "point.txt");
-        copy(R.raw.pointcharacter, "pointcharacter.txt");
-        copy(R.raw.statisticalresults, "statisticalresults.txt");
-        copy(R.raw.tempstroke, "tempstroke.txt");
-        copy(R.raw.trainstroke, "trainstroke.txt");
-        copy(R.raw.trainstroke3, "trainstroke3.txt");
-        copy(R.raw.trainstroke12, "trainstroke12.txt");
+//        copy(R.raw.characterstroke, "characterstroke.txt");
+//        copy(R.raw.collectdatastroke, "collectdatastroke.txt");
+//        copy(R.raw.modelstroke, "modelstroke.txt");
+//        copy(R.raw.outpoint, "outpoint.txt");
+//        copy(R.raw.point, "point.txt");
+//        copy(R.raw.pointcharacter, "pointcharacter.txt");
+//        copy(R.raw.statisticalresults, "statisticalresults.txt");
+//        copy(R.raw.tempstroke, "tempstroke.txt");
+//        copy(R.raw.trainstroke, "trainstroke.txt");
+//        copy(R.raw.trainstroke3, "trainstroke3.txt");
+//        copy(R.raw.trainstroke12, "trainstroke12.txt");
+        copyTxtToAppSpace();
 
         Log.e(TAG,"MainActivity.onCreate()");
 
@@ -495,6 +500,24 @@ public class MainActivity extends BaseActivity {
         drawInit();
         */
 
+    }
+
+    /**
+     * 将识别用数据txt文件拷贝到app专用目录下
+     */
+    public void copyTxtToAppSpace(){
+        copy(R.raw.collectdatastroke, "collectdatastroke.txt");
+        copy(R.raw.modelstroke, "modelstroke.txt");
+        copy(R.raw.outpoint, "outpoint.txt");
+        copy(R.raw.point, "point.txt");
+        copy(R.raw.pointcharacter, "pointcharacter.txt");
+        copy(R.raw.statisticalresults, "statisticalresults.txt");
+        copy(R.raw.tempstroke, "tempstroke.txt");
+        copy(R.raw.trainstroke, "trainstroke.txt");
+        copy(R.raw.trainstroke3, "trainstroke3.txt");
+        copy(R.raw.trainstroke12, "trainstroke12.txt");
+        copy(R.raw.staticprob, "staticprob.txt");
+        copy(R.raw.processsinglepoint, "processsinglepoint.txt");
     }
 
     @Override
@@ -542,9 +565,9 @@ public class MainActivity extends BaseActivity {
 
         //计算
         float ratio = 1f;
-        ratio = (float) ((ratio * mWidth) / A5_BG_REAL_WIDTH);
-        BG_WIDTH = (int) (A5_BG_REAL_WIDTH * ratio);
-        BG_HEIGHT = (int) (A5_BG_REAL_HEIGHT * ratio);
+//        ratio = (float) ((ratio * mWidth) / A5_BG_REAL_WIDTH);
+//        BG_WIDTH = (int) (A5_BG_REAL_WIDTH * ratio);
+//        BG_HEIGHT = (int) (A5_BG_REAL_HEIGHT * ratio);
 
         A5_X_OFFSET = 20;
         A5_Y_OFFSET = 100;
@@ -587,7 +610,7 @@ public class MainActivity extends BaseActivity {
                 Intent setUpIntent = new Intent(this, SetUpActivity.class);Log.e(TAG,"set_up_intent");
                 startActivity(setUpIntent);
             case R.id.status_info:
-                statusIntent = new Intent(this,StatusActivity.class);
+                statusIntent = new Intent(this, StatusActivity.class);
                 Log.e(TAG,"status_info");
                 startActivity(statusIntent);
                 return true;
@@ -684,9 +707,9 @@ public class MainActivity extends BaseActivity {
 
     /**
      * 通过Dot构造MediaDot
-     * time:实时视频进度。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_FLOAT}
-     * videoID:当前视频ID。如果当前没有正在播放视频，则传入默认值{@link XApp#DEFAULT_INT}
-     * audioID:当前正在录制的音频ID。如果当前没有正在录制音频，则传入默认值{@link XApp#DEFAULT_INT}
+     * time:实时视频进度。如果当前没有正在播放视频，则传入默认值{@link XmateNotesApplication#DEFAULT_FLOAT}
+     * videoID:当前视频ID。如果当前没有正在播放视频，则传入默认值{@link XmateNotesApplication#DEFAULT_INT}
+     * audioID:当前正在录制的音频ID。如果当前没有正在录制音频，则传入默认值{@link XmateNotesApplication#DEFAULT_INT}
      * @param dot
      * @return
      */
@@ -695,15 +718,15 @@ public class MainActivity extends BaseActivity {
         try {
             mediaDot = new MediaDot(dot);
             mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
-            mediaDot.time = XApp.DEFAULT_FLOAT;
-            mediaDot.videoID = XApp.DEFAULT_INT;
-            mediaDot.audioID = XApp.DEFAULT_INT;
+            mediaDot.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
+            mediaDot.videoID = XmateNotesApplication.DEFAULT_INT;
+            mediaDot.audioID = XmateNotesApplication.DEFAULT_INT;
             //如果正在录音，再次长压结束录音
             if(audioRecorder == true){
                 mediaDot.audioID = audioManager.getCurrentRecordAudioNumber();
                 mediaDot.color = MediaDot.DEEP_GREEN;
             }
-            mediaDot.penMac = XApp.mBTMac;
+            mediaDot.penMac = XmateNotesApplication.mBTMac;
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -760,8 +783,8 @@ public class MainActivity extends BaseActivity {
             isWriteFirst = true;
         }
 
-        int result = XApp.DEFAULT_INT;//接收识别结果
-        result = XApp.instruction.processEachDot(curMediaDot);
+        int result = XmateNotesApplication.DEFAULT_INT;//接收识别结果
+        result = XmateNotesApplication.instruction.processEachDot(curMediaDot);
 
         if(result == 0){
             if(isWriteFirst){
@@ -870,11 +893,11 @@ public class MainActivity extends BaseActivity {
             if(mediaDot != null){
                 Log.e(TAG,mediaDot.toString());
 
-                if(mediaDot.penMac.equals(XApp.mBTMac)){
+                if(mediaDot.penMac.equals(XmateNotesApplication.mBTMac)){
                     if(mediaDot.isVideoDot()) {
                         //跳转至ck
                         Intent ckIntent = new Intent(this, CkplayerActivity.class);
-                        ckIntent.putExtra("time", mediaDot.time);
+                        ckIntent.putExtra("time", mediaDot.videoTime);
                         ckIntent.putExtra("videoID", mediaDot.videoID);
                         startActivity(ckIntent);
 //                }else if(mediaDot.audioID != 0){
@@ -892,8 +915,8 @@ public class MainActivity extends BaseActivity {
                             //扩展“余光”
                             rpIntent.putExtra("rectLeft",Math.max(lR.rect.left - ReplayActivity.MARGIN, 0));
                             rpIntent.putExtra("rectTop",Math.max(lR.rect.top - ReplayActivity.MARGIN, 0));
-                            rpIntent.putExtra("rectRight",Math.min(lR.rect.right + ReplayActivity.MARGIN, A3_ABSCISSA_RANGE));
-                            rpIntent.putExtra("rectBottom",Math.min(lR.rect.bottom + ReplayActivity.MARGIN, A3_ORDINATE_RANGE));
+                            rpIntent.putExtra("rectRight",Math.min(lR.rect.right + ReplayActivity.MARGIN, A3.ABSCISSA_RANGE));
+                            rpIntent.putExtra("rectBottom",Math.min(lR.rect.bottom + ReplayActivity.MARGIN, A3.ORDINATE_RANGE));
                             rpIntent.putExtra("localCode",lR.getLocalCode());
                             rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
                             startActivity(rpIntent);
@@ -985,11 +1008,11 @@ public class MainActivity extends BaseActivity {
                 //呈现笔迹详细信息
                 if(!pageSurfaceView.isDdrawLocalHWMap){
                     pageSurfaceView.isDdrawLocalHWMap = true;
-                    Page page = XApp.pageManager.getPageByPageID(mediaDot.pageID);
+                    Page page = XmateNotesApplication.pageManager.getPageByPageID(mediaDot.pageID);
                     Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
                     Page.LocalHandwritingsMap lhwm = null;
                     for (Page.LocalHandwritingsMap lh :page.getLocalHandwritings(lR.getLocalCode())) {
-                        if(lh.contains(mediaDot.x,mediaDot.y)){
+                        if(lh.contains(mediaDot.getIntX(),mediaDot.getIntY())){
                             lhwm = lh;
                         }
                     }
