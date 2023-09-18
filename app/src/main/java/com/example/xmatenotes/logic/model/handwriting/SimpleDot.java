@@ -2,13 +2,15 @@ package com.example.xmatenotes.logic.model.handwriting;
 
 import android.view.MotionEvent;
 
+import androidx.annotation.NonNull;
+
 import com.tqltech.tqlpencomm.bean.Dot;
 
 
 /**
  * 识别所需最简的点，坐标为包含小数部分的完整坐标
  */
-public class SimpleDot extends BaseDot {
+public class SimpleDot extends BaseDot implements Cloneable {
 
     private static final String TAG = "SimpleDot";
     private static final long serialVersionUID = 43869332737683388L;
@@ -77,12 +79,20 @@ public class SimpleDot extends BaseDot {
     @Override
     public String toString() {
         return "SimpleDot{" +
-                "x=" + x +
+                "type=" + type +
+                ", timelong=" + timelong +
+                ", x=" + x +
                 ", y=" + y +
                 ", fx=" + fx +
                 ", fy=" + fy +
-                ", type=" + type +
-                ", timelong=" + timelong +
                 '}';
+    }
+
+    @NonNull
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        SimpleDot simpleDot = (SimpleDot) super.clone();
+        simpleDot.type = this.type;
+        return simpleDot;
     }
 }

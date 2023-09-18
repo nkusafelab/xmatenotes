@@ -23,6 +23,8 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
+import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException

@@ -1,4 +1,4 @@
-package com.example.xmatenotes
+package com.example.xmatenotes.ui.qrcode
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.xmatenotes.App.XmateNotesApplication
+import com.example.xmatenotes.ui.view.DrawingImageView
+import com.example.xmatenotes.R
 import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.Storager
@@ -80,10 +82,6 @@ class CardProcessActivity : AppCompatActivity() {
 //            actionBar.setDisplayHomeAsUpEnabled(true)
         }
 
-
-
-
-
         bitmap = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
         cardData = Storager.cardCache
 
@@ -107,9 +105,11 @@ class CardProcessActivity : AppCompatActivity() {
             //测试接口用
             imageView.setPaintSize(40F)
             imageView.setPaintTypeface(Typeface.MONOSPACE)
+
             //imageView.setPaintColor(Color.RED)
 
             imageView.setImageBitmap(it)
+
         }
 
 //        if(bitmap!=null) {
@@ -164,45 +164,55 @@ class CardProcessActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        cardData.setDimensions(imageView.width.toFloat(), imageView.height.toFloat(), resources.displayMetrics.density * 160)
+        this.writer = Writer.getInstance().init().bindCard(cardData).setResponser(object : Responser() {
+            override fun onLongPress(command: Command?):Boolean {
+                if(!super.onLongPress(command)){
+                    return false
+                }
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "长压命令", Toast.LENGTH_SHORT).show() }
 
-        this.writer = Writer.getInstance().init().bindCard(cardData).setCoordinateConverter(
-            CoordinateConverter(cardData.cardContext.showWidth, cardData.cardContext.showHeight, cardData.cardContext.realWidth,cardData.cardContext.realHeight)
-        ).setResponser(object : Responser() {
-            override fun onLongPress(command: Command?) {
-                super.onLongPress(command)
-                Toast.makeText(XmateNotesApplication.context, "长压命令", Toast.LENGTH_SHORT).show()
+                return false
             }
 
-            override fun onSingleClick(command: Command?) {
-                super.onSingleClick(command)
-                Toast.makeText(XmateNotesApplication.context, "单击", Toast.LENGTH_SHORT).show()
+            override fun onSingleClick(command: Command?):Boolean {
+                if(!super.onSingleClick(command)){
+                    return false
+                }
+
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "单击", Toast.LENGTH_SHORT).show() }
+
+                return false
             }
 
-            override fun onDoubleClick(command: Command?) {
-                super.onDoubleClick(command)
-                Toast.makeText(XmateNotesApplication.context, "双击命令", Toast.LENGTH_SHORT).show()
+            override fun onDoubleClick(command: Command?):Boolean {
+                if(!super.onDoubleClick(command)){
+                    return false
+                }
+
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "双击命令", Toast.LENGTH_SHORT).show() }
+
+                return false
             }
 
-            override fun onActionCommand(command: Command?) {
-                super.onActionCommand(command)
+            override fun onActionCommand(command: Command?):Boolean {
+                return super.onActionCommand(command)
             }
 
-            override fun onCalligraphy(command: Command?) {
-                super.onCalligraphy(command)
+            override fun onCalligraphy(command: Command?):Boolean {
 
                 if (command != null) {
                     if(command.handWriting.isClosed){
 
-                        writer.updateStartTime()
+                        runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写", Toast.LENGTH_SHORT).show() }
+
                         //普通书写基本延时响应
-                        writer.handWritingWorkerId = writer.addResponseWorker(
+                        writer.handWritingWorker = writer.addResponseWorker(
                             HandWriting.DELAY_PERIOD
                         ) {
                             LogUtil.e(TAG, "普通书写延迟响应开始")
                             writer.closeHandWriting() }
 
-                        writer.singleHandWritingWorkerId = writer.addResponseWorker(
+                        writer.singleHandWritingWorker = writer.addResponseWorker(
                             SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD
                         ) {
                             LogUtil.e(TAG, "单次笔迹延迟响应开始")
@@ -212,22 +222,32 @@ class CardProcessActivity : AppCompatActivity() {
 
                 //绘制笔迹
                 imageView.drawDots(cardData.cardResource.dotList)
-                Toast.makeText(XmateNotesApplication.context, "普通书写", Toast.LENGTH_SHORT).show()
+                return super.onCalligraphy(command)
             }
 
-            override fun onZhiLingKongZhi(command: Command?) {
-                super.onZhiLingKongZhi(command)
-                Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show()
+            override fun onZhiLingKongZhi(command: Command?):Boolean {
+                if (!super.onZhiLingKongZhi(command)){
+                    return false
+                }
+
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show() }
+
+                return false
             }
 
-            override fun onSymbolicCommand(command: Command?) {
-                super.onSymbolicCommand(command)
+            override fun onSymbolicCommand(command: Command?):Boolean {
+                if(!super.onSymbolicCommand(command)){
+                    return false
+                }
 
                 //绘制笔迹
                 imageView.drawDots(cardData.cardResource.dotList)
-                Toast.makeText(XmateNotesApplication.context, "手势命令", Toast.LENGTH_SHORT).show()
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "手势命令", Toast.LENGTH_SHORT).show() }
+
+                return false
             }
         })
+
 
 //        Thread {
 //            Thread.sleep(1000)
@@ -235,6 +255,10 @@ class CardProcessActivity : AppCompatActivity() {
 //            cardManager.save(cardData, bitmap)
 //
 //        }.start()
+    }
+
+    fun getCoordinateConverter(viewWidth: Int, viewHeight: Int): CoordinateConverter {
+        return cardData.setDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
     }
 
     fun processEachDot(simpleDot: SimpleDot){
@@ -247,7 +271,8 @@ class CardProcessActivity : AppCompatActivity() {
         }
 
         mediaDot.penMac = XmateNotesApplication.mBTMac
-        writer?.let {
+        LogUtil.e(TAG, "封装MediaDot: $mediaDot")
+        writer.let {
             writer.processEachDot(mediaDot)
         }
     }
@@ -586,7 +611,7 @@ class CardProcessActivity : AppCompatActivity() {
 
 
     companion object {
-        const val TAG = "ImgProcessActivity"
+        const val TAG = "CardProcessActivity"
     }
 
     private fun isLineInRegion(line: Line, imageWidth: Int, imageHeight: Int): Boolean {

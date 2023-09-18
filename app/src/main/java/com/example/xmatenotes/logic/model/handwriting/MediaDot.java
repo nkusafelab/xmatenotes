@@ -184,21 +184,21 @@ public class MediaDot extends SimpleDot {
     @Override
     public String toString() {
         return "MediaDot{" +
-                "x=" + x +
-                ", y=" + y +
-                ", fx=" + fx +
-                ", fy=" + fy +
-                ", strokesID=" + strokesID +
+                "strokesID=" + strokesID +
                 ", pageID=" + pageID +
                 ", penMac='" + penMac + '\'' +
                 ", videoID=" + videoID +
-                ", time=" + videoTime +
+                ", videoTime=" + videoTime +
                 ", audioID=" + audioID +
                 ", color=" + color +
                 ", width=" + width +
                 ", ins=" + ins +
                 ", type=" + type +
                 ", timelong=" + timelong +
+                ", x=" + x +
+                ", y=" + y +
+                ", fx=" + fx +
+                ", fy=" + fy +
                 '}';
     }
 

@@ -5,14 +5,19 @@ import com.example.xmatenotes.logic.model.Page.Card;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
+import com.example.xmatenotes.logic.model.instruction.Calligraphy;
 import com.example.xmatenotes.logic.model.instruction.Command;
 import com.example.xmatenotes.logic.model.instruction.CommandDetector;
+import com.example.xmatenotes.logic.model.instruction.DoubleClick;
 import com.example.xmatenotes.logic.model.instruction.Responser;
+import com.example.xmatenotes.logic.model.instruction.SingleClick;
+import com.example.xmatenotes.logic.model.instruction.SymbolicCommand;
 import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PriorityQueue;
 
 /**
@@ -30,7 +35,6 @@ public class Writer {
     private static ExcelReader excelReader;
     private CommandDetector commandDetector;
     private Responser responser;
-    private CoordinateConverter coordinateConverter;
     private WriteTimer writeTimer;
 
     private Card cardData;
@@ -38,10 +42,15 @@ public class Writer {
     private HandWriting handWritingBuffer = null;
     private SingleHandWriting singleHandWritingBuffer = null;
     //普通书写延时任务ID
-    public int handWritingWorkerId = XmateNotesApplication.DEFAULT_INT;
+    public ResponseWorker handWritingWorker = null;
     //单次笔迹延时任务ID
-    public int singleHandWritingWorkerId = XmateNotesApplication.DEFAULT_INT;
+    public ResponseWorker singleHandWritingWorker = null;
 
+    //双击间隔计时器
+    public ResponseWorker doubleClickPeriodWorker = null;
+
+    //非动作命令延时识别计时器
+    public ResponseWorker symbolicDelayWorker = null;
     private long period = Long.MAX_VALUE;
     private MediaDot lastDot;
 
@@ -89,24 +98,14 @@ public class Writer {
         return this;
     }
 
-    private Writer setCommandDetector(CommandDetector commandDetector){
-        this.commandDetector = commandDetector;
-        return this;
-    }
+//    private Writer setCommandDetector(CommandDetector commandDetector){
+//        this.commandDetector = commandDetector;
+//        return this;
+//    }
 
     public Writer setResponser(Responser responser){
         this.responser = responser;
-        return this;
-    }
-
-    /**
-     * 设置UI坐标到真实物理坐标的转换参数
-     * @param coordinateConverter
-     * @return
-     */
-    public Writer setCoordinateConverter(CoordinateConverter coordinateConverter){
-        this.coordinateConverter = coordinateConverter;
-        LogUtil.e(TAG, "配置坐标转换器");
+        LogUtil.e(TAG, "配置响应器");
         return this;
     }
 
@@ -137,18 +136,28 @@ public class Writer {
             return;
         }
 
-        if(containsResponseWorker(this.handWritingWorkerId)){
-            deleteResponseWorker(this.handWritingWorkerId);
+        //如果有，移除普通书写延时响应任务
+        if(containsResponseWorker(this.handWritingWorker)){
+            deleteResponseWorker(this.handWritingWorker);
+            LogUtil.e(TAG, "移除普通书写延时响应任务");
         }
 
-        if(containsResponseWorker(this.singleHandWritingWorkerId)){
-            deleteResponseWorker(this.singleHandWritingWorkerId);
+        //如果有，移除单次笔迹延时响应任务
+        if(containsResponseWorker(this.singleHandWritingWorker)){
+            deleteResponseWorker(this.singleHandWritingWorker);
+            LogUtil.e(TAG, "移除单次笔迹延时响应任务");
         }
 
-        MediaDot inMediaDot = mediaDot;
-        //将UI坐标转换为内部真实物理坐标
-        if(coordinateConverter != null){
-            inMediaDot = coordinateConverter.convertIn(mediaDot);
+        //如果有，移除非动作命令延时识别计时任务
+        if(containsResponseWorker(this.symbolicDelayWorker)){
+            deleteResponseWorker(this.symbolicDelayWorker);
+            LogUtil.e(TAG, "移除单次笔迹延时响应任务");
+        }
+
+        //如果有，移除双击间隔计时任务
+        if(containsResponseWorker(this.doubleClickPeriodWorker)){
+            deleteResponseWorker(this.doubleClickPeriodWorker);
+            LogUtil.e(TAG, "移除双击间隔计时任务");
         }
 
 //        pageManager.update(mediaDot);
@@ -161,37 +170,72 @@ public class Writer {
             //设置进card
             if(this.cardData != null){
                 this.cardData.addSingleHandWriting(singleHandWritingBuffer);
+                LogUtil.e(TAG, "新的单次笔迹开始");
             }
         }
 
-        if(handWritingBuffer.isEmpty()){
-            handWritingBuffer.setPrePeriod(mediaDot.timelong - lastDot.timelong);
-        }
 
         if(handWritingBuffer == null){
             if(lastDot == null){
-                handWritingBuffer = new HandWriting(period);
+                handWritingBuffer = new HandWriting(period, mediaDot.timelong);
             } else {
-                handWritingBuffer = new HandWriting(mediaDot.timelong - lastDot.timelong);
+                handWritingBuffer = new HandWriting(mediaDot.timelong - lastDot.timelong, mediaDot.timelong);
             }
             if(singleHandWritingBuffer != null){
                 singleHandWritingBuffer.addHandWriting(handWritingBuffer);
+                LogUtil.e(TAG,"添加新handWriting");
             }
+            LogUtil.e(TAG, "新的普通书写开始");
         }
 
-        handWritingBuffer.addDot(inMediaDot);
+        if(handWritingBuffer.isEmpty() && lastDot != null){
+            handWritingBuffer.setPrePeriod(mediaDot.timelong - lastDot.timelong);
+        }
+
+        handWritingBuffer.addDot(mediaDot);
+        LogUtil.e(TAG, "存入书写缓存："+mediaDot.toString());
+        lastDot = mediaDot;
 
         if(commandDetector != null){
             if(!handWritingBuffer.isClosed()){
                 commandDetector.setSymbolicCommandAvailable(false);
             }
-            response(commandDetector.recognize(handWritingBuffer));
+
+            Command com = commandDetector.recognize(handWritingBuffer);
+            if(com instanceof SingleClick && com.getHandWriting().isClosed()){
+                //双击间隔计时器
+                LogUtil.e(TAG, "开启双击间隔计时器");
+                this.updateStartTime();
+                this.doubleClickPeriodWorker = addResponseWorker(DoubleClick.DOUBLE_CLICK_PERIOD, new ResponseTask() {
+                    @Override
+                    public void execute() {
+                        response(com);
+                    }
+                });
+            } else if(com instanceof Calligraphy && com.getHandWriting().isClosed()){
+                this.updateStartTime();
+                LogUtil.e(TAG,"开启非动作命令延时识别计时器");
+                this.symbolicDelayWorker = addResponseWorker(SymbolicCommand.SYMBOLIC_DELAY, new ResponseTask() {
+                    @Override
+                    public void execute() {
+                        commandDetector.setSymbolicCommandAvailable(true);
+                        Command com = commandDetector.recognize(handWritingBuffer);
+                        response(com);
+                    }
+                });
+            } else {
+                this.updateStartTime();
+                response(com);
+            }
+
         }
     }
 
     public void response(Command command){
+        LogUtil.e(TAG, "识别结束");
         if(command != null){
             command.addObserver(responser);
+            LogUtil.e(TAG, "开始响应");
             command.response();
         }
     }
@@ -205,11 +249,13 @@ public class Writer {
         if (lastDot != null) {
             if (mediaDot.type == Dot.DotType.PEN_MOVE) {
                 if (lastDot.type == Dot.DotType.PEN_UP) {
+                    LogUtil.e(TAG, "异常点：PEN_UP后直接出现PEN_MOVE");
                     mediaDot.type = Dot.DotType.PEN_DOWN;//可能存在PEN_UP后直接PEN_MOVE的情况
                 }
             }
             if (mediaDot.type == Dot.DotType.PEN_UP) {
                 if (lastDot.type == Dot.DotType.PEN_UP) {
+                    LogUtil.e(TAG, "异常点：PEN_UP后接着出现PEN_UP");
                     return false;
                 }
             }
@@ -221,28 +267,32 @@ public class Writer {
      * 添加延时任务
      * @param delay 延时时间
      * @param responseTask 延时任务
-     * @return 任务Id，在需要的时候用来移除指定任务
+     * @return 任务，在需要的时候用来移除指定任务
      */
-    public int addResponseWorker(long delay, ResponseTask responseTask){
-        return this.writeTimer.addResponseWorker(delay, responseTask);
+    public ResponseWorker addResponseWorker(long delay, ResponseTask responseTask){
+        synchronized (TAG){
+            return this.writeTimer.addResponseWorker(delay, responseTask);
+        }
     }
 
     /**
      * 移除指定延时任务
-     * @param workerId 任务Id
+     * @param worker 任务
      * @return
      */
-    public ResponseWorker deleteResponseWorker(int workerId){
-        return this.writeTimer.deleteResponseWorker(workerId);
+    public ResponseWorker deleteResponseWorker(ResponseWorker worker){
+        synchronized (TAG){
+            return this.writeTimer.deleteResponseWorker(worker);
+        }
     }
 
     /**
      * 是否存在某任务
-     * @param workerId
+     * @param worker
      * @return
      */
-    public boolean containsResponseWorker(int workerId){
-        return this.writeTimer.containsResponseWorker(workerId);
+    public boolean containsResponseWorker(ResponseWorker worker){
+        return this.writeTimer.containsResponseWorker(worker);
     }
 
     /**
@@ -251,6 +301,7 @@ public class Writer {
     public void closeHandWriting(){
         if(handWritingBuffer != null){
             handWritingBuffer = null;
+            LogUtil.e(TAG, "一次普通书写结束");
         }
     }
 
@@ -261,6 +312,7 @@ public class Writer {
         if(singleHandWritingBuffer != null){
             singleHandWritingBuffer.close();
             singleHandWritingBuffer = null;
+            LogUtil.e(TAG, "单次笔迹结束");
         }
     }
 
@@ -279,12 +331,18 @@ public class Writer {
     public class ResponseWorker implements Comparable<ResponseWorker> {
         private int workerId;
        private long delay;
+
+        /**
+         * 是否有效
+         */
+        private boolean isAvailable;
        private ResponseTask responseTask;
 
         public ResponseWorker(int workerId, long delay, ResponseTask responseTask) {
             this.workerId = workerId;
             this.delay = delay;
             this.responseTask = responseTask;
+            this.isAvailable = true;
         }
 
         public int getWorkerId() {
@@ -315,9 +373,30 @@ public class Writer {
             this.responseTask = responseTask;
         }
 
+        public void setAvailable(boolean available) {
+            isAvailable = available;
+        }
+
+        public boolean isAvailable() {
+            return isAvailable;
+        }
+
         @Override
         public int compareTo(ResponseWorker o) {
             return (int) (this.delay - o.delay);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ResponseWorker that = (ResponseWorker) o;
+            return workerId == that.workerId && delay == that.delay && isAvailable == that.isAvailable;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(workerId, delay, isAvailable);
         }
 
         @Override
@@ -366,16 +445,20 @@ public class Writer {
             while (isStart) {
                 this.delay = System.currentTimeMillis() - this.startTime;
 
-                while (!this.priorityQueue.isEmpty()){
-                    if(delay >= this.priorityQueue.peek().getDelay()){
-                        ResponseWorker responseWorker = this.priorityQueue.poll();
-                        this.responseWorkerMap.remove(responseWorker.getWorkerId());
-                        responseWorker.getResponseTask().execute();
-                        LogUtil.e(TAG, "执行了延时任务："+responseWorker);
-                    }else {
-                        break;
+                synchronized (TAG){
+                    while (!this.priorityQueue.isEmpty()){
+                        if(delay >= this.priorityQueue.peek().getDelay()){
+                            ResponseWorker responseWorker = this.priorityQueue.poll();
+                            this.responseWorkerMap.remove(responseWorker.getWorkerId());
+                            responseWorker.getResponseTask().execute();
+                            responseWorker.setAvailable(false);
+                            LogUtil.e(TAG, "执行了延时任务："+responseWorker);
+                        }else {
+                            break;
+                        }
                     }
                 }
+
             }
 
         }
@@ -386,25 +469,26 @@ public class Writer {
          * @param responseTask 延时任务
          * @return 任务id，可以用来在需要的时候删除指定的任务
          */
-        public int addResponseWorker(long delay, ResponseTask responseTask){
+        public ResponseWorker addResponseWorker(long delay, ResponseTask responseTask){
             int workId = this.priorityQueue.size()+1;
             ResponseWorker responseWorker = new ResponseWorker(workId, delay, responseTask);
             this.priorityQueue.offer(responseWorker);
             this.responseWorkerMap.put(workId, responseWorker);
             LogUtil.e(TAG, "添加延时任务："+ responseWorker);
-            return workId;
+            return responseWorker;
         }
 
         /**
          * 移除指定延时任务
-         * @param workerId 延时任务Id
+         * @param worker 延时任务
          * @return 目标任务
          */
-        public ResponseWorker deleteResponseWorker(int workerId){
-            if(containsResponseWorker(workerId)){
-                ResponseWorker responseWorker = this.responseWorkerMap.remove(workerId);
+        public ResponseWorker deleteResponseWorker(ResponseWorker worker){
+            if(worker != null && containsResponseWorker(worker)){
+                ResponseWorker responseWorker = this.responseWorkerMap.remove(worker.getWorkerId());
                 this.priorityQueue.remove(responseWorker);
                 LogUtil.e(TAG, "移除指定延时任务："+responseWorker.toString());
+                responseWorker.setAvailable(false);
                 return responseWorker;
             }
             return null;
@@ -415,8 +499,9 @@ public class Writer {
          * @param worker
          * @return
          */
-        public boolean containsResponseWorker(int worker){
-            return this.responseWorkerMap.containsKey(worker);
+        public boolean containsResponseWorker(ResponseWorker worker){
+//            return this.responseWorkerMap.containsKey(worker);
+            return this.priorityQueue.contains(worker);
         }
 
         /**

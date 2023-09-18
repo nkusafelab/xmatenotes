@@ -14,6 +14,8 @@ public class SymbolicCommand extends Command{
     public final static int MAX_STROKES_NUMBER = 5;//定义单击命令的笔划数
     public final static int MIN_STROKES_NUMBER = 1;//定义单击命令的笔划数
 
+    public final static int SYMBOLIC_DELAY = 1000;//定义双击的两次点击最大时间间隔
+
     public static final int MAX_ID = 17;
     public static final int MIN_ID = 4;
 
@@ -51,6 +53,11 @@ public class SymbolicCommand extends Command{
     }
 
     @Override
+    public String getTag() {
+        return TAG;
+    }
+
+    @Override
     public Command handle(HandWriting handWriting) {
         Command command = null;
         if(isAvailable()){
@@ -71,6 +78,7 @@ public class SymbolicCommand extends Command{
     }
 
     protected boolean recognize(HandWriting handWriting) {
+        LogUtil.e(TAG,getTag()+"开始识别");
 
         int strokesNumber = handWriting.getStrokesNumber();
         if(strokesNumber >= MIN_STROKES_NUMBER && strokesNumber <= MAX_STROKES_NUMBER){
@@ -132,7 +140,11 @@ public class SymbolicCommand extends Command{
             default:
                 name = null;
         }
-        return new SymbolicCommand(handWriting, id, name);
+        if(name != null){
+            return new SymbolicCommand(handWriting, id, name);
+        }
+        return null;
+
     }
 
     /*************************************so手势识别*******************************************/

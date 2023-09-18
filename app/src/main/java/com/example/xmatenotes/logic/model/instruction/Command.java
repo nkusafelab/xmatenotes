@@ -24,6 +24,9 @@ public abstract class Command extends Observable {
     public abstract int getID();
 
     public abstract String getName();
+    public String getTag(){
+        return TAG;
+    }
 
     public boolean isAvailable() {
         return available;

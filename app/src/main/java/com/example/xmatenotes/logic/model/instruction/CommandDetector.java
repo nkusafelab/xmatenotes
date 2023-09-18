@@ -4,6 +4,7 @@ import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.util.LogUtil;
 
 public class CommandDetector {
     private static final String TAG = "CommandDetector";
@@ -26,6 +27,8 @@ public class CommandDetector {
 
     public Command recognize(HandWriting handWriting){
 
+        LogUtil.e(TAG, "开始识别");
+
         actionCommand.setNext(symbolicCommand);
         symbolicCommand.setNext(calligraphy);
         return actionCommand.handle(handWriting);
@@ -37,14 +40,16 @@ public class CommandDetector {
 
     public void setSymbolicCommandAvailable(boolean available){
         this.symbolicCommand.setAvailable(available);
+        LogUtil.e(TAG, "SymbolicCommandAvailable设置为："+available);
     }
 
     public void setCalligraphyAvailable(boolean available){
         this.calligraphy.setAvailable(available);
+        LogUtil.e(TAG, "CalligraphyAvailable设置为："+available);
     }
 
     public void response(Command command){
-        if(writer != null){
+        if(writer != null && command != null){
             writer.response(command);
         }
     }

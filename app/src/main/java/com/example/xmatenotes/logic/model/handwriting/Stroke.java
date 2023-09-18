@@ -2,8 +2,14 @@ package com.example.xmatenotes.logic.model.handwriting;
 
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.os.Build;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.util.LogUtil;
+import com.google.gson.Gson;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.Serializable;
@@ -12,7 +18,7 @@ import java.util.ArrayList;
 /**
  * 笔划类
  */
-public class Stroke implements Serializable {
+public class Stroke implements Serializable, Cloneable {
 
     private static final String TAG = "Stroke";
     private static final long serialVersionUID = -4140045423314807525L;
@@ -134,6 +140,7 @@ public class Stroke implements Serializable {
         dots.add(sDot);
 
         boundRect.union(sDot.getFloatX(), sDot.getFloatY());
+        LogUtil.e(TAG, "Stroke's boundRect: "+boundRect);
 
         if(sDot.type == Dot.DotType.PEN_UP){
             isClosed = true;
@@ -216,5 +223,15 @@ public class Stroke implements Serializable {
 
     public void setWidth(int width) {
         this.width = width;
+    }
+
+    @NonNull
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        Stroke stroke = (Stroke) super.clone();
+        stroke.dots = (ArrayList<SimpleDot>) this.dots.clone();
+        Gson gson = new Gson();
+        stroke.boundRect = gson.fromJson(gson.toJson(this.boundRect), RectF.class);
+        return stroke;
     }
 }

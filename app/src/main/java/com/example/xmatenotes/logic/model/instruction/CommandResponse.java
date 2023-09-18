@@ -5,44 +5,44 @@ package com.example.xmatenotes.logic.model.instruction;
  */
 public interface CommandResponse {
 
-    void onActionCommand(Command command);
+    boolean onActionCommand(Command command);
 
-    void onSingleClick(Command command);
+    boolean onSingleClick(Command command);
 
-    void onDoubleClick(Command command);
+    boolean onDoubleClick(Command command);
 
-    void onLongPress(Command command);
+    boolean onLongPress(Command command);
 
-    void onCalligraphy(Command command);
+    boolean onCalligraphy(Command command);
 
-    void onSymbolicCommand(Command command);
+    boolean onSymbolicCommand(Command command);
 
-    void onZhiLingKongZhi(Command command);
+    boolean onZhiLingKongZhi(Command command);
 
-    void onDui(Command command);
+    boolean onDui(Command command);
 
-    void onBanDui(Command command);
+    boolean onBanDui(Command command);
 
-    void onBanBanDui(Command command);
+    boolean onBanBanDui(Command command);
 
-    void onBanBanBanDui(Command command);
+    boolean onBanBanBanDui(Command command);
 
-    void onCha(Command command);
+    boolean onCha(Command command);
 
-    void onWen(Command command);
+    boolean onWen(Command command);
 
-    void onBanWen(Command command);
+    boolean onBanWen(Command command);
 
-    void onBanBanWen(Command command);
+    boolean onBanBanWen(Command command);
 
-    void onBanBanBanWen(Command command);
+    boolean onBanBanBanWen(Command command);
 
-    void onTan(Command command);
+    boolean onTan(Command command);
 
-    void onBanTan(Command command);
+    boolean onBanTan(Command command);
 
-    void onBanBanTan(Command command);
+    boolean onBanBanTan(Command command);
 
-    void onBanBanBanTan(Command command);
+    boolean onBanBanBanTan(Command command);
 
 }

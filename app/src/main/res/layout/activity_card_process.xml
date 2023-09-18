@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".CardProcessActivity">
+        tools:context=".ui.qrcode.CardProcessActivity">
 
     <RelativeLayout
             android:layout_width="match_parent"
@@ -18,13 +18,13 @@
         <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-            <!--            <com.example.xmatenotes.DrawingImageView-->
+            <!--            <com.example.xmatenotes.ui.view.DrawingImageView-->
             <!--                android:id="@+id/imageView"-->
             <!--                android:layout_width="match_parent"-->
             <!--                android:layout_height="match_parent"-->
             <!--                android:layout_marginTop="20dp" />-->
 
-            <com.example.xmatenotes.DrawingImageView
+            <com.example.xmatenotes.ui.view.DrawingImageView
                     android:id="@+id/imageView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"

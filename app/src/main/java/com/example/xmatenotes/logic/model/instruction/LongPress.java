@@ -5,6 +5,7 @@ import static com.example.xmatenotes.logic.model.instruction.SingleClick.SINGLE_
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
 import com.example.xmatenotes.logic.model.instruction.Instruction;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * <p><strong>长压</strong></p>
@@ -33,11 +34,17 @@ public class LongPress extends ActionCommand {
 
     @Override
     public String getName() {
-        return "LongPress";
+        return getTag();
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 
     @Override
     protected boolean recognize(HandWriting handWriting) {
+        LogUtil.e(TAG,getTag()+"开始识别");
         if(handWriting.getStrokesNumber() == STROKES_NUMBER){
             return recognize(handWriting.getFirstStroke());
         }

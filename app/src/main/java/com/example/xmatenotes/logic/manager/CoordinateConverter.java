@@ -1,11 +1,15 @@
 package com.example.xmatenotes.logic.manager;
 
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * 坐标转换器
  */
 public class CoordinateConverter {
+
+    private static final String TAG = "CoordinateConverter";
 
     /**
      * UI版面宽度
@@ -32,29 +36,42 @@ public class CoordinateConverter {
         this.showHeight = showHeight;
         this.realWidth = realWidth;
         this.realHeight = realHeight;
+        LogUtil.e(TAG, toString());
     }
 
     /**
      * 将UI坐标转换为内部的真实物理坐标
-     * @param outMediaDot
+     * @param outSimpleDot
      * @return
      */
-    public MediaDot convertIn(MediaDot outMediaDot){
-        MediaDot inMediaDot = new MediaDot(outMediaDot);
-        inMediaDot.setX((inMediaDot.getFloatX() / this.showWidth) * this.realWidth);
-        inMediaDot.setY((inMediaDot.getFloatY() / this.showHeight) * this.realHeight);
-        return inMediaDot;
+    public SimpleDot convertIn(SimpleDot outSimpleDot){
+        SimpleDot inSimpleDot = new SimpleDot(outSimpleDot);
+        inSimpleDot.setX((inSimpleDot.getFloatX() / this.showWidth) * this.realWidth);
+        inSimpleDot.setY((inSimpleDot.getFloatY() / this.showHeight) * this.realHeight);
+        LogUtil.e(TAG, "convertIn: "+inSimpleDot);
+        return inSimpleDot;
     }
 
     /**
      * 将内部的真实物理坐标转换为Ui坐标
-     * @param inMediaDot
+     * @param inSimpleDot
      * @return
      */
-    public MediaDot convertOut(MediaDot inMediaDot){
-        MediaDot outMediaDot = new MediaDot(inMediaDot);
-        outMediaDot.setX((outMediaDot.getFloatX() / this.realWidth) * this.showWidth);
-        outMediaDot.setY((outMediaDot.getFloatY() / this.realHeight) * this.showHeight);
-        return outMediaDot;
+    public SimpleDot convertOut(SimpleDot inSimpleDot){
+        SimpleDot outSimpleDot = new MediaDot(inSimpleDot);
+        outSimpleDot.setX((outSimpleDot.getFloatX() / this.realWidth) * this.showWidth);
+        outSimpleDot.setY((outSimpleDot.getFloatY() / this.realHeight) * this.showHeight);
+        LogUtil.e(TAG, "convertOut: "+outSimpleDot);
+        return outSimpleDot;
+    }
+
+    @Override
+    public String toString() {
+        return "CoordinateConverter{" +
+                "showWidth=" + showWidth +
+                ", showHeight=" + showHeight +
+                ", realWidth=" + realWidth +
+                ", realHeight=" + realHeight +
+                '}';
     }
 }

@@ -48,7 +48,7 @@ object QRCodeUtil {
      */
     @JvmStatic
     fun generateQRCodeBitmap(text: String, qrBoundsWithoutMargin: RectF, iteration: Int): Bitmap? {
-        return generateQRCodeBitmap(text, qrBoundsWithoutMargin, WHITE_MARGIN_SCALE, "271·NK·01", iterationToColorMap.get(iteration)!!)
+        return generateQRCodeBitmap(text, qrBoundsWithoutMargin, WHITE_MARGIN_SCALE, "271·NK·01", iterationToColorMap[iteration]!!)
     }
 
     /**

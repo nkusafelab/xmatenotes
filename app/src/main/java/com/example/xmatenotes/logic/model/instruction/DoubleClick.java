@@ -2,6 +2,7 @@ package com.example.xmatenotes.logic.model.instruction;
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * <p><strong>双击</strong></p>
@@ -32,17 +33,25 @@ public class DoubleClick extends ActionCommand{
 
     @Override
     public String getName() {
-        return "DoubleClick";
+        return getTag();
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 
     @Override
     protected boolean recognize(HandWriting handWriting) {
+        LogUtil.e(TAG,getTag()+"开始识别");
+        LogUtil.e(TAG,"StrokesNumber: "+handWriting.getStrokesNumber());
         if(handWriting.getStrokesNumber() == STROKES_NUMBER){
             for (Stroke stroke: handWriting.getStrokes()) {
                 if(!SingleClick.recognize(stroke)){
                     return false;
                 }
             }
+            LogUtil.e(TAG, "PrePeriod: "+handWriting.getStrokes().get(STROKES_NUMBER-1).getPrePeriod());
             if(handWriting.getStrokes().get(STROKES_NUMBER-1).getPrePeriod() >= DOUBLE_CLICK_PERIOD){
                 return false;
             }

@@ -16,18 +16,7 @@ public abstract class Responser implements Observer, CommandResponse {
 
     @Override
     public void update(Observable o, Object arg) {
-
-        if(o instanceof Command){
-            Command com = (Command)o;
-            String comName = com.getName();
-            Class responserClass = this.getClass();
-            try {
-                Method method = responserClass.getDeclaredMethod("on"+comName,Command.class);
-                method.invoke(this, com);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
+        LogUtil.e(TAG, "响应开始");
 
         //动作命令
         if(o instanceof ActionCommand){
@@ -41,122 +30,163 @@ public abstract class Responser implements Observer, CommandResponse {
             this.onSymbolicCommand(symbolicCommand);
         }
 
+        if(o instanceof Command){
+            Command com = (Command)o;
+            String comName = com.getName();
+            Class responserClass = this.getClass();
+            try {
+                Method method = responserClass.getDeclaredMethod("on"+comName,Command.class);
+                method.invoke(this, com);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            if(com.getHandWriting().isClosed() && !isLongPressExecute){
+                isLongPressExecute = true;
+            }
+        }
+
     }
 
     @Override
-    public void onActionCommand(Command command) {
+    public boolean onActionCommand(Command command) {
         if(!command.getHandWriting().isClosed()){
-            return;
+            return false;
         }
+
+        //动作命令不画出来
+        HandWriting handWriting = command.getHandWriting().clone();
         LogUtil.e(TAG, "onActionCommand");
         command.getHandWriting().clear();
+        command.setHandWriting(handWriting);
+        return true;
     }
 
     @Override
-    public void onSingleClick(Command command) {
+    public boolean onSingleClick(Command command) {
         if(!command.getHandWriting().isClosed()){
-            return;
+            return false;//后续不建议执行
         }
         LogUtil.e(TAG, "onSingleClick");
-
+        return true;
     }
 
     @Override
-    public void onDoubleClick(Command command) {
+    public boolean onDoubleClick(Command command) {
         if(!command.getHandWriting().isClosed()){
-            return;
+            return false;
         }
         LogUtil.e(TAG, "onDoubleClick");
+        return true;
     }
 
+    private boolean isLongPressExecute = true;
+
     @Override
-    public void onLongPress(Command command) {
-        if(!command.getHandWriting().isClosed()){
-            return;
+    public boolean onLongPress(Command command) {
+        if(isLongPressExecute){
+            isLongPressExecute = false;
+            return true;
         }
         LogUtil.e(TAG, "onLongPress");
+        return false;
     }
 
     @Override
-    public void onCalligraphy(Command command) {
+    public boolean onCalligraphy(Command command) {
         LogUtil.e(TAG, "onCalligraphy");
+        return true;
     }
 
     @Override
-    public void onSymbolicCommand(Command command) {
+    public boolean onSymbolicCommand(Command command) {
         LogUtil.e(TAG, "onSymbolicCommand");
         HandWriting handWriting = command.getHandWriting();
         handWriting.setColor(Color.BLUE);
         handWriting.setWidth(HandWriting.DEFAULT_BOLD_WIDTH);
+        return true;
     }
 
     @Override
-    public void onZhiLingKongZhi(Command command) {
+    public boolean onZhiLingKongZhi(Command command) {
         LogUtil.e(TAG, "onZhiLingKongZhi");
+        return true;
     }
 
     @Override
-    public void onDui(Command command) {
+    public boolean onDui(Command command) {
         LogUtil.e(TAG, "onDui");
+        return true;
     }
 
     @Override
-    public void onBanDui(Command command) {
+    public boolean onBanDui(Command command) {
         LogUtil.e(TAG, "onBanDui");
+        return true;
     }
 
     @Override
-    public void onBanBanDui(Command command) {
+    public boolean onBanBanDui(Command command) {
         LogUtil.e(TAG, "onBanBanDui");
+        return true;
     }
 
     @Override
-    public void onBanBanBanDui(Command command) {
+    public boolean onBanBanBanDui(Command command) {
         LogUtil.e(TAG, "onBanBanBanDui");
+        return true;
     }
 
     @Override
-    public void onCha(Command command) {
+    public boolean onCha(Command command) {
         LogUtil.e(TAG, "onCha");
+        return true;
     }
 
     @Override
-    public void onWen(Command command) {
+    public boolean onWen(Command command) {
         LogUtil.e(TAG, "onWen");
+        return true;
     }
 
     @Override
-    public void onBanWen(Command command) {
+    public boolean onBanWen(Command command) {
         LogUtil.e(TAG, "onBanWen");
+        return true;
     }
 
     @Override
-    public void onBanBanWen(Command command) {
+    public boolean onBanBanWen(Command command) {
         LogUtil.e(TAG, "onBanBanWen");
+        return true;
     }
 
     @Override
-    public void onBanBanBanWen(Command command) {
+    public boolean onBanBanBanWen(Command command) {
         LogUtil.e(TAG, "onBanBanBanWen");
+        return true;
     }
 
     @Override
-    public void onTan(Command command) {
+    public boolean onTan(Command command) {
         LogUtil.e(TAG, "onTan");
+        return true;
     }
 
     @Override
-    public void onBanTan(Command command) {
+    public boolean onBanTan(Command command) {
         LogUtil.e(TAG, "onBanTan");
+        return true;
     }
 
     @Override
-    public void onBanBanTan(Command command) {
+    public boolean onBanBanTan(Command command) {
         LogUtil.e(TAG, "onBanBanTan");
+        return true;
     }
 
     @Override
-    public void onBanBanBanTan(Command command) {
+    public boolean onBanBanBanTan(Command command) {
         LogUtil.e(TAG, "onBanBanBanTan");
+        return true;
     }
 }

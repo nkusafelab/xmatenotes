@@ -199,6 +199,15 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
         })
 
+        runOnUiThread {
+            setTopActionBar(null, null,null, "一元一次不等式", "整体认知构建", "2")
+            setOrganInfor(null, cardData.getGroup(), cardData.getClassG(), cardData.getGrade(),"秋季学期","20230911")
+            LogUtil.e(TAG, "初始化卡片完成")
+        }
+
+        cardData.init()
+        LogUtil.e(TAG, "初始化cardData完成")
+
         circleRunnable = CircleRunnable(object : CircleCallBack {
 
             override fun stopableCallBack() {
@@ -217,10 +226,6 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     }
 
     fun updateData(){
-        runOnUiThread {
-            setTopActionBar(null, null,null, "一元一次不等式", "整体认知构建", "2")
-            setOrganInfor(null, cardData.getGroup(), cardData.getClassG(), cardData.getGrade(),"秋季学期","20230911")
-        }
 
         getSubject(object : CallBack {
             override fun onCallBack(subjectMap: MutableMap<String, Any>) {
@@ -229,11 +234,11 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                         setSubjectText(subjectMap.get("科目").toString())
                         setTermText(subjectMap.get("学期").toString())
                         setWeekText(subjectMap.get("教学周").toString())
+                        LogUtil.e(TAG, "更新Subject")
                     }
                 }
             }
         })
-        cardData.init()
 
     }
 
@@ -457,8 +462,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         //cameraScan.setAnalyzeImage(true) // 继续扫码分析
     }
 
-    override fun onRestart() {
-        super.onRestart()
+    override fun onStart() {
+        super.onStart()
         ivResult.setImageBitmap(null)
         cameraScan.setAnalyzeImage(true)
         previewView.alpha = 1.0F
@@ -505,7 +510,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     qrObjectList.add(qrO)
                     isQRPToPagePList.add(true)
                 } catch (e: JsonSyntaxException) {
-                    println("JSON解析失败: ${e.message}")
+                    LogUtil.e(TAG, "JSON解析失败: ${e.message}")
                     isQRPToPagePList.add(false)
                 }
 
@@ -526,13 +531,14 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                         })
                         setPreCodeText(qrObject.pn)
                         cardData.setIteration(qrObject.data)
+                        LogUtil.e(TAG, "使用二维码内容更新cardData")
                     }
                 }
             }
 
             var i = 0
             var j = 0
-            Log.e(TAG, "onScanResultCallback: before: pageBitMapPoints.size: "+pageBitMapPoints.size)
+            LogUtil.e(TAG, "onScanResultCallback: before: pageBitMapPoints.size: "+pageBitMapPoints.size)
             result.points?.forEach { mat ->
 //                var points = detectQREdgePoints(mat, result.bitmap)
 //                if(points.size != 0){
@@ -556,7 +562,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                }
             }
 
-            Log.e(TAG, "onScanResultCallback: after: pageBitMapPoints.size: "+pageBitMapPoints.size)
+            LogUtil.e(TAG, "onScanResultCallback: after: pageBitMapPoints.size: "+pageBitMapPoints.size)
 //            for (i in 0 until result.points.rows()) {
 //                result.points.row(i).let { mat ->
 //                    processOpenCVMat(mat, result, isQRPToPageP)?.let { bitMapPoints.addAll(it) }
@@ -571,8 +577,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                var srcVHeight = previewView.bitmap?.height
                 var srcVWidth = viewfinderView.width
                 var srcVHeight = viewfinderView.height
-                Log.e(TAG, "result.bitmap.width: "+(result.bitmap.width) +" viewfinderView.width: "+viewfinderView.width+" previewView.bitmap?.width: "+previewView.bitmap?.width+" ivResult.width: "+ivResult.width)
-                Log.e(TAG, "result.bitmap.height: "+(result.bitmap.height) +" viewfinderView.height: "+viewfinderView.height+" previewView.bitmap?.height: "+previewView.bitmap?.height+" ivResult.height: "+ivResult.height)
+                LogUtil.e(TAG, "result.bitmap.width: "+(result.bitmap.width) +" viewfinderView.width: "+viewfinderView.width+" previewView.bitmap?.width: "+previewView.bitmap?.width+" ivResult.width: "+ivResult.width)
+                LogUtil.e(TAG, "result.bitmap.height: "+(result.bitmap.height) +" viewfinderView.height: "+viewfinderView.height+" previewView.bitmap?.height: "+previewView.bitmap?.height+" ivResult.height: "+ivResult.height)
 
                 var desWidth : Int = srcPWidth
                 var desHeight: Int = srcPHeight
@@ -1454,11 +1460,10 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 ))
             }
 
-//            if(resp.data.items.isNotEmpty()) {
-//                callBack.onCallBack(resp.data.items.get(0).getFields())
-//            }
             LogUtil.e(TAG, Jsons.DEFAULT.toJson(resp.getData()))
-            callBack.onCallBack(resp.data.items.get(0).getFields())
+            if(resp.data.items.isNotEmpty()) {
+                callBack.onCallBack(resp.data.items.get(0).getFields())
+            }
 
         }.start()
 
@@ -1504,10 +1509,10 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 ))
             }
 
-//            if(resp.getData().getItems().size >0){
-//                callBack.onCallBack(resp.getData().getItems().get(0).getFields())
-//            }
-            callBack.onCallBack(resp.data.items.get(0).getFields())
+            if(resp.data.items.isNotEmpty()){
+                callBack.onCallBack(resp.data.items[0].fields)
+            }
+
 
         }.start()
 

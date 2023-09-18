@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream

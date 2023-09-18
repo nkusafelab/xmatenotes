@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.xmatenotes.logic.model.Page.QRObject
+import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
 import com.google.gson.Gson
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException

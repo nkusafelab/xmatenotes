@@ -20,6 +20,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale

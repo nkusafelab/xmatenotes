@@ -7,6 +7,8 @@ import com.example.xmatenotes.logic.model.handwriting.HandWriting;
  */
 public class Calligraphy extends Command {
 
+    private static final String TAG = "Calligraphy";
+
     public Calligraphy() {
     }
 
@@ -21,7 +23,12 @@ public class Calligraphy extends Command {
 
     @Override
     public String getName() {
-        return "Calligraphy";
+        return getTag();
+    }
+
+    @Override
+    public String getTag() {
+        return TAG;
     }
 
     @Override

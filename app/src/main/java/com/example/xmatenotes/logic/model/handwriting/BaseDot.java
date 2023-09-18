@@ -2,12 +2,14 @@ package com.example.xmatenotes.logic.model.handwriting;
 
 import android.graphics.Point;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 
 /**
  * 点基类
  */
-public class BaseDot implements Serializable {
+public class BaseDot implements Serializable,Cloneable {
 
     private static final String TAG = "BaseDot";
     private static final long serialVersionUID = -2969091827840758620L;
@@ -120,5 +122,11 @@ public class BaseDot implements Serializable {
                 ", fx=" + fx +
                 ", fy=" + fy +
                 '}';
+    }
+
+    @NonNull
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

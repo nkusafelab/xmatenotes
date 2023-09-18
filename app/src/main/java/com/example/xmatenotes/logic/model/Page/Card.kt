@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.RectF
 import android.os.Build
+import com.example.xmatenotes.logic.manager.CoordinateConverter
+import com.example.xmatenotes.logic.model.Role
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
@@ -61,9 +63,9 @@ class Card() : Serializable {
         ca = "2100_150",
         au = "011",
         te = "037",
-        st = "01GM",
+        st = "01",
         gn = "03",
-        gl = "6",
+        gl = "6",//组型
         sub = "01",
         data = "0",
         time = "2023-0911-113300",//1
@@ -93,19 +95,19 @@ class Card() : Serializable {
      */
     public data class CardDataLabel(
         //顶栏
-        var preCode: String,
-        var subjectName: String, //1
-        var unitName: String,
-        var stage: String,
-        var classTime: String,
+        var preCode: String,//前置编码
+        var subjectName: String, //学科名
+        var unitName: String,//单元名
+        var stage: String,//阶段
+        var classTime: String,//课时
 
         //侧栏
-        var week: String,
-        var group: String,
-        var classG: String,
-        var grade: String,
-        var term: String,
-        var day: String
+        var week: String,//周
+        var group: String,//小组编号
+        var classG: String,//班级
+        var grade: String,//年级
+        var term: String,//学期
+        var day: String//日期
     ) : Serializable {
         companion object {
             private const val serialVersionUID: Long = -846449730274394163L
@@ -163,11 +165,12 @@ class Card() : Serializable {
     /**
      * 配置版面UI尺寸和真实物理尺寸
      */
-    fun setDimensions(showWidth: Float, showHeight: Float, dpi: Float){
+    fun setDimensions(showWidth: Float, showHeight: Float, dpi: Float): CoordinateConverter {
         this.cardContext.showWidth = showWidth
         this.cardContext.showHeight = showHeight
         this.cardContext.realWidth = (showWidth / dpi) *254
         this.cardContext.realHeight = (showHeight / dpi) *254
+        return createCoordinateConverter()
     }
 
     fun setPreCode(preCode : String){
@@ -190,6 +193,13 @@ class Card() : Serializable {
         this.qrObject.qx = left
         this.qrObject.qy = top
         this.qrObject.ql = long
+    }
+
+    /**
+     * 生成坐标转换器
+     */
+    private fun createCoordinateConverter(): CoordinateConverter {
+        return CoordinateConverter(this.cardContext.showWidth, this.cardContext.showHeight, this.cardContext.realWidth,this.cardContext.realHeight)
     }
 
     /**
@@ -309,6 +319,29 @@ class Card() : Serializable {
     fun getGroupClass() : String{
         this.qrObject.gl = "萝卜+"
         return this.qrObject.gl
+    }
+
+    /**
+     * 更新角色身份信息
+     */
+    fun updateRole(role: Role){
+        //角色
+        this.cardContext.role = role.role
+        //学生编号
+        this.qrObject.st = role.studentNumber
+        //小组编号
+        this.cardDataLabel.group = role.groupNumber
+        this.qrObject.gn = role.groupNumber
+        //小组组型
+        this.qrObject.gl = role.groupTip
+        //学校
+        this.qrObject.sc = role.school
+        //班级
+        this.cardDataLabel.classG = role.classNumber
+        this.qrObject.cl = role.classNumber
+        //年级
+        this.cardDataLabel.grade = role.grade
+        this.qrObject.gr = role.grade
     }
 
     /**

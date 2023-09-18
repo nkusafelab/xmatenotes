@@ -62,6 +62,11 @@ public class SingleHandWriting implements Serializable {
         this.prePeriod = prePeriod;
     }
 
+    /**
+     *
+     * @param handWriting 至少有一个点
+     * @return
+     */
     public SingleHandWriting addHandWriting(HandWriting handWriting){
 
         if(this.handWritings.isEmpty()){
@@ -71,7 +76,7 @@ public class SingleHandWriting implements Serializable {
         }
 
         if(firsttime == XmateNotesApplication.DEFAULT_LONG){
-            firsttime = handWriting.getFirstDot().timelong;
+            firsttime = handWriting.getFirsttime();
         }
 
         region.union(HandWriting.rectFToRect(handWriting.getBoundRectF()));

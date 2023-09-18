@@ -4,8 +4,13 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.App.XmateNotesApplication;
+import com.google.gson.Gson;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.Serializable;
@@ -14,7 +19,7 @@ import java.util.ArrayList;
 /**
  * 可能会是命令的笔迹
  */
-public class HandWriting implements Serializable {
+public class HandWriting implements Serializable,Cloneable {
 
     private static final String TAG = "HandWriting";
     private static final long serialVersionUID = -8355882537505201068L;
@@ -78,8 +83,9 @@ public class HandWriting implements Serializable {
     public HandWriting(){
     }
 
-    public HandWriting(long prePeriod) {
+    public HandWriting(long prePeriod, long firsttime) {
         this.prePeriod = prePeriod;
+        this.firsttime = firsttime;
     }
 
 //    /**
@@ -150,8 +156,11 @@ public class HandWriting implements Serializable {
             firsttime = sDot.timelong;
         }
 
-        if(sDot.type == Dot.DotType.PEN_DOWN && strokesNumber > 0){
-            this.strokes.add(new Stroke(sDot.timelong - this.strokes.get(strokes.size()-1).getLastTime()));
+        if(sDot.type == Dot.DotType.PEN_DOWN){
+            if(strokesNumber > 0){
+                this.strokes.add(new Stroke(sDot.timelong - this.strokes.get(strokes.size()-1).getLastTime()));
+            }
+            this.strokesNumber++;
         }
 
         if(firsttime != XmateNotesApplication.DEFAULT_LONG){
@@ -167,7 +176,6 @@ public class HandWriting implements Serializable {
         //自动闭合
         if(sDot.type == Dot.DotType.PEN_UP){
             region.union(rectFToRect(stroke.getBoundRectF()));
-            strokesNumber++;
             close();
         }
 
@@ -268,4 +276,35 @@ public class HandWriting implements Serializable {
     public static Rect rectFToRect(RectF rectF){
         return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
     }
+
+    @NonNull
+    @Override
+    public HandWriting clone() {
+        HandWriting handWriting = null;
+        try {
+            handWriting = (HandWriting)super.clone();
+            handWriting.strokes = (ArrayList<Stroke>) this.strokes.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        handWriting.boundRect = (RectF) copy(this.boundRect);
+        handWriting.region = (Region) copy(this.region);
+        return handWriting;
+    }
+
+    public static Parcelable copy(Parcelable input) {
+        Parcel parcel = null;
+        try {
+            parcel = Parcel.obtain();
+            parcel.writeParcelable(input, 0);
+
+            parcel.setDataPosition(0);
+            return parcel.readParcelable(input.getClass().getClassLoader());
+        } finally {
+            if (null != parcel) {
+                parcel.recycle();
+            }
+        }
+    }
+
 }

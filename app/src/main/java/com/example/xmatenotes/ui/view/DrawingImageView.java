@@ -1,4 +1,4 @@
-package com.example.xmatenotes;
+package com.example.xmatenotes.ui.view;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,24 +29,33 @@ import androidx.appcompat.app.AlertDialog;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
+import com.example.xmatenotes.R;
+import com.example.xmatenotes.logic.manager.CoordinateConverter;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
+import com.example.xmatenotes.ui.qrcode.CardProcessActivity;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DrawingImageView extends AppCompatImageView {
+
+    private static final String TAG = "DrawingImageView";
     private Bitmap mBitmap;
     private Canvas mCanvas;
     private Matrix mMatrix;
     private Paint mPaint;
     private Path mPath;
     private Writer writer = null;
+
+    //坐标转换器
+    private CoordinateConverter coordinateConverter;
     private CardProcessActivity cardProcessActivity = null;
 
     private List<Draw> mDraws = new ArrayList<>();
@@ -111,6 +121,10 @@ public class DrawingImageView extends AppCompatImageView {
         mBitmap = null;
         mMatrix = new Matrix();
 
+        if(getContext() instanceof CardProcessActivity){
+            this.cardProcessActivity = (CardProcessActivity) getContext();
+        }
+
     }
 
     @Override
@@ -118,6 +132,10 @@ public class DrawingImageView extends AppCompatImageView {
         super.onDraw(canvas);
         if (mBitmap != null) {
             canvas.drawBitmap(mBitmap, mMatrix, null);
+        }
+        if(this.coordinateConverter == null && this.cardProcessActivity != null){
+            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
+            setCoordinateConverter(this.cardProcessActivity.getCoordinateConverter(getWidth(), getHeight()));
         }
 
         //初始化设置属性等
@@ -169,25 +187,29 @@ public class DrawingImageView extends AppCompatImageView {
             for (HandWriting handWriting: singleHandWriting.getHandWritings()) {
                 for (Stroke stroke: handWriting.getStrokes()) {
                     for (SimpleDot simpleDot : stroke.getDots()) {
-                        if(simpleDot instanceof MediaDot){
-
+                        SimpleDot outSimpleDot = simpleDot;
+                        //将UI坐标转换为内部真实物理坐标
+                        if(this.coordinateConverter != null){
+                            outSimpleDot = this.coordinateConverter.convertOut(simpleDot);
                         }
-                        switch (simpleDot.type){
+                        if(simpleDot instanceof MediaDot){
+                        }
+                        switch (outSimpleDot.type){
                             case PEN_DOWN:
-                                mPath.moveTo(simpleDot.getFloatX(), simpleDot.getFloatY());
+                                mPath.moveTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
                                 break;
                             case PEN_MOVE:
-                                mPath.lineTo(simpleDot.getFloatX(), simpleDot.getFloatY());
+                                mPath.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
                                 break;
                             case PEN_UP:
-                                mPath.lineTo(simpleDot.getFloatX(), simpleDot.getFloatY());
+                                mPath.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
                                 break;
                         }
                     }
                 }
             }
         }
-        invalidate();
+        postInvalidate();
     }
 
 
@@ -198,6 +220,16 @@ public class DrawingImageView extends AppCompatImageView {
         mBitmap = bm;
         calculateMatrix();
         invalidate();
+    }
+
+    /**
+     * 设置UI坐标到真实物理坐标的转换参数
+     * @param coordinateConverter
+     * @return
+     */
+    public void setCoordinateConverter(CoordinateConverter coordinateConverter){
+        this.coordinateConverter = coordinateConverter;
+        LogUtil.e(TAG, "配置坐标转换器");
     }
 
     /**
@@ -269,8 +301,15 @@ public class DrawingImageView extends AppCompatImageView {
                 break;
         }
 
+        LogUtil.e(TAG, "触摸点："+simpleDot);
+        SimpleDot inSimpleDot = simpleDot;
+        //将UI坐标转换为内部真实物理坐标
+        if(this.coordinateConverter != null){
+            inSimpleDot = this.coordinateConverter.convertIn(simpleDot);
+        }
+
         if(this.cardProcessActivity != null){
-            this.cardProcessActivity.processEachDot(simpleDot);
+            this.cardProcessActivity.processEachDot(inSimpleDot);
         }
 
 //        invalidate();
