@@ -1,16 +1,18 @@
 package com.example.xmatenotes.logic.model.Page
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.RectF
 import android.os.Build
+import android.util.Log
+import com.example.xmatenotes.App.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.model.Role
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
-import java.io.ByteArrayOutputStream
+import com.example.xmatenotes.util.LogUtil
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.sin
 
 class Card() : Serializable {
 
@@ -25,6 +27,24 @@ class Card() : Serializable {
          * 多为表格存储tableId
          */
         public const val cardsTableId = "tblXcJERkVDkcPki"
+
+        /**
+         * 生成卡片存储文件夹名
+         */
+        @JvmStatic
+        fun getCardName(code: Int, timelong: String): String {
+            return TAG+"#"+code.toString()+"#"+getFormatTime(timelong.toLong())
+        }
+
+        /**
+         * 格式化时间戳
+         */
+        @JvmStatic
+        fun getFormatTime(timelong: Long) : String{
+            val sdf = SimpleDateFormat("yyyy-MM-dd-hh-mm-ss")
+            val datetime: Date = Date(timelong)
+            return sdf.format(datetime)
+        }
     }
 
     public var subjectToColorMap:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
@@ -49,6 +69,7 @@ class Card() : Serializable {
     public lateinit var cardContext: CardContext
     public lateinit var cardDataLabel: CardDataLabel
     public lateinit var cardResource: CardResource
+
     /**
      * 卡片资源信息存储
      */
@@ -96,6 +117,7 @@ class Card() : Serializable {
     public data class CardDataLabel(
         //顶栏
         var preCode: String,//前置编码
+        var postCode: String,//后置编码
         var subjectName: String, //学科名
         var unitName: String,//单元名
         var stage: String,//阶段
@@ -118,14 +140,14 @@ class Card() : Serializable {
      * 卡片资源信息存储
      */
     public data class CardResource(
-        var cardStorageName: String,
-        var audioNameList: MutableList<String>,
+        var cardStorageName: String,//卡片存储相对路径
+        var audioNameList: MutableList<String>,//音频文件名，不含后缀
         var dotList: MutableList<SingleHandWriting>, //笔迹数据
 //        var bitmapByteArray: ByteArray?,//图像字节数组
-        var left: Float = 0F,
-        var top: Float = 0F,
-        var right: Float = 0F,
-        var bottom: Float = 0F,
+        var left: Float = Float.MAX_VALUE,
+        var top: Float = Float.MAX_VALUE,
+        var right: Float = Float.MIN_VALUE,
+        var bottom: Float = Float.MIN_VALUE,
     ) : Serializable {
         companion object {
             private const val serialVersionUID: Long = -5994362899161424990L
@@ -157,9 +179,9 @@ class Card() : Serializable {
 
     init {
         cardContext = CardContext( "", "组长", 0F, 0F, 0F, 0F)
-        cardDataLabel = CardDataLabel("", "", "一元一次不等式", "整体认知构建", "2", "", "", "", "", "", "")
+        cardDataLabel = CardDataLabel("", "","语文", "一元一次不等式", "整体认知构建", "2", "七", "00", "00", "00", "秋季学期","20230911")
         cardResource = CardResource( "", ArrayList(), ArrayList())
-        cardResource.dotList.add(SingleHandWriting())
+//        cardResource.dotList.add(SingleHandWriting())
     }
 
     /**
@@ -174,16 +196,29 @@ class Card() : Serializable {
     }
 
     fun setPreCode(preCode : String){
-        this.preCode = Integer.parseInt(preCode)
-        this.cardDataLabel.preCode = this.preCode.toString()
-        this.code = this.preCode+1
-        this.qrObject.pn = this.code.toString()
+        if (preCode.isNotEmpty()){
+            this.preCode = Integer.parseInt(preCode)
+            this.cardDataLabel.preCode = this.preCode.toString()
+            this.code = this.preCode+1
+            this.qrObject.pn = this.code.toString()
+        }
+    }
+
+    fun setPostCode(postCode: String){
+        if(postCode.isNotEmpty()){
+            this.postCode = Integer.parseInt(postCode)
+            this.cardDataLabel.postCode = this.postCode.toString()
+        }
+
     }
 
     fun setIteration(oldIteration: String){
         this.qrObject.data = (Integer.parseInt(oldIteration)+1).toString()
     }
 
+    /**
+     * 设置真实物理版面尺寸
+     */
     fun setPageRect(width: Int, height: Int){
         this.qrObject.psx = width
         this.qrObject.psy = height
@@ -203,11 +238,60 @@ class Card() : Serializable {
     }
 
     /**
+     * 添加笔迹点集
+     */
+    fun addDotList(index: Int, dotList: MutableList<SingleHandWriting>){
+        this.cardResource.dotList.addAll(index, dotList)
+    }
+
+    fun addAudioNameList(index: Int, audioNameList: MutableList<String>){
+        this.cardResource.audioNameList.addAll(index, audioNameList)
+    }
+
+    /**
+     * 生成一个新音频文件名，不含后缀，并返回
+     */
+    fun getNewAudioName(): String {
+        var newAudioName = this.cardResource.audioNameList.size.toString()
+        this.cardResource.audioNameList.add(newAudioName)
+        LogUtil.e(TAG, "getNewAudioName: audioNameList.size为: "+this.cardResource.audioNameList.size)
+        return newAudioName
+    }
+
+    fun getAudioNameList(): MutableList<String> {
+        return this.cardResource.audioNameList
+    }
+
+    /**
+     * 获取最后一个音频文件名
+     */
+    fun getLastAudioName(): String {
+        var lastName = this.getAudioNameList()[getAudioNameList().size-1]
+        LogUtil.e(TAG, "getLastAudioName: $lastName")
+        return lastName
+    }
+
+    /**
+     * 根据坐标获取可能叠加的音频，若无音频，返回null
+     */
+    fun getAudioNameByCoordinate(dot: SimpleDot): String?{
+        for (singleHandWriting in this.cardResource.dotList){
+            for (handWriting in singleHandWriting.handWritings){
+                LogUtil.e(TAG, "handWriting.audioId: "+handWriting.audioId)
+                if(handWriting.audioId != XmateNotesApplication.DEFAULT_INT && handWriting.contains(dot)){
+                    return handWriting.audioId.toString()
+                }
+            }
+        }
+        return null
+    }
+
+    /**
      *
      */
     fun getCardName(): String{
         //版面类型+唯一标识符+生成时间
-        cardResource.cardStorageName = TAG+"#"+code.toString()+"#"+getFormatTime(this.qrObject.time.toLong())
+        cardResource.cardStorageName = getCardName(this.code, this.qrObject.time)
         return cardResource.cardStorageName
     }
 
@@ -215,13 +299,39 @@ class Card() : Serializable {
      * 确定最终生成时间
      */
     fun create(){
-        this.qrObject.time = System.currentTimeMillis().toString()
-    }
 
-    fun getFormatTime(timelong: Long) : String{
-        val sdf = SimpleDateFormat("yyyy-MM-dd-hh-mm-ss")
-        val datetime: Date = Date(timelong)
-        return sdf.format(datetime)
+        var rectF = RectF()
+        for (singleHandWriting in this.cardResource.dotList){
+            if(singleHandWriting.boundRectF.equals(rectF)){
+                //若为空，直接跳过
+                continue
+            }
+            LogUtil.e(TAG, "前getHandWritingsRectF():"+getHandWritingsRectF())
+            LogUtil.e(TAG, "singleHandWriting.boundRectF: "+singleHandWriting.boundRectF)
+            this.cardResource.left = if(this.cardResource.left > singleHandWriting.boundRectF.left){
+                singleHandWriting.boundRectF.left
+            } else {
+                this.cardResource.left
+            }
+            this.cardResource.top = if(this.cardResource.top > singleHandWriting.boundRectF.top){
+                singleHandWriting.boundRectF.top
+            } else {
+                this.cardResource.top
+            }
+            this.cardResource.right = if(this.cardResource.right < singleHandWriting.boundRectF.right){
+                singleHandWriting.boundRectF.right
+            } else {
+                this.cardResource.right
+            }
+            this.cardResource.bottom = if(this.cardResource.bottom < singleHandWriting.boundRectF.bottom){
+                singleHandWriting.boundRectF.bottom
+            } else {
+                this.cardResource.bottom
+            }
+            LogUtil.e(TAG, "后getHandWritingsRectF():"+getHandWritingsRectF())
+        }
+
+        this.qrObject.time = System.currentTimeMillis().toString()
     }
 
     /**
@@ -284,7 +394,8 @@ class Card() : Serializable {
 
     fun toQRObject() : QRObject{
 //        this.qrObject.time = DateUtil.formatTimelong(System.currentTimeMillis(), DATE_FORMAT)
-
+        //初始化卡片存储目录
+        this.create()
         return this.qrObject
     }
 
@@ -309,7 +420,8 @@ class Card() : Serializable {
         map["Top"] = this.cardResource.top
         map["Right"] = this.cardResource.right
         map["Bottom"] = this.cardResource.bottom
-        map["更新时间"] = System.currentTimeMillis()
+        map["卡片名称"] = this.getCardName()
+        map["更新时间"] = this.qrObject.time.toLong()
         return map
     }
 
@@ -347,12 +459,12 @@ class Card() : Serializable {
     /**
      * 自动初始化
      */
-    fun init(){
+    fun init(): Card{
         getDevice()
         getRole()
         getStudentNumber()
         getGroupClass()
-
+        return this
     }
 
 }

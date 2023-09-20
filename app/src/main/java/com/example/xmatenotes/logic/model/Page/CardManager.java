@@ -5,12 +5,14 @@ import android.os.Environment;
 
 import com.example.xmatenotes.logic.manager.Storager;
 import com.example.xmatenotes.logic.network.BitableManager;
+import com.example.xmatenotes.util.LogUtil;
+import com.lark.oapi.service.bitable.v1.model.AppTableField;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * 负责卡片数据的本地存储、上传、下载、解析
@@ -35,24 +37,77 @@ public class CardManager {
         return cardManager;
     }
     private String getPageAbsolutePath(Card card){
-        return absoluteRootPath+"/"+card.getCardName();
+        return getPageAbsolutePath(card.getCardName());
+    }
+
+    /**
+     * 通过卡片数据文件名，获得完整存储绝对路径
+     * @param cardName
+     * @return
+     */
+    public String getPageAbsolutePath(String cardName){
+        return absoluteRootPath+"/"+cardName;
     }
 
     private String getDataAbsolutePath(Card card){
         return getPageAbsolutePath(card)+"/"+"data";
     }
 
+    private String getDataAbsolutePath(String pageAbsolutePath){
+        return pageAbsolutePath+"/"+"data";
+    }
+
     private String getPicAbsolutePath(Card card){
         return getPageAbsolutePath(card)+"/"+"pic"+".png";
     }
 
-    private String getAudioAbsolutePath(Card card){
-        return getPageAbsolutePath(card);
+    public String getNewAudioAbsolutePath(Card card){
+        return getPageAbsolutePath(card)+"/"+card.getNewAudioName()+".mp4";
+    }
+
+    public String getAudioAbsolutePath(Card card, String audioName){
+        return getPageAbsolutePath(card)+"/"+audioName+".mp4";
+    }
+
+    public List<String> getAudioAbsolutePathList(Card card){
+        List<String> audioNameList = card.getAudioNameList();
+        List<String> audioAbsolutePathList = new ArrayList<>();
+        for (String audioName: audioNameList) {
+            audioAbsolutePathList.add(getAudioAbsolutePath(card, audioName));
+        }
+        return audioAbsolutePathList;
+    }
+
+    /**
+     * 创建卡片存储目录
+     * @param card
+     */
+    public String mkdirs(Card card){
+        String cardAbsolutePath = getPageAbsolutePath(card);
+        mkdirs(cardAbsolutePath);
+        return cardAbsolutePath;
+    }
+
+    private void mkdirs(String cardAbsolutePath){
+        File file = new File(cardAbsolutePath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
     }
 
     public void save(Card card, Bitmap bitmap){
 
+        File oldFile = new File(getPageAbsolutePath(card));
         card.create();
+        File newFile = new File(getPageAbsolutePath(card));
+
+        //重命名
+        if (oldFile.renameTo(newFile)) {
+            LogUtil.e(TAG,"Directory " + oldFile.getName() + " renamed to " + newFile.getName());
+        } else {
+            LogUtil.e(TAG,"Could not rename directory " + newFile.getName());
+        }
+
         bitableManager.initial(Card.cardsTableId);
 
         String dataPath = getDataAbsolutePath(card);
@@ -60,6 +115,7 @@ public class CardManager {
 
         //存储图片
         storager.saveBmpWithSuffix(picPath, bitmap);
+        LogUtil.e(TAG, "卡片图片存储完成");
 
         //序列化存储CardData对象
         try {
@@ -67,6 +123,8 @@ public class CardManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        LogUtil.e(TAG, "卡片data序列化完成");
 
         //存储音频
 
@@ -80,11 +138,15 @@ public class CardManager {
                         add(dataPath);
                     }
                 });
+                LogUtil.e(TAG, "上传卡片数据文件");
                 bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "卡片图片",new ArrayList<String>(){
                     {
                         add(picPath);
                     }
                 });
+                LogUtil.e(TAG, "上传卡片图片");
+                bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "音频",getAudioAbsolutePathList(card));
+                LogUtil.e(TAG, "上传卡片音频文件");
             }
 
             @Override
@@ -94,6 +156,69 @@ public class CardManager {
 
         });
 
+    }
+
+    public void downLoad(int code, String cardAbsolutePath, ObjectInputResp objectInputResp){
+        File file = new File(cardAbsolutePath);
+        if(!file.exists()){
+            LogUtil.e(TAG, "目标文件夹不存在！");
+            return;
+        }
+
+        //配置BitTableManager
+        bitableManager.initial(Card.cardsTableId);
+
+        //查飞书多维表格
+        bitableManager.searchAppTableRecords(Card.cardsTableId, null, "CurrentValue.[Code] = " + code, new BitableManager.BitableResp() {
+            @Override
+            public void onFinish(AppTableRecord[] appTableRecords) {
+                super.onFinish(appTableRecords);
+                for(AppTableRecord appTableRecord: appTableRecords){
+                    LogUtil.e(TAG, "onFinish: "+appTableRecord.getRecordId());
+
+                    //创建对应卡片文件夹
+//                    String cardAbsolutePath = getPageAbsolutePath(appTableRecord.getFields().get("卡片名称").toString());
+//                    mkdirs(cardAbsolutePath);
+
+                    //下载
+//                    List<String> picFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "卡片图片");
+//                    bitableManager.downloadFile(appTableRecord.getRecordId(), "卡片图片", cardAbsolutePath, picFileTokens);
+                    List<String> dataFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "卡片数据");
+                    bitableManager.downloadFile(appTableRecord.getRecordId(), "卡片数据", cardAbsolutePath, dataFileTokens);
+                    List<String> audioFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "音频");
+                    bitableManager.downloadFile(appTableRecord.getRecordId(), "音频", cardAbsolutePath, audioFileTokens);
+
+                    //解析Card对象
+                    try {
+                        Card card = (Card) storager.serializeParseObject(getDataAbsolutePath(cardAbsolutePath));
+                        if(objectInputResp != null){
+                            objectInputResp.onFinish(card);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+                super.onError(errorMsg);
+                if(objectInputResp != null){
+                    objectInputResp.onError(errorMsg);
+                }
+            }
+        });
+    }
+
+    /**
+     * Card对象解析返回接口
+     */
+    public interface ObjectInputResp {
+        public void onFinish(Card card);
+
+        public void onError(String errorMsg);
     }
 
 }

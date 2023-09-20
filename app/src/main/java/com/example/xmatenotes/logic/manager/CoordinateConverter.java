@@ -65,6 +65,38 @@ public class CoordinateConverter {
         return outSimpleDot;
     }
 
+    public float getShowWidth() {
+        return showWidth;
+    }
+
+    public void setShowWidth(float showWidth) {
+        this.showWidth = showWidth;
+    }
+
+    public float getShowHeight() {
+        return showHeight;
+    }
+
+    public void setShowHeight(float showHeight) {
+        this.showHeight = showHeight;
+    }
+
+    public float getRealWidth() {
+        return realWidth;
+    }
+
+    public void setRealWidth(float realWidth) {
+        this.realWidth = realWidth;
+    }
+
+    public float getRealHeight() {
+        return realHeight;
+    }
+
+    public void setRealHeight(float realHeight) {
+        this.realHeight = realHeight;
+    }
+
     @Override
     public String toString() {
         return "CoordinateConverter{" +

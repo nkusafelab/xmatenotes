@@ -1,7 +1,10 @@
 package com.example.xmatenotes.ui.qrcode
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.LruCache
@@ -11,7 +14,6 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.xmatenotes.App.XmateNotesApplication
-import com.example.xmatenotes.ui.view.DrawingImageView
 import com.example.xmatenotes.R
 import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
@@ -26,11 +28,20 @@ import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
+import com.example.xmatenotes.ui.view.DrawingImageView
 import com.example.xmatenotes.util.LogUtil
 import org.opencv.android.Utils
-import org.opencv.core.*
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.core.MatOfPoint
+import org.opencv.core.MatOfPoint2f
+import org.opencv.core.Point
+import org.opencv.core.Scalar
+import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
-import java.lang.Math.*
+import java.lang.Math.abs
+import java.lang.Math.atan2
+import java.lang.Math.sqrt
 import java.util.concurrent.CountDownLatch
 import kotlin.math.pow
 
@@ -55,7 +66,7 @@ class CardProcessActivity : AppCompatActivity() {
 
     private lateinit var cardData: Card
     private var bitmap: Bitmap? = null
-    private val audioRecorder = false //录音开关
+    private var audioRecorder = false //录音开关
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +95,23 @@ class CardProcessActivity : AppCompatActivity() {
 
         bitmap = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
         cardData = Storager.cardCache
+        var cardAbsolutePath = cardManager.mkdirs(cardData)
+        cardManager.downLoad(cardData.preCode, cardAbsolutePath, object : CardManager.ObjectInputResp {
+            override fun onFinish(card: Card?) {
+                if (card != null){
+                    //融合笔迹点集合
+                    cardData.addDotList(0, card.cardResource.dotList)
+                    //融合音频文件名集合
+                    cardData.addAudioNameList(0, card.getAudioNameList())
+                    //融合笔迹范围，暂不处理
+                }
+            }
+
+            override fun onError(errorMsg: String?) {
+                LogUtil.e(TAG, "获取前代卡片数据失败")
+            }
+
+        })
 
         bitmap?.let {
             val rotatedBitmap: Bitmap
@@ -169,6 +197,8 @@ class CardProcessActivity : AppCompatActivity() {
                 if(!super.onLongPress(command)){
                     return false
                 }
+
+                cardManager.save(cardData, bitmap?.let { generateCardBmp(cardData, it) })
                 runOnUiThread { Toast.makeText(XmateNotesApplication.context, "长压命令", Toast.LENGTH_SHORT).show() }
 
                 return false
@@ -189,6 +219,13 @@ class CardProcessActivity : AppCompatActivity() {
                     return false
                 }
 
+                command?.handWriting?.firstDot?.let {coordinate->
+                    cardData.getAudioNameByCoordinate(coordinate)?.let { audioName ->
+                        LogUtil.e(TAG, "播放AudioName为：$audioName")
+                        audioManager.comPlayAudio(cardManager.getAudioAbsolutePath(cardData, audioName))
+                    }
+                }
+
                 runOnUiThread { Toast.makeText(XmateNotesApplication.context, "双击命令", Toast.LENGTH_SHORT).show() }
 
                 return false
@@ -207,10 +244,15 @@ class CardProcessActivity : AppCompatActivity() {
 
                         //普通书写基本延时响应
                         writer.handWritingWorker = writer.addResponseWorker(
-                            HandWriting.DELAY_PERIOD
+                            HandWriting.DELAY_PERIOD+1000
                         ) {
                             LogUtil.e(TAG, "普通书写延迟响应开始")
-                            writer.closeHandWriting() }
+                            writer.closeHandWriting()
+                            if (audioRecorder) {
+                                audioRecorder = false
+                                audioManager.stopRATimer()
+                            }
+                        }
 
                         writer.singleHandWritingWorker = writer.addResponseWorker(
                             SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD
@@ -230,6 +272,9 @@ class CardProcessActivity : AppCompatActivity() {
                     return false
                 }
 
+                audioManager.startRATimer(cardManager.getNewAudioAbsolutePath(cardData))
+                audioRecorder = true
+
                 runOnUiThread { Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show() }
 
                 return false
@@ -242,9 +287,24 @@ class CardProcessActivity : AppCompatActivity() {
 
                 //绘制笔迹
                 imageView.drawDots(cardData.cardResource.dotList)
-                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "手势命令", Toast.LENGTH_SHORT).show() }
+//                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "手势命令", Toast.LENGTH_SHORT).show() }
 
                 return false
+            }
+
+            override fun onDui(command: Command?): Boolean {
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "对勾命令", Toast.LENGTH_SHORT).show() }
+                return super.onDui(command)
+            }
+
+            override fun onCha(command: Command?): Boolean {
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "叉命令", Toast.LENGTH_SHORT).show() }
+                return super.onCha(command)
+            }
+
+            override fun onBanDui(command: Command?): Boolean {
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "半对命令", Toast.LENGTH_SHORT).show() }
+                return super.onBanDui(command)
             }
         })
 
@@ -261,12 +321,33 @@ class CardProcessActivity : AppCompatActivity() {
         return cardData.setDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
     }
 
+    /**
+     * 生成带有笔迹的卡片图片
+     */
+    fun generateCardBmp(card: Card, mBitmap: Bitmap): Bitmap{
+        val bitmap: Bitmap = mBitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(bitmap)
+        var paint = Paint()
+        paint.color = Color.BLACK
+        paint.strokeWidth = 2f
+        paint.style = Paint.Style.STROKE
+        val coordinateConverter = CoordinateConverter(
+            bitmap.width.toFloat(),
+            bitmap.height.toFloat(),
+            imageView.coordinateConverter.realWidth,
+            imageView.coordinateConverter.realHeight
+        )
+        var path = imageView.drawDots(cardData.cardResource.dotList, coordinateConverter)
+        canvas.drawPath(path, paint)
+        return bitmap
+    }
+
     fun processEachDot(simpleDot: SimpleDot){
         val mediaDot = MediaDot(simpleDot)
         mediaDot.pageID = this.cardData.code
         //如果正在录音，再次长压结束录音
-        if (audioRecorder == true) {
-            mediaDot.audioID = audioManager.getCurrentRecordAudioNumber()
+        if (audioRecorder) {
+            mediaDot.audioID = Integer.parseInt(cardData.getLastAudioName())
             mediaDot.color = MediaDot.DEEP_GREEN
         }
 

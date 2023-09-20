@@ -2,6 +2,7 @@ package com.example.xmatenotes.logic.network;
 
 import android.util.Log;
 
+import com.example.xmatenotes.util.LogUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -371,9 +372,15 @@ public class BitableManager {
 //
 //    }
 
+    /**
+     * 获取指定字段中的所有附件fileToken
+     * @param appTableRecord
+     * @param fieldName
+     * @return
+     */
     public static List<String> getfileTokensByFieldName(AppTableRecord appTableRecord, String fieldName){
         if(!appTableRecord.getFields().containsKey(fieldName)){
-            Log.e(TAG, "getfileTokensByFieldName: 未找到目标字段");
+            Log.e(TAG, "getfileTokensByFieldName: 未找到目标字段: "+fieldName);
             return null;
         }
         //先把linkedTreeMap对象转成json字符串，然后再转成目标list
@@ -724,6 +731,7 @@ public class BitableManager {
     public void downloadFile(String recordId, String fieldName, String path, List<String> fileTokens){
         downloadFile(curTableId, recordId, getFieldIdByName(curTableId, fieldName), path, fileTokens);
     }
+
     /**
      * 附件素材下载
      * @param tableId
@@ -733,6 +741,14 @@ public class BitableManager {
      * @param fileTokens
      */
     public void downloadFile(String tableId, String recordId, String fieldId, String path, List<String> fileTokens){
+
+        if(fileTokens == null){
+            LogUtil.e(TAG, "待下载附件列表为空！");
+            return;
+        } else if(fileTokens.isEmpty()){
+            LogUtil.e(TAG, "待下载附件列表为空！");
+            return;
+        }
 
         new Thread(new Runnable() {
             @Override

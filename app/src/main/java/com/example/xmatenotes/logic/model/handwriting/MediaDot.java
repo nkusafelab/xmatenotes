@@ -48,7 +48,7 @@ public class MediaDot extends SimpleDot {
     /**
      * 音频ID
      */
-    public int audioID;
+    public int audioID = XmateNotesApplication.DEFAULT_INT;
     /***************************媒体信息*****************************/
 
     /***************************形态信息*****************************/

@@ -7,6 +7,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import java.util.*
 
 /**
@@ -104,7 +105,7 @@ object QRCodeUtil {
         var heightPix = heightPix
         return try {
             val hints: Hashtable<EncodeHintType, Any?> = Hashtable()
-//            hints.put(EncodeHintType.CHARACTER_SET, "utf-8")
+            hints.put(EncodeHintType.CHARACTER_SET, "utf-8")//防止将汉字编码错误成乱码"??"
 //            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H)
             hints.put(EncodeHintType.MARGIN, if (isDeleteWhite) 1 else 0)
             var matrix =

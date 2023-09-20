@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.RectF
 import com.example.xmatenotes.util.DateUtil
+import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.util.QRCodeUtil
 import com.google.gson.Gson
 import java.io.Serializable
@@ -112,7 +113,7 @@ data class QRObject(
 ) : Serializable {
 
     companion object {
-
+        private const val TAG = "QRObject"
     }
 
     /**
@@ -122,14 +123,22 @@ data class QRObject(
         return Gson().toJson(this)
     }
 
+
+
     /**
      * 将QRObject转换为二维码图片
      * rectF为希望不含白边部分的二维码所占的矩形区域坐标范围，会自动按比例放大，使得最终生成的图片中含白边的二维码所占的矩形区域坐标范围为放大后的rectF
      */
     fun toQRCodeBitmap(rectF: RectF): Bitmap? {
         val text = toJosn()
+        LogUtil.e(TAG, "生成Json格式：$text");
+//        LogUtil.e(TAG, "反向解析："+Gson().fromJson(text, QRObject::class.java).toString())
 //        QRCodeUtil.generateQRCodeRectF(text, rectF.width().toInt(), rectF.height().toInt())
 //            ?.let { QRCodeUtil.amplify(it, rectF) }
         return QRCodeUtil.generateQRCodeBitmap(text, rectF, Integer.parseInt(this.data))
+    }
+
+    override fun toString(): String {
+        return "QRObject(p='$p', psx=$psx, psy=$psy, pn='$pn', qx=$qx, qy=$qy, ql=$ql, sc='$sc', gr='$gr', cl='$cl', ca='$ca', au='$au', te='$te', st='$st', gn='$gn', gl='$gl', sub='$sub', data='$data', time='$time')"
     }
 }

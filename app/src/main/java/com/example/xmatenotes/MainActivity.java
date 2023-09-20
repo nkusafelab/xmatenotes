@@ -607,13 +607,11 @@ public class MainActivity extends BaseActivity {
                 startActivity(dotInfoIntent);
                 return true;
             case R.id.action_setup:
-                Intent setUpIntent = new Intent(this, SetUpActivity.class);Log.e(TAG,"set_up_intent");
-                startActivity(setUpIntent);
-            case R.id.status_info:
                 statusIntent = new Intent(this, StatusActivity.class);
                 Log.e(TAG,"status_info");
                 startActivity(statusIntent);
                 return true;
+
             case R.id.photo_notes:
 //                QRIntent = new Intent(this, WeChatQRCodeActivity.class);
 //                QRIntent = new Intent(this,ScanActivity.class);
@@ -1031,7 +1029,7 @@ public class MainActivity extends BaseActivity {
             //指令控制符
             Log.e(TAG, "receiveRecognizeResult: 指令控制符命令 ");
             handlerToast("指令控制符命令");
-            audioManager.startRATimer();
+            audioManager.startRATimer(null);
             audioRecorder = true;
             Log.e(TAG,"receiveRecognizeResult(): 开启录音");
         }else if(ges.getInsId() == 5){

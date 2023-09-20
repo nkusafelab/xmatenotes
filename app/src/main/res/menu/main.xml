@@ -17,9 +17,6 @@
         android:id="@+id/action_setup"
         android:title="@string/action_setup"/>
     <item
-        android:id="@+id/status_info"
-        android:title="@string/status_info"/>
-    <item
         android:id="@+id/photo_notes"
         android:title="@string/photo_notes"/>
 

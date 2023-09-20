@@ -14,6 +14,7 @@ import android.util.Log;
 import com.example.xmatenotes.App.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.Page.Page;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.File;
@@ -203,6 +204,7 @@ public class AudioManager {
         if(player == null){
             player = new MediaPlayer();
             try {
+                LogUtil.e(TAG,"播放音频文件绝对路径为："+audioFileName);
                 player.setDataSource(audioFileName);
                 player.prepare();
             } catch (IOException e) {
@@ -261,6 +263,7 @@ public class AudioManager {
      */
     public void stopPlayAudio(){
         if(player != null){
+            LogUtil.e(TAG, "停止播放音频");
             player.stop();
             player.release();
             player = null;
@@ -280,10 +283,14 @@ public class AudioManager {
 
     /**
      * 开始录音
-     * @param audioFileName 待录音文件的文件名，不含后缀
+     * @param audioAbsolutePath 完整待录音文件的文件绝对路径
      */
-    public void startRecordAudio(String audioFileName){
-        File file = new File(audioPath,audioFileName+".mp4");
+    public void startRecordAudio(String audioAbsolutePath){
+        if(audioAbsolutePath == null){
+            startRecordAudio();
+            return;
+        }
+        File file = new File(audioAbsolutePath);
         File fileParent = file.getParentFile();
         if(!fileParent.exists()){
             fileParent.mkdirs();
@@ -300,8 +307,6 @@ public class AudioManager {
             return ;
         }
 
-        setCurrentRecordAudioName(audioFileName);
-
         if(recorder == null){
             recorder = new MediaRecorder();
         }
@@ -312,6 +317,7 @@ public class AudioManager {
         try {
             recorder.prepare();//准备
             recorder.start();//开始录音
+            LogUtil.e(TAG, "开始录音");
             RATimer = true;//打开录音专用计时器开关
             recordStartTime = System.currentTimeMillis();//记录录音开始时间
             Log.e(TAG,"recordStartTime: "+recordStartTime);
@@ -327,7 +333,9 @@ public class AudioManager {
      * 开始录音，录音文件名采用默认方式
      */
     public void startRecordAudio(){
-        startRecordAudio(Page.createRecordAudioName(++recordAudioNumber));
+        String audioFileName = Page.createRecordAudioName(++recordAudioNumber);
+        setCurrentRecordAudioName(audioFileName);
+        startRecordAudio(audioPath+"/"+audioFileName+".mp4");
     }
 
     public int getCurrentRecordAudioNumber(){
@@ -349,7 +357,7 @@ public class AudioManager {
     /**
      * 停止录音，并释放相应资源
      */
-    public void stopRecordAudio(){
+    public void stopRecordAudioWithDot(){
         if(recorder != null){
             try{
                 recorder.setOnErrorListener(null);
@@ -385,6 +393,31 @@ public class AudioManager {
     }
 
     /**
+     * 停止录音，并释放相应资源
+     */
+    public void stopRecordAudio(){
+        if(recorder != null){
+            try{
+                recorder.setOnErrorListener(null);
+                recorder.setOnInfoListener(null);
+                recorder.setPreviewDisplay(null);
+                recorder.stop();//停止录音
+                recordStartTime = 0;//录音开始时间归零
+
+            }catch (IllegalStateException e){
+                recorder = null;
+                recorder = new MediaRecorder();
+            }
+
+//            recorder.reset();//重置
+            recorder.release();//释放资源
+            recorder=null;
+            Log.e(TAG,"结束录音");
+//            Toast.makeText(this,"停止录音",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
      * 添加录制音频文件名与笔迹的映射关系
      */
     public static void addAudio(){
@@ -399,7 +432,7 @@ public class AudioManager {
     /**
      * 开启录音。该方法会开启线程和计时器来进行录音。对应的关闭录音方法为{@link #stopRATimer()}
      */
-    public void startRATimer(){
+    public void startRATimer(String audioAbsolutePath){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -412,7 +445,7 @@ public class AudioManager {
                 }
                 Log.e(TAG,"执行完comPlayAssetsAudio(beep.ogg); "+System.currentTimeMillis()+" ms");
                 long a = System.currentTimeMillis();//记录录音开始时间
-                startRecordAudio();
+                startRecordAudio(audioAbsolutePath);
                 long s = System.currentTimeMillis();
                 Log.e(TAG,"startRecordAudio()执行了 "+(s-a)+" ms");
                 while (RATimer == true){
@@ -483,6 +516,24 @@ public class AudioManager {
         Log.e(TAG,"执行stopPlayAudio()前: "+System.currentTimeMillis()+" ms");
         stopPlayAudio();
         Log.e(TAG,"执行stopPlayAudio()后: "+System.currentTimeMillis()+" ms");
+    }
+
+    /**
+     * 完整播放音频
+     * @param audioAbsolutePath 音频文件完整绝对路径
+     */
+    public void comPlayAudio(String audioAbsolutePath){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startPlayAudio(audioAbsolutePath);
+                while (isPlaying()){
+
+                }
+                stopPlayAudio();
+            }
+        }).start();
+
     }
 
     /**

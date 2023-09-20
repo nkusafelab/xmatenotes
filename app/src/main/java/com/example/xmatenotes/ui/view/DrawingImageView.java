@@ -8,7 +8,10 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -130,13 +133,24 @@ public class DrawingImageView extends AppCompatImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (mBitmap != null) {
-            canvas.drawBitmap(mBitmap, mMatrix, null);
-        }
+//        if (mBitmap != null) {
+//            canvas.drawBitmap(mBitmap, mMatrix, null);
+//        }
         if(this.coordinateConverter == null && this.cardProcessActivity != null){
             LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
             setCoordinateConverter(this.cardProcessActivity.getCoordinateConverter(getWidth(), getHeight()));
         }
+
+//        Rect rect = this.getDrawable().getBounds();
+        //获取内部图片在屏幕上的真实坐标范围
+        Matrix matrix = getImageMatrix();
+        RectF rectF = new RectF();
+        Drawable drawable = getDrawable();
+        if (drawable != null) {
+            rectF.set(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            matrix.mapRect(rectF);
+        }
+        canvas.drawRect(rectF,mPaint);
 
         //初始化设置属性等
 //        for (Draw d : mDraws) {
@@ -182,34 +196,37 @@ public class DrawingImageView extends AppCompatImageView {
     }
 
     public void drawDots(List<SingleHandWriting> singleHandWritingList){
-        mPath = new Path();
-        for (SingleHandWriting singleHandWriting: singleHandWritingList) {
-            for (HandWriting handWriting: singleHandWriting.getHandWritings()) {
-                for (Stroke stroke: handWriting.getStrokes()) {
-                    for (SimpleDot simpleDot : stroke.getDots()) {
-                        SimpleDot outSimpleDot = simpleDot;
-                        //将UI坐标转换为内部真实物理坐标
-                        if(this.coordinateConverter != null){
-                            outSimpleDot = this.coordinateConverter.convertOut(simpleDot);
-                        }
-                        if(simpleDot instanceof MediaDot){
-                        }
-                        switch (outSimpleDot.type){
-                            case PEN_DOWN:
-                                mPath.moveTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
-                                break;
-                            case PEN_MOVE:
-                                mPath.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
-                                break;
-                            case PEN_UP:
-                                mPath.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
-                                break;
+        mPath = drawDots(singleHandWritingList, this.coordinateConverter);
+        postInvalidate();
+    }
+    public Path drawDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter converter){
+        Path path = new Path();
+        if(converter != null){
+            for (SingleHandWriting singleHandWriting: singleHandWritingList) {
+                for (HandWriting handWriting: singleHandWriting.getHandWritings()) {
+                    for (Stroke stroke: handWriting.getStrokes()) {
+                        for (SimpleDot simpleDot : stroke.getDots()) {
+                            SimpleDot outSimpleDot = simpleDot;
+                            //将UI坐标转换为内部真实物理坐标
+                            outSimpleDot = converter.convertOut(simpleDot);
+                            if(simpleDot instanceof MediaDot){
+                            }
+                            switch (outSimpleDot.type){
+                                case PEN_DOWN:
+                                    path.moveTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
+                                    break;
+                                case PEN_MOVE:
+                                case PEN_UP:
+                                    path.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
+                                    break;
+                            }
                         }
                     }
                 }
             }
+            return path;
         }
-        postInvalidate();
+        return null;
     }
 
 
@@ -218,6 +235,7 @@ public class DrawingImageView extends AppCompatImageView {
     public void setImageBitmap(Bitmap bm) {
         super.setImageBitmap(bm);
         mBitmap = bm;
+        mCanvas = new Canvas(mBitmap);
         calculateMatrix();
         invalidate();
     }
@@ -230,6 +248,10 @@ public class DrawingImageView extends AppCompatImageView {
     public void setCoordinateConverter(CoordinateConverter coordinateConverter){
         this.coordinateConverter = coordinateConverter;
         LogUtil.e(TAG, "配置坐标转换器");
+    }
+
+    public CoordinateConverter getCoordinateConverter() {
+        return coordinateConverter;
     }
 
     /**
@@ -416,8 +438,6 @@ public class DrawingImageView extends AppCompatImageView {
             });
         }
     }
-
-
 
     public void undo() {
         if (!mDraws.isEmpty()) {

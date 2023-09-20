@@ -35,10 +35,19 @@ public abstract class Responser implements Observer, CommandResponse {
             String comName = com.getName();
             Class responserClass = this.getClass();
             try {
+                LogUtil.e(TAG, "执行on"+comName+"()");
                 Method method = responserClass.getDeclaredMethod("on"+comName,Command.class);
                 method.invoke(this, com);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
+                try {
+                    Method method = Responser.class.getDeclaredMethod("on"+comName, Command.class);
+                    method.invoke(this, com);
+                } catch (NoSuchMethodException | InvocationTargetException |
+                         IllegalAccessException ex) {
+                    throw new RuntimeException(ex);
+                }
+
             }
             if(com.getHandWriting().isClosed() && !isLongPressExecute){
                 isLongPressExecute = true;

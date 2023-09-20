@@ -54,12 +54,17 @@ public class HandWriting implements Serializable,Cloneable {
      */
     private long duration = XmateNotesApplication.DEFAULT_LONG;
     private Region region = new Region();
-    private RectF boundRect = new RectF();
+    private SerializableRectF boundRect = new SerializableRectF();
 
     /**
      * 表示普通书写是否完整
      */
     private boolean isClosed = false;
+
+    /**
+     * 音频文件ID
+     */
+    private int audioId = XmateNotesApplication.DEFAULT_INT;
 
     /***************************形态信息*****************************/
     /**
@@ -170,6 +175,12 @@ public class HandWriting implements Serializable,Cloneable {
         Stroke stroke = this.strokes.get(strokes.size()-1);
 
         stroke.addDot(sDot);
+
+        if(sDot instanceof  MediaDot){
+            sDot = (MediaDot)sDot;
+            this.audioId = ((MediaDot) sDot).audioID;
+        }
+
         isClosed = false;
         boundRect.union(sDot.getFloatX(), sDot.getFloatY());
 
@@ -203,7 +214,7 @@ public class HandWriting implements Serializable,Cloneable {
         this.strokes.clear();
         this.strokesNumber = 0;
         this.firsttime = XmateNotesApplication.DEFAULT_LONG;
-        this.boundRect = new RectF();
+        this.boundRect = new SerializableRectF();
         this.region.setEmpty();
     }
 
@@ -233,8 +244,8 @@ public class HandWriting implements Serializable,Cloneable {
         return null;
     }
 
-    public RectF getBoundRectF() {
-        return boundRect;
+    public SerializableRectF getBoundRectF() {
+        return this.boundRect;
     }
 
     public ArrayList<Stroke> getStrokes() {
@@ -273,7 +284,28 @@ public class HandWriting implements Serializable,Cloneable {
         this.width = width;
     }
 
+    public int getAudioId() {
+        return audioId;
+    }
+
+    public void setAudioId(int audioId) {
+        this.audioId = audioId;
+    }
+
+    /**
+     * 是否包含某个点
+     * @param simpleDot
+     * @return
+     */
+    public boolean contains(SimpleDot simpleDot){
+        return this.region.contains(simpleDot.getIntX(), simpleDot.getIntY());
+    }
+
     public static Rect rectFToRect(RectF rectF){
+        return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
+    }
+
+    public static Rect rectFToRect(SerializableRectF rectF){
         return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
     }
 
@@ -284,10 +316,11 @@ public class HandWriting implements Serializable,Cloneable {
         try {
             handWriting = (HandWriting)super.clone();
             handWriting.strokes = (ArrayList<Stroke>) this.strokes.clone();
+            handWriting.boundRect = this.boundRect.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
-        handWriting.boundRect = (RectF) copy(this.boundRect);
+//        handWriting.boundRect = (SerializableRectF) copy(this.boundRect);
         handWriting.region = (Region) copy(this.region);
         return handWriting;
     }

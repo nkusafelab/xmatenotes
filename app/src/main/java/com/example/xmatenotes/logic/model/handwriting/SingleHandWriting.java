@@ -47,7 +47,7 @@ public class SingleHandWriting implements Serializable {
      */
     private long duration = XmateNotesApplication.DEFAULT_LONG;
     private Region region = new Region();
-    private RectF boundRect = new RectF();
+    private SerializableRectF boundRect = new SerializableRectF();
 
     /**
      * 表示单次笔迹是否完整
@@ -80,7 +80,7 @@ public class SingleHandWriting implements Serializable {
         }
 
         region.union(HandWriting.rectFToRect(handWriting.getBoundRectF()));
-        boundRect.union(handWriting.getBoundRectF());
+//        boundRect.union(handWriting.getBoundRectF());初始handWriting.getBoundRectF()为单点
         this.handWritings.add(handWriting);
         this.handWritingsNumber++;
 
@@ -95,11 +95,22 @@ public class SingleHandWriting implements Serializable {
             if(handWritingsNumber == 0){
 
             } else {
+                RectF rectF = new RectF();
+                for (HandWriting handWriting: this.handWritings) {
+                    if(handWriting.getBoundRectF().equals(rectF)){
+                        continue;
+                    }
+                    boundRect.union(handWriting.getBoundRectF());
+                }
                 this.handWritings.get(handWritings.size()-1).close();
             }
             isClosed = true;
         }
     }
+
+//    public boolean isEmpty(){
+//        return
+//    }
 
     public void setPrePeriod(long prePeriod) {
         this.prePeriod = prePeriod;
@@ -119,7 +130,7 @@ public class SingleHandWriting implements Serializable {
         return null;
     }
 
-    public RectF getBoundRectF() {
+    public SerializableRectF getBoundRectF() {
         return boundRect;
     }
 

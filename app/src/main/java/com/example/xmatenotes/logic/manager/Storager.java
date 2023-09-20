@@ -8,9 +8,11 @@ import com.example.xmatenotes.logic.model.Page.Card;
 import com.example.xmatenotes.util.LogUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class Storager {
@@ -29,6 +31,12 @@ public class Storager {
         return storager;
     }
 
+    /**
+     * 序列化存储对象
+     * @param absolutePath
+     * @param obj
+     * @throws IOException
+     */
     public void serializeSaveObject(String absolutePath, Object obj) throws IOException {
         File file = new File(absolutePath);
         File parentFile = file.getParentFile();
@@ -39,6 +47,23 @@ public class Storager {
         oos.writeObject(obj);
         oos.flush();
         oos.close();
+    }
+
+    /**
+     * 序列化解析对象
+     * @param absolutePath
+     * @throws IOException
+     */
+    public Object serializeParseObject(String absolutePath) throws IOException, ClassNotFoundException {
+        File file = new File(absolutePath);
+        if (!file.exists()) {
+            LogUtil.e(TAG, "待解析对象文件不存在！");
+            return null;
+        }
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+        Object obj = ois.readObject();
+        ois.close();
+        return obj;
     }
 
     //参数为包含后缀的文件绝对路径

@@ -17,6 +17,7 @@ import android.widget.*
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.xmatenotes.*
+import com.example.xmatenotes.App.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.Storager
 import com.example.xmatenotes.logic.model.Page.Card
 import com.example.xmatenotes.logic.model.Page.QRObject
@@ -34,6 +35,7 @@ import com.king.opencv.qrcode.OpenCVQRCodeDetector
 import com.king.wechat.qrcode.WeChatQRCodeDetector
 import com.king.wechat.qrcode.scanning.WeChatCameraScanActivity
 import com.lark.oapi.Client
+import com.lark.oapi.core.exception.ClientTimeoutException
 import com.lark.oapi.core.request.RequestOptions
 import com.lark.oapi.core.utils.Jsons
 import com.lark.oapi.service.bitable.v1.model.ListAppTableRecordReq
@@ -199,13 +201,17 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
         })
 
+        cardData.init()
+        if(XmateNotesApplication.role != null){
+            cardData.updateRole(XmateNotesApplication.role)
+        }
+
         runOnUiThread {
-            setTopActionBar(null, null,null, "一元一次不等式", "整体认知构建", "2")
-            setOrganInfor(null, cardData.getGroup(), cardData.getClassG(), cardData.getGrade(),"秋季学期","20230911")
+            setTopActionBar(cardData)
+            setOrganInfor(cardData)
             LogUtil.e(TAG, "初始化卡片完成")
         }
 
-        cardData.init()
         LogUtil.e(TAG, "初始化cardData完成")
 
         circleRunnable = CircleRunnable(object : CircleCallBack {
@@ -216,7 +222,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
             override fun circleCallBack() {
                 runOnUiThread {
-                    setDayText(getTime())
+                    cardData.cardDataLabel.day = getTime()
+                    setOrganInfor(cardData)
                 }
             }
 
@@ -231,10 +238,15 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             override fun onCallBack(subjectMap: MutableMap<String, Any>) {
                 if(circleRunnable.isAlive){
                     runOnUiThread {
-                        setSubjectText(subjectMap.get("科目").toString())
-                        setTermText(subjectMap.get("学期").toString())
-                        setWeekText(subjectMap.get("教学周").toString())
-                        LogUtil.e(TAG, "更新Subject")
+                        synchronized(this){
+                            cardData.cardDataLabel.subjectName = subjectMap.get("科目").toString()
+                            cardData.cardDataLabel.term = subjectMap.get("学期").toString()
+                            cardData.cardDataLabel.week = subjectMap.get("教学周").toString()
+
+                            setTopActionBar(cardData)
+                            setOrganInfor(cardData)
+                            LogUtil.e(TAG, "更新Subject")
+                        }
                     }
                 }
             }
@@ -518,6 +530,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     qrObject = qrObjectList.get(qrObjectList.size-1)
                     LogUtil.e(TAG, "qrObject.pn: "+qrObject.pn+" cardData.preCode: "+cardData.preCode)
                     LogUtil.e(TAG, "qrObject.pn.equals(cardData.preCode.toString()): "+qrObject.pn.equals(cardData.preCode.toString()))
+                    LogUtil.e(TAG, qrObject.toString())
                     if(Integer.parseInt(qrObject.pn) != cardData.preCode){
                         circleRunnable.stop()
                         getSubject(qrObject.te, object : CallBack {
@@ -525,12 +538,16 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                             override fun onCallBack(subjectMap: MutableMap<String, Any>) {
 
                                 runOnUiThread {
-                                    setSubjectText(subjectMap.get("科目").toString())
+                                    synchronized(this){
+                                        cardData.cardDataLabel.subjectName = subjectMap["科目"].toString()
+                                        setTopActionBar(cardData)
+                                    }
                                 }
                             }
                         })
-                        setPreCodeText(qrObject.pn)
+                        cardData.setPreCode(qrObject.pn)
                         cardData.setIteration(qrObject.data)
+                        setTopActionBar(cardData)
                         LogUtil.e(TAG, "使用二维码内容更新cardData")
                     }
                 }
@@ -682,7 +699,8 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                                 cardData.toQRObject().toQRCodeBitmap(rectF)
                                     ?.let {
                                         LogUtil.e(TAG, "变换后:"+rectF.toString())
-                                        canvas.drawBitmap(it, rectF.left, rectF.top, paint) }
+                                        canvas.drawBitmap(it, rectF.left, rectF.top, paint)
+                                    }
                             }
                         }
 
@@ -702,6 +720,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                         )
                         // 将View绘制到Bitmap上
                         rootView.draw(Canvas(bitmap))
+
 //                    ivResult.setImageBitmap(bitmap)
                         Storager.cardCache = cardData
                         BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
@@ -754,6 +773,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         }
     }
 
+    /**
+     * 获取包含所有目标点的最小正方形
+     */
     private fun getMinSquare(newQRCodePoints: ArrayList<Point>): ArrayList<RectF> {
         var rectFs = ArrayList<RectF>()
         var rectF : RectF? = null
@@ -1442,28 +1464,32 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 .build()
 
 
-            // 发起请求
-            // 如开启了Sdk的token管理功能，就无需调用 RequestOptions.newBuilder().tenantAccessToken("t-xxx").build()来设置租户token了
-            val resp = client.bitable().appTableRecord().list(
-                req, RequestOptions.newBuilder()
-                    .tenantAccessToken("t-g1049bkqIY5R5ZXKGVNT2XSXBLOQBE6W7FLNOGCS")
-                    .build()
-            )
+            try {
+                // 发起请求
+                // 如开启了Sdk的token管理功能，就无需调用 RequestOptions.newBuilder().tenantAccessToken("t-xxx").build()来设置租户token了
+                val resp = client.bitable().appTableRecord().list(
+                    req, RequestOptions.newBuilder()
+                        .build()
+                )
 
-            // 处理服务端错误
-            if (!resp.success()) {
-                LogUtil.e(TAG, String.format(
-                    "code:%s,msg:%s,reqId:%s",
-                    resp.code,
-                    resp.msg,
-                    resp.requestId
-                ))
+                // 处理服务端错误
+                if (!resp.success()) {
+                    LogUtil.e(TAG, String.format(
+                        "code:%s,msg:%s,reqId:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId
+                    ))
+                }
+
+                LogUtil.e(TAG, Jsons.DEFAULT.toJson(resp.getData()))
+                if(resp.data != null) {
+                    callBack.onCallBack(resp.data.items.get(0).getFields())
+                }
+            } catch (e: ClientTimeoutException) {
+                e.printStackTrace()
             }
 
-            LogUtil.e(TAG, Jsons.DEFAULT.toJson(resp.getData()))
-            if(resp.data.items.isNotEmpty()) {
-                callBack.onCallBack(resp.data.items.get(0).getFields())
-            }
 
         }.start()
 
@@ -1473,7 +1499,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
      * 通过教师编号从多维表格获取学科
      */
     fun getSubject(teacherNumber: String, callBack: CallBack) {
-        LogUtil.e(TAG, "teacherNumber: "+teacherNumber)
+        LogUtil.e(TAG, "teacherNumber: $teacherNumber")
         if(teacherNumber.equals("")){
             return
         }
@@ -1493,24 +1519,28 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
             // 发起请求
 
-            // 发起请求
-            val resp = client.bitable().appTableRecord().list(
-                req, RequestOptions.newBuilder()
-                    .build()
-            )
+            try {
+                // 发起请求
+                val resp = client.bitable().appTableRecord().list(
+                    req, RequestOptions.newBuilder()
+                        .build()
+                )
 
-            // 处理服务端错误
-            if (!resp.success()) {
-                LogUtil.e(TAG, String.format(
-                    "code:%s,msg:%s,reqId:%s",
-                    resp.code,
-                    resp.msg,
-                    resp.requestId
-                ))
-            }
+                // 处理服务端错误
+                if (!resp.success()) {
+                    LogUtil.e(TAG, String.format(
+                        "code:%s,msg:%s,reqId:%s",
+                        resp.code,
+                        resp.msg,
+                        resp.requestId
+                    ))
+                }
 
-            if(resp.data.items.isNotEmpty()){
-                callBack.onCallBack(resp.data.items[0].fields)
+                if(resp.data != null){
+                    callBack.onCallBack(resp.data.items[0].fields)
+                }
+            } catch (e: ClientTimeoutException) {
+                e.printStackTrace()
             }
 
 
@@ -1527,105 +1557,80 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         return sdf.format(datetime)
     }
 
-    fun setPreCodeText(string:String){
+    fun setPreCodeText(string: String){
         preCodeText.text = preCodeString+string
-        cardData.setPreCode(string)
+//        cardData.setPreCode(string)
     }
 
     fun setPostCodeText(string:String){
         postCodeText.text = postCodeString+string
-        cardData.postCode = Integer.parseInt(string)
+//        cardData.setPostCode(string)
     }
     fun setSubjectText(string:String){
         subjectText.text = subjectString+string
-        cardData.cardDataLabel.subjectName = string
+//        cardData.cardDataLabel.subjectName = string
         backgroundColorChange(string)
     }
     fun setUnitText(string:String){
         unitText.text = unitString+string
-        cardData.cardDataLabel.unitName = string
+//        cardData.cardDataLabel.unitName = string
     }
     fun setStageText(string:String){
         stageText.text = stageString+string
-        cardData.cardDataLabel.stage = string
+//        cardData.cardDataLabel.stage = string
     }
     fun setClassTimeText(string:String){
         classTimeText.text = classString+string
-        cardData.cardDataLabel.classTime = string
+//        cardData.cardDataLabel.classTime = string
     }
     fun setWeekText(string:String){
         weekText.text = "第"+string+"周"
-        cardData.cardDataLabel.week = string
+//        cardData.cardDataLabel.week = string
     }
     fun setGroupText(string:String){
         groupText.text = groupString+string
-        cardData.qrObject.gn = string
+//        cardData.qrObject.gn = string
     }
     fun setRoomText(string:String){
         roomText.text = roomString+string
-        cardData.qrObject.cl = string
+//        cardData.qrObject.cl = string
     }
     fun setGradeText(string:String){
         gradeText.text = gradeString+string
-        cardData.qrObject.gr = string
+//        cardData.qrObject.gr = string
     }
     fun setTermText(string:String){
         termText.text = string
-        cardData.cardDataLabel.term = string
+//        cardData.cardDataLabel.term = string
     }
 
     fun setDayText(string: String){
         dayText.text = string
-        cardData.cardDataLabel.day = string
+//        cardData.cardDataLabel.day = string
     }
 
     /**
      * 设置顶部学科栏
      */
-    fun setTopActionBar(preCode: String?, postCode: String?, subject: String?, unit: String?, stage: String?, classTime: String?) {
-        if(preCode != null){
-            setPreCodeText(preCode)
-        }
-
-        if(postCode != null){
-            setPostCodeText(postCode)
-        }
-        if(subject != null){
-            setSubjectText(subject)
-        }
-        if(unit != null){
-            setUnitText(unit)
-        }
-        if(stage != null){
-            setStageText(stage)
-        }
-        if(classTime != null){
-            setClassTimeText(classTime)
-        }
+    fun setTopActionBar(card: Card) {
+        setPreCodeText(card.cardDataLabel.preCode)
+        setPostCodeText(card.cardDataLabel.postCode)
+        setSubjectText(card.cardDataLabel.subjectName)
+        setUnitText(card.cardDataLabel.unitName)
+        setStageText(card.cardDataLabel.stage)
+        setClassTimeText(card.cardDataLabel.classTime)
     }
 
     /**
      * 设置组织信息
      */
-    fun setOrganInfor(week: String?, group: String?, room: String?, grade: String?, term: String?, day: String?) {
-        if(week != null){
-            setWeekText(week)
-        }
-        if(group != null){
-            setGroupText(group)
-        }
-        if(room != null){
-            setRoomText(room)
-        }
-        if(grade != null){
-            setGradeText(grade)
-        }
-        if(term != null){
-            setTermText(term)
-        }
-        if(day != null){
-            setDayText(day)
-        }
+    fun setOrganInfor(card: Card) {
+        setWeekText(card.cardDataLabel.week)
+        setGroupText(card.cardDataLabel.group)
+        setRoomText(card.cardDataLabel.classG)
+        setGradeText(card.cardDataLabel.grade)
+        setTermText(card.cardDataLabel.term)
+        setDayText(card.cardDataLabel.day)
     }
 
     /**
@@ -1645,7 +1650,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
                 captureButton.text = string
 
-                val background: Drawable = captureButton.getBackground().mutate()
+                val background: Drawable = captureButton.background.mutate()
                 var offset = 50 //颜色整体偏移量
                 background.colorFilter = PorterDuffColorFilter(
                     Color.rgb(
@@ -1654,7 +1659,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                         if ((blue + offset) > 0xFF) 0xFF else blue + offset
                     ), PorterDuff.Mode.SRC_IN
                 )
-                captureButton.setBackground(background)
+                captureButton.background = background
             }
         }
 
