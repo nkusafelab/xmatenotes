@@ -95,16 +95,22 @@ class CardProcessActivity : AppCompatActivity() {
 
         bitmap = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
         cardData = Storager.cardCache
+        Storager.cardCache = null
         var cardAbsolutePath = cardManager.mkdirs(cardData)
         cardManager.downLoad(cardData.preCode, cardAbsolutePath, object : CardManager.ObjectInputResp {
             override fun onFinish(card: Card?) {
+                LogUtil.e(TAG, "card == null: "+(card == null))
                 if (card != null){
+                    var handWritingNumber = 0
                     //区分新旧笔迹
                     for(singleHandWriting in card.cardResource.dotList){
+                        handWritingNumber += singleHandWriting.size()
                         singleHandWriting.isNew = false
                     }
+
                     //融合笔迹点集合
                     cardData.addDotList(0, card.cardResource.dotList)
+                    LogUtil.e(TAG, "融合旧的singleHandWriting数量为"+card.cardResource.dotList.size+" HandWriting数量为: "+handWritingNumber)
                     //融合音频文件名集合
                     cardData.addAudioNameList(0, card.getAudioNameList())
                     //融合笔迹范围，暂不处理
@@ -244,8 +250,6 @@ class CardProcessActivity : AppCompatActivity() {
                 if (command != null) {
                     if(command.handWriting.isClosed){
 
-                        runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写", Toast.LENGTH_SHORT).show() }
-
                         //普通书写基本延时响应
                         writer.handWritingWorker = writer.addResponseWorker(
                             HandWriting.DELAY_PERIOD+1000
@@ -256,13 +260,15 @@ class CardProcessActivity : AppCompatActivity() {
                                 audioRecorder = false
                                 audioManager.stopRATimer()
                             }
+                            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写完毕", Toast.LENGTH_SHORT).show() }
                         }
 
                         writer.singleHandWritingWorker = writer.addResponseWorker(
                             SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD
                         ) {
                             LogUtil.e(TAG, "单次笔迹延迟响应开始")
-                            writer.closeSingleHandWriting() }
+                            writer.closeSingleHandWriting()
+                            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "单次笔迹完毕", Toast.LENGTH_SHORT).show() }}
                     }
                 }
 

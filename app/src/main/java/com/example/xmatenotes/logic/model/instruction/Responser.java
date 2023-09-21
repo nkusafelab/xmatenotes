@@ -65,7 +65,7 @@ public abstract class Responser implements Observer, CommandResponse {
         //动作命令不画出来
         HandWriting handWriting = command.getHandWriting().clone();
         LogUtil.e(TAG, "onActionCommand");
-        command.getHandWriting().clear();
+        command.getHandWriting().clear();//确保动作命令所在的HandWriting是完全独立的，否则可能会误删前面的笔迹
         command.setHandWriting(handWriting);
         return true;
     }

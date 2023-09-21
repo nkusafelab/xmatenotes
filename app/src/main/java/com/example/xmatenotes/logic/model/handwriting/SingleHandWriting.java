@@ -51,7 +51,7 @@ public class SingleHandWriting implements Serializable {
      * 是否是新笔迹
      */
     private boolean isNew = true;
-    private Region region = new Region();
+//    private Region region = new Region();
     private SerializableRectF boundRect = new SerializableRectF();
 
     /**
@@ -84,7 +84,7 @@ public class SingleHandWriting implements Serializable {
             firsttime = handWriting.getFirsttime();
         }
 
-        region.union(HandWriting.rectFToRect(handWriting.getBoundRectF()));
+//        region.union(HandWriting.rectFToRect(handWriting.getBoundRectF()));
 //        boundRect.union(handWriting.getBoundRectF());初始handWriting.getBoundRectF()为单点
         this.handWritings.add(handWriting);
         this.handWritingsNumber++;
@@ -100,7 +100,7 @@ public class SingleHandWriting implements Serializable {
             if(handWritingsNumber == 0){
 
             } else {
-                RectF rectF = new RectF();
+                SerializableRectF rectF = new SerializableRectF();
                 for (HandWriting handWriting: this.handWritings) {
                     if(handWriting.getBoundRectF().equals(rectF)){
                         continue;
@@ -165,5 +165,18 @@ public class SingleHandWriting implements Serializable {
 
     public void setNew(boolean aNew) {
         isNew = aNew;
+    }
+
+    public int size(){
+        return this.handWritingsNumber;
+    }
+
+    public boolean contains(SimpleDot simpleDot){
+        for (HandWriting handWriting: this.handWritings) {
+            if(handWriting.contains(simpleDot)){
+                return true;
+            }
+        }
+        return false;
     }
 }

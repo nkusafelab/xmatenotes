@@ -52,7 +52,7 @@ public class HandWriting implements Serializable,Cloneable {
      * 实时笔划时间间隔
      */
     private long duration = XmateNotesApplication.DEFAULT_LONG;
-    private Region region = new Region();
+//    private Region region = new Region();
     private SerializableRectF boundRect = new SerializableRectF();
 
     /**
@@ -185,7 +185,7 @@ public class HandWriting implements Serializable,Cloneable {
 
         //自动闭合
         if(sDot.type == Dot.DotType.PEN_UP){
-            region.union(rectFToRect(stroke.getBoundRectF()));
+//            region.union(rectFToRect(stroke.getBoundRectF()));
             close();
         }
 
@@ -213,8 +213,8 @@ public class HandWriting implements Serializable,Cloneable {
         this.strokes.clear();
         this.strokesNumber = 0;
         this.firsttime = XmateNotesApplication.DEFAULT_LONG;
-        this.boundRect = new SerializableRectF();
-        this.region.setEmpty();
+        this.boundRect.setEmpty();
+//        this.region.setEmpty();
     }
 
     public boolean isClosed(){
@@ -297,12 +297,13 @@ public class HandWriting implements Serializable,Cloneable {
      * @return
      */
     public boolean contains(SimpleDot simpleDot){
-        return this.region.contains(simpleDot.getIntX(), simpleDot.getIntY());
+//        return this.region.contains(simpleDot.getIntX(), simpleDot.getIntY());
+        return this.boundRect.contains(simpleDot.getIntX(), simpleDot.getIntY());
     }
 
-    public static Rect rectFToRect(RectF rectF){
-        return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
-    }
+//    public static Rect rectFToRect(RectF rectF){
+//        return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
+//    }
 
     public static Rect rectFToRect(SerializableRectF rectF){
         return new Rect((int)rectF.left, (int)rectF.top, (int)Math.ceil(rectF.right), (int)Math.ceil(rectF.bottom));
@@ -320,7 +321,7 @@ public class HandWriting implements Serializable,Cloneable {
             throw new RuntimeException(e);
         }
 //        handWriting.boundRect = (SerializableRectF) copy(this.boundRect);
-        handWriting.region = (Region) copy(this.region);
+//        handWriting.region = (Region) copy(this.region);
         return handWriting;
     }
 

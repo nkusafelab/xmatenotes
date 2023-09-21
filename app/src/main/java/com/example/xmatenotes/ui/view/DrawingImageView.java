@@ -142,15 +142,16 @@ public class DrawingImageView extends AppCompatImageView {
         }
 
 //        Rect rect = this.getDrawable().getBounds();
+
         //获取内部图片在屏幕上的真实坐标范围
-        Matrix matrix = getImageMatrix();
-        RectF rectF = new RectF();
-        Drawable drawable = getDrawable();
-        if (drawable != null) {
-            rectF.set(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-            matrix.mapRect(rectF);
-        }
-        canvas.drawRect(rectF,mPaint);
+//        Matrix matrix = getImageMatrix();
+//        RectF rectF = new RectF();
+//        Drawable drawable = getDrawable();
+//        if (drawable != null) {
+//            rectF.set(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+//            matrix.mapRect(rectF);
+//        }
+//        canvas.drawRect(rectF,mPaint);
 
         //初始化设置属性等
 //        for (Draw d : mDraws) {
@@ -205,6 +206,7 @@ public class DrawingImageView extends AppCompatImageView {
             for (SingleHandWriting singleHandWriting: singleHandWritingList) {
                 //旧笔迹不绘制
                 if(!singleHandWriting.isNew()){
+                    LogUtil.e(TAG,"旧笔迹不绘制");
                     continue;
                 }
                 for (HandWriting handWriting: singleHandWriting.getHandWritings()) {
@@ -215,6 +217,7 @@ public class DrawingImageView extends AppCompatImageView {
                             outSimpleDot = converter.convertOut(simpleDot);
                             if(simpleDot instanceof MediaDot){
                             }
+                            LogUtil.e(TAG, "绘制"+outSimpleDot);
                             switch (outSimpleDot.type){
                                 case PEN_DOWN:
                                     path.moveTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());

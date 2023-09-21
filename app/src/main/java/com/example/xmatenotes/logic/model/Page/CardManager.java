@@ -2,6 +2,7 @@ package com.example.xmatenotes.logic.model.Page;
 
 import android.graphics.Bitmap;
 import android.os.Environment;
+import android.util.Log;
 
 import com.example.xmatenotes.logic.manager.Storager;
 import com.example.xmatenotes.logic.network.BitableManager;
@@ -183,21 +184,51 @@ public class CardManager {
                     //下载
 //                    List<String> picFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "卡片图片");
 //                    bitableManager.downloadFile(appTableRecord.getRecordId(), "卡片图片", cardAbsolutePath, picFileTokens);
-                    List<String> dataFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "卡片数据");
-                    bitableManager.downloadFile(appTableRecord.getRecordId(), "卡片数据", cardAbsolutePath, dataFileTokens);
-                    List<String> audioFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "音频");
-                    bitableManager.downloadFile(appTableRecord.getRecordId(), "音频", cardAbsolutePath, audioFileTokens);
 
-                    //解析Card对象
-                    try {
-                        Card card = (Card) storager.serializeParseObject(getDataAbsolutePath(cardAbsolutePath));
-                        if(objectInputResp != null){
-                            objectInputResp.onFinish(card);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
+                    if(appTableRecord.getFields().get("卡片数据") != null){
+//                        LogUtil.e(TAG, "appTableRecord.getFields().get(\"卡片数据\"): "+ appTableRecord.getFields().get("卡片数据"));
+                        List<String> dataFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "卡片数据");
+                        bitableManager.downloadFile(appTableRecord.getRecordId(), "卡片数据", cardAbsolutePath, dataFileTokens, new BitableManager.BitableResp() {
+                            @Override
+                            public void onFinish(String string) {
+                                super.onFinish(string);
+                                //解析Card对象
+                                try {
+                                    Card card = (Card) storager.serializeParseObject(getDataAbsolutePath(cardAbsolutePath));
+                                    if(objectInputResp != null){
+                                        objectInputResp.onFinish(card);
+                                    }
+                                } catch (Exception e) {
+                                    LogUtil.e(TAG, "card解析失败");
+                                    e.printStackTrace();
+                                } finally {
 
+                                }
+                            }
+
+                            @Override
+                            public void onError(String errorMsg) {
+                                super.onError(errorMsg);
+                            }
+                        });
+                    } else {
+                        LogUtil.e(TAG, "目标卡片数据为空！");
+                    }
+                    if(appTableRecord.getFields().get("音频") != null){
+                        List<String> audioFileTokens = bitableManager.getfileTokensByFieldName(appTableRecord, "音频");
+                        bitableManager.downloadFile(appTableRecord.getRecordId(), "音频", cardAbsolutePath, audioFileTokens, new BitableManager.BitableResp() {
+                            @Override
+                            public void onFinish(String string) {
+                                super.onFinish(string);
+                            }
+
+                            @Override
+                            public void onError(String errorMsg) {
+                                super.onError(errorMsg);
+                            }
+                        });
+                    } else {
+                        LogUtil.e(TAG, "目标卡片音频列表为空！");
                     }
                 }
             }

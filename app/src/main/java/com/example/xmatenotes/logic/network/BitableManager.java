@@ -622,6 +622,7 @@ public class BitableManager {
         for(int i=0; i < fileTokenList.size(); i++) {
             Map<String, String> map = new HashMap<>();
             map.put("file_token", fileTokenList.get(i));
+            LogUtil.e(TAG, "updateAttachmentCell: file_token: "+fileTokenList.get(i));
             listMap.add(map);
         }
 
@@ -710,13 +711,17 @@ public class BitableManager {
 
                         // 处理服务端错误
                         if (!resp.success()) {
-                            callBack.onError("uploadFile: "+String.format("code:%s,msg:%s,reqId:%s", resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                            if(callBack != null){
+                                callBack.onError("uploadFile: "+String.format("code:%s,msg:%s,reqId:%s", resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                            }
                             return;
                         }
 
                         // 业务数据处理
                         Log.e(TAG, "uploadFile: resp.getData(): " + Jsons.DEFAULT.toJson(resp.getData()));
-                        callBack.onFinish(resp.getData().getFileToken());
+                        if(callBack != null){
+                            callBack.onFinish(resp.getData().getFileToken());
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -834,9 +839,18 @@ public class BitableManager {
         }
     }
 
-    public void downloadFile(String recordId, String fieldName, String path, List<String> fileTokens){
-        downloadFile(curTableId, recordId, getFieldIdByName(curTableId, fieldName), path, fileTokens);
+    /**
+     *
+     * @param recordId
+     * @param fieldName
+     * @param path
+     * @param fileTokens
+     * @param callBack 回调接口，至少实现onFinish(String string)和onError(String errorMsg)
+     */
+    public void downloadFile(String recordId, String fieldName, String path, List<String> fileTokens, BitableResp callBack){
+        downloadFile(curTableId, recordId, getFieldIdByName(curTableId, fieldName), path, fileTokens, callBack);
     }
+
 
     /**
      * 附件素材下载
@@ -845,8 +859,9 @@ public class BitableManager {
      * @param fieldId
      * @param path
      * @param fileTokens
+     * @param callBack 回调接口，至少实现onFinish(String string)和onError(String errorMsg)
      */
-    public void downloadFile(String tableId, String recordId, String fieldId, String path, List<String> fileTokens){
+    public void downloadFile(String tableId, String recordId, String fieldId, String path, List<String> fileTokens, BitableResp callBack){
 
         if(fileTokens == null){
             LogUtil.e(TAG, "待下载附件列表为空！");
@@ -876,11 +891,17 @@ public class BitableManager {
                         // 处理服务端错误
                         if(!resp.success()) {
                             Log.e(TAG, "downloadFile: "+String.format("code:%s,msg:%s,reqId:%s", resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                            if(callBack != null){
+                                callBack.onError(String.format("code:%s,msg:%s,reqId:%s", resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                            }
                             return;
                         }
 
                         Log.e(TAG, "downloadFile: path: "+path+"/"+resp.getFileName());
                         resp.writeFile(path+"/"+resp.getFileName());
+                        if(callBack != null){
+                            callBack.onFinish(path+"/"+resp.getFileName());
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

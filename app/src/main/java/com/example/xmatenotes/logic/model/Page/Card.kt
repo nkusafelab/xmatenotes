@@ -5,6 +5,7 @@ import android.os.Build
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.model.Role
+import com.example.xmatenotes.logic.model.handwriting.SerializableRectF
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import com.example.xmatenotes.util.LogUtil
@@ -62,11 +63,11 @@ class Card() : Serializable {
     /**
      * 后置编码
      */
-    public var postCode = 0
+    var postCode = 0
 
-    public lateinit var cardContext: CardContext
-    public lateinit var cardDataLabel: CardDataLabel
-    public lateinit var cardResource: CardResource
+    var cardContext: CardContext = CardContext( "", "组长", 0F, 0F, 0F, 0F)
+    var cardDataLabel: CardDataLabel = CardDataLabel("", "","语文", "一元一次不等式", "整体认知构建", "2", "七", "00", "00", "00", "秋季学期","20230911")
+    var cardResource: CardResource = CardResource( "", ArrayList(), ArrayList())
 
     /**
      * 卡片资源信息存储
@@ -176,10 +177,7 @@ class Card() : Serializable {
 //    }
 
     init {
-        cardContext = CardContext( "", "组长", 0F, 0F, 0F, 0F)
-        cardDataLabel = CardDataLabel("", "","语文", "一元一次不等式", "整体认知构建", "2", "七", "00", "00", "00", "秋季学期","20230911")
-        cardResource = CardResource( "", ArrayList(), ArrayList())
-//        cardResource.dotList.add(SingleHandWriting())
+        //        cardResource.dotList.add(SingleHandWriting())
     }
 
     /**
@@ -277,6 +275,7 @@ class Card() : Serializable {
             for (handWriting in singleHandWriting.handWritings){
                 LogUtil.e(TAG, "handWriting.audioId: "+handWriting.audioId)
                 if(handWriting.audioId != XmateNotesApplication.DEFAULT_INT && handWriting.contains(dot)){
+                    LogUtil.e(TAG, "坐标上叠加的音频为: "+handWriting.audioId)
                     return handWriting.audioId.toString()
                 }
             }
@@ -298,7 +297,9 @@ class Card() : Serializable {
      */
     fun create(){
 
-        var rectF = RectF()
+        LogUtil.e(TAG, "原始getHandWritingsRectF():"+getHandWritingsRectF())
+        LogUtil.e(TAG, "已有singleHandWriting数量: "+this.cardResource.dotList.size)
+        var rectF = SerializableRectF()
         for (singleHandWriting in this.cardResource.dotList){
             if(singleHandWriting.boundRectF.equals(rectF) || !singleHandWriting.isNew){
                 //若为空，或旧笔迹，直接跳过

@@ -44,7 +44,7 @@ public class Stroke implements Serializable, Cloneable {
     /**
      * 实时最小矩形
      */
-    private RectF boundRect = new RectF();
+    private SerializableRectF boundRect = new SerializableRectF();
     private boolean isClosed = false;
 
     /***************************形态信息*****************************/
@@ -179,7 +179,7 @@ public class Stroke implements Serializable, Cloneable {
         return null;
     }
 
-    public RectF getBoundRectF() {
+    public SerializableRectF getBoundRectF() {
         return boundRect;
     }
 
@@ -229,7 +229,7 @@ public class Stroke implements Serializable, Cloneable {
         Stroke stroke = (Stroke) super.clone();
         stroke.dots = (ArrayList<SimpleDot>) this.dots.clone();
         Gson gson = new Gson();
-        stroke.boundRect = gson.fromJson(gson.toJson(this.boundRect), RectF.class);
+        stroke.boundRect = gson.fromJson(gson.toJson(this.boundRect), SerializableRectF.class);
         return stroke;
     }
 }

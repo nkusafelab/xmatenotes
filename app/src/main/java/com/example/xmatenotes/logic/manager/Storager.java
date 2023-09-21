@@ -57,7 +57,7 @@ public class Storager {
     public Object serializeParseObject(String absolutePath) throws IOException, ClassNotFoundException {
         File file = new File(absolutePath);
         if (!file.exists()) {
-            LogUtil.e(TAG, "待解析对象文件不存在！");
+            LogUtil.e(TAG, "待解析对象文件不存在！: "+absolutePath);
             return null;
         }
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));

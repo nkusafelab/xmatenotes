@@ -232,6 +232,13 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
         })
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        //每次回到本活动，重新初始化cardData
+        cardData = Card()
         cardData.init()
         if(XmateNotesApplication.role != null){
             cardData.updateRole(XmateNotesApplication.role)
@@ -260,6 +267,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         })
         Thread(circleRunnable).start()
 
+        ivResult.setImageBitmap(null)
+        cameraScan.setAnalyzeImage(true)
+        previewView.alpha = 1.0F
     }
 
     fun updateData(){
@@ -530,13 +540,6 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //        viewfinderView.showScanner()
         ivResult.setImageBitmap(null)
         //cameraScan.setAnalyzeImage(true) // 继续扫码分析
-    }
-
-    override fun onStart() {
-        super.onStart()
-        ivResult.setImageBitmap(null)
-        cameraScan.setAnalyzeImage(true)
-        previewView.alpha = 1.0F
     }
 
     override fun onScanResultCallback(result: AnalyzeResult<List<String>>) {
