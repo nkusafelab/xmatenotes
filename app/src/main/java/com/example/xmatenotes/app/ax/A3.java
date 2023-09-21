@@ -1,4 +1,4 @@
-package com.example.xmatenotes.App;
+package com.example.xmatenotes.app.ax;
 
 public class A3 extends AX{
     //(本子铺码) A3纸规格尺寸：297mm × 420mm

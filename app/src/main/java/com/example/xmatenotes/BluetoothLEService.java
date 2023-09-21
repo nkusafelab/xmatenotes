@@ -10,7 +10,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.tqltech.tqlpencomm.BLEException;
 import com.tqltech.tqlpencomm.bean.Dot;
 

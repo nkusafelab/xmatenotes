@@ -1,6 +1,6 @@
 package com.example.xmatenotes;
 
-import static com.example.xmatenotes.App.XmateNotesApplication.videoManager;
+import static com.example.xmatenotes.app.XmateNotesApplication.videoManager;
 import static com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity.REQUEST_CODE_QRCODE;
 
 import android.annotation.SuppressLint;
@@ -23,11 +23,11 @@ import java.util.Map;
 import java.util.Set;
 
 
-import com.example.xmatenotes.App.A3;
+import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.model.handwriting.Dots;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.ui.BaseActivity;
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.manager.AudioManager;
 import com.example.xmatenotes.logic.manager.ExcelReader;
@@ -36,6 +36,7 @@ import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.example.xmatenotes.logic.model.instruction.Instruction;
+import com.example.xmatenotes.ui.CardshowActivity;
 import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity;
 import com.google.common.collect.ArrayListMultimap;
@@ -127,8 +128,6 @@ public class MainActivity extends BaseActivity {
     private Intent serverIntent = null;
     private Intent ckplayerIntent = null;
     private Intent LogIntent = null;
-
-    private Intent statusIntent = null;
 
     private Intent QRIntent = null;
 
@@ -607,7 +606,7 @@ public class MainActivity extends BaseActivity {
                 startActivity(dotInfoIntent);
                 return true;
             case R.id.action_setup:
-                statusIntent = new Intent(this, StatusActivity.class);
+                Intent statusIntent = new Intent(this, StatusActivity.class);
                 Log.e(TAG,"status_info");
                 startActivity(statusIntent);
                 return true;
@@ -621,6 +620,11 @@ public class MainActivity extends BaseActivity {
                 // 初始化WeChatQRCodeDetector
                 WeChatQRCodeDetector.init(this);
                 startActivityForResult(WeChatQRCodeActivity.class);
+                return true;
+            case R.id.a0_page0:
+                Intent a0PageIntent = new Intent(this, CardshowActivity.class);
+                Log.e(TAG,"a0_page0");
+                startActivity(a0PageIntent);
                 return true;
 
             default:
@@ -713,21 +717,17 @@ public class MainActivity extends BaseActivity {
      */
     private MediaDot createMediaDot(Dot dot){
         MediaDot mediaDot = null;
-        try {
-            mediaDot = new MediaDot(dot);
-            mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
-            mediaDot.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
-            mediaDot.videoID = XmateNotesApplication.DEFAULT_INT;
-            mediaDot.audioID = XmateNotesApplication.DEFAULT_INT;
-            //如果正在录音，再次长压结束录音
-            if(audioRecorder == true){
-                mediaDot.audioID = audioManager.getCurrentRecordAudioNumber();
-                mediaDot.color = MediaDot.DEEP_GREEN;
-            }
-            mediaDot.penMac = XmateNotesApplication.mBTMac;
-        } catch (ParseException e) {
-            e.printStackTrace();
+        mediaDot = new MediaDot(dot);
+        mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
+        mediaDot.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
+        mediaDot.videoID = XmateNotesApplication.DEFAULT_INT;
+        mediaDot.audioID = XmateNotesApplication.DEFAULT_INT;
+        //如果正在录音，再次长压结束录音
+        if(audioRecorder == true){
+            mediaDot.audioID = audioManager.getCurrentRecordAudioNumber();
+            mediaDot.color = MediaDot.DEEP_GREEN;
         }
+        mediaDot.penMac = XmateNotesApplication.mBTMac;
 
         return mediaDot;
     }

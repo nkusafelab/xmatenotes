@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.R;
 import com.example.xmatenotes.logic.model.Page.Page;

@@ -238,6 +238,29 @@ public class BitableManager {
     }
 
     /**
+     * 在多维表格目标table中检索是否满足目标筛选条件的记录,查找成功则返回所找到的所有记录
+     * @param filter 筛选条件为OR(...)
+     * @param callBack 回调接口
+     * @see #searchAppTableRecords(String, Map, String, BitableResp)
+     */
+    public void searchAppTableRecordsWithORFilter(Map<String, Object> filter, final BitableResp callBack){
+        //构造OR(...)筛选条件
+
+        //查找记录
+        //searchAppTableRecords(String filter, final BitableResp callBack)
+    }
+
+    /**
+     * 在多维表格目标table中检索是否满足目标筛选条件的记录,查找成功则返回所找到的所有记录
+     * @param filter 查找记录筛选条件
+     * @param callBack 回调接口
+     * @see #searchAppTableRecords(String, Map, String, BitableResp)
+     */
+    public void searchAppTableRecords(String filter, final BitableResp callBack){
+        searchAppTableRecords(curTableId, null, filter, callBack);
+    }
+
+    /**
      * 在多维表格当前table中检索是否满足目标筛选条件的记录,查找成功则返回所找到的所有记录;若查找失败可能创建新纪录
      * @param fields
      * @param filter
@@ -313,7 +336,7 @@ public class BitableManager {
     /**
      * 在目标table中创建记录
      * @param fields 新纪录中的字段和值
-     * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)
+     * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)和onError(String errorMsg)
      */
     public void createAppTableRecord(String tableId, Map<String, Object> fields, BitableResp callBack){
 //        CreateAppTableRecordReq reqc = CreateAppTableRecordReq.newBuilder()
@@ -358,14 +381,97 @@ public class BitableManager {
                     throw new RuntimeException(ex);
                 }
                 // 业务数据处理
-                Log.e(TAG, "createRecord: resp.getData(): "+Jsons.DEFAULT.toJson(resp.getData()));
-                NowRecordId1 = resp.getData().getRecord().getRecordId();
+                LogUtil.e(TAG, "createRecord: resp.getData(): "+Jsons.DEFAULT.toJson(resp.getData()));
+//                NowRecordId1 = resp.getData().getRecord().getRecordId();
 
                 if (callBack != null){
                     callBack.onFinish(resp.getData().getRecord());
                 }
             }
         }).start();
+    }
+
+    /**
+     * 更新记录
+     * @param tableId
+     * @param recordId
+     * @param fields
+     * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)和onError(String errorMsg)
+     */
+    public void updateAppTableRecord(String tableId, String recordId, Map<String, Object> fields, BitableResp callBack){
+        UpdateAppTableRecordReq req = UpdateAppTableRecordReq.newBuilder()
+                .appToken(appToken)
+                .tableId(tableId)
+                .recordId(recordId)
+                .appTableRecord(AppTableRecord.newBuilder()
+                        .fields(fields)
+                        .build())
+                .build();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // 发起请求
+                try {
+                    UpdateAppTableRecordResp resp = client.bitable().appTableRecord().update(req, RequestOptions.newBuilder()
+                            .build());
+
+                    // 处理服务端错误
+                    if(!resp.success()) {
+                        callBack.onError("updateAppTableRecord: "+String.format("code:%s,msg:%s,reqId:%s", resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                        return;
+                    }
+
+                    // 业务数据处理
+                    LogUtil.e(TAG, "updateRecord: resp.getData(): "+Jsons.DEFAULT.toJson(resp.getData()));
+
+                    if (callBack != null){
+                        callBack.onFinish(resp.getData().getRecord());
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 查找并更新筛选出的记录
+     * @param filter 筛选条件
+     * @param fields 待更新的字段
+     * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)和onError(String errorMsg)
+     */
+    public void sUpdateAppTableRecord(String filter, Map<String, Object> fields, BitableResp callBack){
+        searchAppTableRecords(filter, new BitableResp() {
+
+            @Override
+            public void onFinish(AppTableRecord[] appTableRecords) {
+                super.onFinish(appTableRecords);
+
+                //更新记录
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+                super.onError(errorMsg);
+                if(callBack != null){
+                    callBack.onError(errorMsg);
+                }
+            }
+        });
+    }
+
+    /**
+     * 查找并更新筛选出的记录
+     * @param filter 筛选条件为AND(...)
+     * @param fields 待更新的字段
+     * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)和onError(String errorMsg)
+     */
+    public void sUpdateAppTableRecordWithANDFilter(Map<String, Object> filter, Map<String, Object> fields, BitableResp callBack){
+        //构造AND(...)
+
+        //查找并更新记录
+        //sUpdateAppTableRecord(String filter, Map<String, Object> fields, BitableResp callBack)
     }
 
 //    public void coverAttachmentCell(String tableId, String recordId, String fieldName,List<String> pathList){

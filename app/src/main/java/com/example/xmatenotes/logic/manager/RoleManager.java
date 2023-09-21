@@ -4,7 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.SharedPreferences;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 //import com.example.xmatenotes.logic.dao.RoleDao;
 import com.example.xmatenotes.logic.model.Role;
 import com.google.gson.Gson;

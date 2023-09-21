@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.model.handwriting;
 
 import android.graphics.Color;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.util.DateUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
@@ -94,7 +94,7 @@ public class MediaDot extends SimpleDot {
         this.ins = DEFAULT_INS;
     }
 
-    public MediaDot(Dot dot) throws ParseException {
+    public MediaDot(Dot dot) {
         super(dot);
         this.pageID = dot.PageID;
         this.videoTime = XmateNotesApplication.DEFAULT_FLOAT;

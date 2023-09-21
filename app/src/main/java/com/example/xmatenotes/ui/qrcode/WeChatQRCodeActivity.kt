@@ -17,7 +17,7 @@ import android.widget.*
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.xmatenotes.*
-import com.example.xmatenotes.App.XmateNotesApplication
+import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.Storager
 import com.example.xmatenotes.logic.model.Page.Card
 import com.example.xmatenotes.logic.model.Page.QRObject

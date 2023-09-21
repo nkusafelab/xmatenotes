@@ -1,4 +1,4 @@
-package com.example.xmatenotes.App;
+package com.example.xmatenotes.app.ax;
 
 public class AX {
 

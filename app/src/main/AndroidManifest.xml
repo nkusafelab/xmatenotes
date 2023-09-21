@@ -31,7 +31,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
-        android:name=".App.XmateNotesApplication"
+        android:name=".app.XmateNotesApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -122,6 +122,9 @@
             tools:ignore="Instantiatable" />
         <activity
             android:name=".CropActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.CardshowActivity"
             android:screenOrientation="portrait" />
 
         <provider

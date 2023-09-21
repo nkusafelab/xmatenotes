@@ -1,4 +1,4 @@
-package com.example.xmatenotes.App;
+package com.example.xmatenotes.app;
 
 
 import android.app.Application;
@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.example.xmatenotes.logic.manager.AudioManager;
+//import com.example.xmatenotes.logic.manager.ExcelA0Reader;
 import com.example.xmatenotes.logic.manager.ExcelReader;
 import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
@@ -87,6 +88,24 @@ public class XmateNotesApplication extends Application {
         excelReader.openExcel("excel/A3学程样例·纸分区坐标.xlsx","一级局域索引表");
         excelReader.switchSheet("二级局域编码表");
 
+        //打开关于A0表格的各种工作表
+//        excelA0Reader = ExcelA0Reader.getInstance();
+//
+//        excelA0Reader.openExcel("excel/填写索引表.xlsx","0级索引表");
+//
+//        excelA0Reader.indexSheet = excelA0Reader.openSheet("0级索引表");//0级索引表
+//
+//        excelA0Reader.indexSheet1 = excelA0Reader.openSheet("一级索引表");
+//
+//        excelA0Reader.indexSheet2 = excelA0Reader.openSheet("二级索引表");
+//
+//        excelA0Reader.sheet1 = excelA0Reader.openSheet("G表");
+//
+//        excelA0Reader.sheet2 = excelA0Reader.openSheet("TA表");
+//
+//        excelA0Reader.sheet3 = excelA0Reader.openSheet("N表");
+//
+//        excelA0Reader.pageSheet = excelA0Reader.openSheet("page");
 
         videoManager = VideoManager.getInstance();
 

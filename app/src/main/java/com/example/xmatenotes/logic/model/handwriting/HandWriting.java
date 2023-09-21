@@ -9,8 +9,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
-import com.google.gson.Gson;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.Serializable;

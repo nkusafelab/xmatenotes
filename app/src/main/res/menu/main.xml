@@ -19,5 +19,8 @@
     <item
         android:id="@+id/photo_notes"
         android:title="@string/photo_notes"/>
+    <item
+        android:id="@+id/a0_page0"
+        android:title="@string/page_a0"/>
 
 </menu>

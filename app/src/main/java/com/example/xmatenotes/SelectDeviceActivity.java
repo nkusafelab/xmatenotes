@@ -27,7 +27,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.core.app.ActivityCompat;
 
 import com.example.xmatenotes.ui.BaseActivity;
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.tqltech.tqlpencomm.BLEException;
 import com.tqltech.tqlpencomm.BLEScanner;

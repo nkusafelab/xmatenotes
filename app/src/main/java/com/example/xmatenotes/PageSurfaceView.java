@@ -1,8 +1,5 @@
 package com.example.xmatenotes;
 
-import static com.example.xmatenotes.App.A3.ABSCISSA_RANGE;
-import static com.example.xmatenotes.App.A3.ORDINATE_RANGE;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -27,10 +24,10 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
-import com.example.xmatenotes.App.A3;
+import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.ui.BaseActivity;
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.TimelongDot;

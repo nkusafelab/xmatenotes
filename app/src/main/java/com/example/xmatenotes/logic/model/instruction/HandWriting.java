@@ -3,7 +3,7 @@ package com.example.xmatenotes.logic.model.instruction;
 import android.graphics.Rect;
 import android.graphics.Region;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 
 /**

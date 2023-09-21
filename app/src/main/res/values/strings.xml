@@ -40,6 +40,7 @@
     <string name="take_photo">拍照</string>
     <string name="select">相册</string>
     <string name="photo_notes">拍照笔记</string>
+    <string name="page_a0">多幅面表格数据活动呈现</string>
 
 
 </resources>

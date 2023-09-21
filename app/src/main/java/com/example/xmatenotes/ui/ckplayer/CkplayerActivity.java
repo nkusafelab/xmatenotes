@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.BluetoothLEService;
 import com.example.xmatenotes.DotInfoActivity;
 import com.example.xmatenotes.R;
@@ -357,27 +357,23 @@ public class CkplayerActivity extends BaseActivity {
 	 */
 	private MediaDot createMediaDot(Dot dot){
 		MediaDot mediaDot = null;
+		mediaDot = new MediaDot(dot);
+		mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
+		mediaDot.audioID = XmateNotesApplication.DEFAULT_INT;
+
+		float timeR = time;
 		try {
-			mediaDot = new MediaDot(dot);
-			mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
-			mediaDot.audioID = XmateNotesApplication.DEFAULT_INT;
-
-			float timeR = time;
-			try {
-				//修正视频进度;
-				timeR = MediaDot.reviseTimeS(dot.timelong, time);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-
-			mediaDot.videoTime = timeR;
-			mediaDot.videoID = currentID;
-			mediaDot.color = MediaDot.DEEP_ORANGE;
-
-			mediaDot.penMac = XmateNotesApplication.mBTMac;
+			//修正视频进度;
+			timeR = MediaDot.reviseTimeS(dot.timelong, time);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
+
+		mediaDot.videoTime = timeR;
+		mediaDot.videoID = currentID;
+		mediaDot.color = MediaDot.DEEP_ORANGE;
+
+		mediaDot.penMac = XmateNotesApplication.mBTMac;
 
 		return mediaDot;
 	}

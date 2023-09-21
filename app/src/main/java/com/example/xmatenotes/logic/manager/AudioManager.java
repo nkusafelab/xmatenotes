@@ -11,7 +11,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.util.LogUtil;

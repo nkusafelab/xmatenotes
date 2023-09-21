@@ -2,8 +2,7 @@ package com.example.xmatenotes.logic.model.Page
 
 import android.graphics.RectF
 import android.os.Build
-import android.util.Log
-import com.example.xmatenotes.App.XmateNotesApplication
+import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.model.Role
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
@@ -12,7 +11,6 @@ import com.example.xmatenotes.util.LogUtil
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.sin
 
 class Card() : Serializable {
 

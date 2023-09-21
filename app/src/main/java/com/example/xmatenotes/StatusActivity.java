@@ -22,7 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 //import com.example.xmatenotes.logic.manager.AppDataBase;
 import com.example.xmatenotes.logic.manager.RoleManager;
 //import com.example.xmatenotes.logic.dao.RoleDao;

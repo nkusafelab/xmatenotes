@@ -1,6 +1,5 @@
 package com.example.xmatenotes.logic.manager;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.Page.Card;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;

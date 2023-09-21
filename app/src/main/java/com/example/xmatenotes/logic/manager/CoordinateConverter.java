@@ -45,7 +45,12 @@ public class CoordinateConverter {
      * @return
      */
     public SimpleDot convertIn(SimpleDot outSimpleDot){
-        SimpleDot inSimpleDot = new SimpleDot(outSimpleDot);
+        SimpleDot inSimpleDot = null;
+        if(outSimpleDot instanceof MediaDot){
+            inSimpleDot = new MediaDot((MediaDot) outSimpleDot);
+        } else {
+            inSimpleDot = new SimpleDot(outSimpleDot);
+        }
         inSimpleDot.setX((inSimpleDot.getFloatX() / this.showWidth) * this.realWidth);
         inSimpleDot.setY((inSimpleDot.getFloatY() / this.showHeight) * this.realHeight);
         LogUtil.e(TAG, "convertIn: "+inSimpleDot);
@@ -58,7 +63,12 @@ public class CoordinateConverter {
      * @return
      */
     public SimpleDot convertOut(SimpleDot inSimpleDot){
-        SimpleDot outSimpleDot = new MediaDot(inSimpleDot);
+        SimpleDot outSimpleDot = null;
+        if(inSimpleDot instanceof MediaDot){
+            outSimpleDot = new MediaDot((MediaDot) inSimpleDot);
+        } else {
+            outSimpleDot = new SimpleDot(inSimpleDot);
+        }
         outSimpleDot.setX((outSimpleDot.getFloatX() / this.realWidth) * this.showWidth);
         outSimpleDot.setY((outSimpleDot.getFloatY() / this.realHeight) * this.showHeight);
         LogUtil.e(TAG, "convertOut: "+outSimpleDot);

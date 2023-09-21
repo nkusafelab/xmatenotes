@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.RectF;
 import android.util.Log;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.ui.BaseActivity;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;

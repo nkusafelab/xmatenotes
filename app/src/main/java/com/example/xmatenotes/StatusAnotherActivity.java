@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 
 import com.example.xmatenotes.ui.BaseActivity;
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.tqltech.tqlpencomm.PenCommAgent;
 import com.tqltech.tqlpencomm.bean.PenStatus;
 

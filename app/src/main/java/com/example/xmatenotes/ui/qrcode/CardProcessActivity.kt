@@ -13,7 +13,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import com.example.xmatenotes.App.XmateNotesApplication
+import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.R
 import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter

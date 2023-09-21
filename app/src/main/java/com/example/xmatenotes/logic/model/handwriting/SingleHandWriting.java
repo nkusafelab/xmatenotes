@@ -3,7 +3,7 @@ package com.example.xmatenotes.logic.model.handwriting;
 import android.graphics.RectF;
 import android.graphics.Region;
 
-import com.example.xmatenotes.App.XmateNotesApplication;
+import com.example.xmatenotes.app.XmateNotesApplication;
 
 import java.io.Serializable;
 import java.util.ArrayList;

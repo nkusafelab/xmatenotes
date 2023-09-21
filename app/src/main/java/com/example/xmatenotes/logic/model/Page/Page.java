@@ -5,7 +5,7 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
 
-import com.example.xmatenotes.App.A3;
+import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.manager.AudioManager;
 import com.example.xmatenotes.logic.manager.ExcelReader;
 import com.example.xmatenotes.logic.manager.LocalRect;
