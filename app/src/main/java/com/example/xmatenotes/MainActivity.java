@@ -37,6 +37,7 @@ import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.example.xmatenotes.logic.model.instruction.Instruction;
 import com.example.xmatenotes.ui.CardshowActivity;
+//import com.example.xmatenotes.ui.TestActivity;
 import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity;
 import com.google.common.collect.ArrayListMultimap;
@@ -626,6 +627,11 @@ public class MainActivity extends BaseActivity {
                 Log.e(TAG,"a0_page0");
                 startActivity(a0PageIntent);
                 return true;
+//            case R.id.line_chart:
+//                Intent lcIntent = new Intent(this, TestActivity.class);
+//                Log.e(TAG,"testActivity");
+//                startActivity(lcIntent);
+//                return true;
 
             default:
 /*

@@ -300,8 +300,8 @@ class Card() : Serializable {
 
         var rectF = RectF()
         for (singleHandWriting in this.cardResource.dotList){
-            if(singleHandWriting.boundRectF.equals(rectF)){
-                //若为空，直接跳过
+            if(singleHandWriting.boundRectF.equals(rectF) || !singleHandWriting.isNew){
+                //若为空，或旧笔迹，直接跳过
                 continue
             }
             LogUtil.e(TAG, "前getHandWritingsRectF():"+getHandWritingsRectF())

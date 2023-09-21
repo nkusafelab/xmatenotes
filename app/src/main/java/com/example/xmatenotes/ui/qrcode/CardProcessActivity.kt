@@ -99,6 +99,10 @@ class CardProcessActivity : AppCompatActivity() {
         cardManager.downLoad(cardData.preCode, cardAbsolutePath, object : CardManager.ObjectInputResp {
             override fun onFinish(card: Card?) {
                 if (card != null){
+                    //区分新旧笔迹
+                    for(singleHandWriting in card.cardResource.dotList){
+                        singleHandWriting.isNew = false
+                    }
                     //融合笔迹点集合
                     cardData.addDotList(0, card.cardResource.dotList)
                     //融合音频文件名集合

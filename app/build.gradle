@@ -96,6 +96,7 @@ dependencies {
     implementation group: 'com.larksuite.oapi', name: 'oapi-sdk', version: '2.0.18'
     implementation 'androidx.compose.ui:ui-graphics:1.3.0'
     implementation "androidx.room:room-runtime:2.5.2"
+    implementation 'com.github.lecho:hellocharts-library:1.5.8'
     kapt "androidx.room:room-compiler:2.5.2"
 
     testImplementation 'junit:junit:4.13.2'
@@ -137,6 +138,10 @@ dependencies {
     implementation 'org.litepal.guolindev:core:3.2.3'
 
     implementation 'androidx.cardview:cardview:1.0.0'
+
+//    implementation 'com.github.User:Repo:Tag'
+
+//    implementation 'com.github.lecho:hellocharts-library:1.5.8@aar'
 
 //    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 

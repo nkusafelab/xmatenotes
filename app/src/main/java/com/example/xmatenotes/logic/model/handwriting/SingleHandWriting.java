@@ -46,6 +46,11 @@ public class SingleHandWriting implements Serializable {
      * 实时笔划时间间隔
      */
     private long duration = XmateNotesApplication.DEFAULT_LONG;
+
+    /**
+     * 是否是新笔迹
+     */
+    private boolean isNew = true;
     private Region region = new Region();
     private SerializableRectF boundRect = new SerializableRectF();
 
@@ -152,5 +157,13 @@ public class SingleHandWriting implements Serializable {
 
     public int getHandWritingsNumber() {
         return handWritingsNumber;
+    }
+
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean aNew) {
+        isNew = aNew;
     }
 }

@@ -203,6 +203,10 @@ public class DrawingImageView extends AppCompatImageView {
         Path path = new Path();
         if(converter != null){
             for (SingleHandWriting singleHandWriting: singleHandWritingList) {
+                //旧笔迹不绘制
+                if(!singleHandWriting.isNew()){
+                    continue;
+                }
                 for (HandWriting handWriting: singleHandWriting.getHandWritings()) {
                     for (Stroke stroke: handWriting.getStrokes()) {
                         for (SimpleDot simpleDot : stroke.getDots()) {

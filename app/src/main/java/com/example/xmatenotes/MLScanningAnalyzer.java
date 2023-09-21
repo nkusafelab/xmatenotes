@@ -86,7 +86,7 @@ public class MLScanningAnalyzer  implements Analyzer<List<String>> {
                         public void onSuccess(List<Barcode> barcodes) {
                             // Task completed successfully
                             // ...
-                            Log.e(TAG, "onSuccess: 777");
+                            Log.e(TAG, "onSuccess: barcode analyze");
                             if (barcodes.isEmpty()) {
                                 Log.v(TAG, "No barcode has been detected");
                             }else {
@@ -109,7 +109,7 @@ public class MLScanningAnalyzer  implements Analyzer<List<String>> {
                         public void onFailure(@NonNull Exception e) {
                             // Task failed with an exception
                             // ...
-                            Log.e(TAG, "onFailure: 888");
+                            Log.e(TAG, "onFailure: barcode analyze");
                         }
                     })
                     .addOnCompleteListener(new OnCompleteListener<List<Barcode>>() {
