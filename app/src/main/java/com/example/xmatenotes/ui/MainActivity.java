@@ -1,4 +1,4 @@
-package com.example.xmatenotes;
+package com.example.xmatenotes.ui;
 
 import static com.example.xmatenotes.app.XmateNotesApplication.videoManager;
 import static com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity.REQUEST_CODE_QRCODE;
@@ -17,17 +17,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
 
+import com.example.xmatenotes.BluetoothLEService;
+import com.example.xmatenotes.DotInfoActivity;
+import com.example.xmatenotes.DrawView;
+import com.example.xmatenotes.PageSurfaceView;
+import com.example.xmatenotes.R;
+import com.example.xmatenotes.ReplayActivity;
+import com.example.xmatenotes.SelectDeviceActivity;
+import com.example.xmatenotes.StatusActivity;
 import com.example.xmatenotes.app.ax.A3;
+import com.example.xmatenotes.logic.manager.CoordinateConverter;
+import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.handwriting.Dots;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
-import com.example.xmatenotes.ui.BaseActivity;
 import com.example.xmatenotes.app.XmateNotesApplication;
+import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.manager.AudioManager;
 import com.example.xmatenotes.logic.manager.ExcelReader;
@@ -35,11 +44,15 @@ import com.example.xmatenotes.logic.manager.LocalRect;
 import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
+import com.example.xmatenotes.logic.model.instruction.Command;
 import com.example.xmatenotes.logic.model.instruction.Instruction;
-import com.example.xmatenotes.ui.CardshowActivity;
 //import com.example.xmatenotes.ui.TestActivity;
+import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity;
+import com.example.xmatenotes.util.LogUtil;
 import com.google.common.collect.ArrayListMultimap;
 import com.king.wechat.qrcode.WeChatQRCodeDetector;
 import com.tqltech.tqlpencomm.bean.Dot;
@@ -176,6 +189,11 @@ public class MainActivity extends BaseActivity {
     private PenMacManager penMacManager = null;//管理所有mac地址的对象
     private PageManager pageManager = null;
     private ExcelReader excelReader = null;
+
+    private Writer writer = null;
+
+    //坐标转换器
+    private CoordinateConverter coordinateConverter;
     private String penMac = XmateNotesApplication.mBTMac;//存储笔mac地址
 
     private boolean wTimer = false;//普通书写完毕计时器开关
@@ -413,6 +431,9 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //配置坐标转换器,maxX，maxY,maxrealX,maxrealY
+        this.coordinateConverter = new CoordinateConverter(A3.ABSCISSA_RANGE, A3.ORDINATE_RANGE, A3.PAPER_WIDTH * 10, A3.PAPER_HEIGHT * 10);
+
         Intent gattServiceIntent = new Intent(this, BluetoothLEService.class);
         boolean bBind = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
@@ -532,6 +553,372 @@ public class MainActivity extends BaseActivity {
             mService.setOnDataReceiveListener(dotsListener);//添加监听器
         }
         Log.e(TAG,"MainActivity.onResume()");
+
+        this.writer = Writer.getInstance().init().bindCard(null).setResponser(new Responser() {
+
+            @Override
+            public boolean onDoubleClick(Command command) {
+                if(!super.onDoubleClick(command)){
+                    return false;
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(XmateNotesApplication.context, "双击命令", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                handlerToast("双击命令");
+
+                SimpleDot simpleDot = command.getHandWriting().getFirstDot();
+                if(simpleDot != null){
+                    MediaDot mediaDot = (MediaDot) coordinateConverter.convertOut(simpleDot) ;
+                    int pN = pageManager.getPageNumberByPageID(mediaDot.pageID);
+                    //long start = System.currentTimeMillis();
+                    LocalRect lR = excelReader.getLocalRectByXY(pN, mediaDot.getIntX(), mediaDot.getIntY());
+                    //Log.e(TAG,"start - end = "+(System.currentTimeMillis()-start)+" ms");
+                    //耗时一般在十几ms以内
+                    if(lR != null){
+                        Log.e(TAG,"局域编码: "+lR.getLocalCode());
+                    }
+
+                    mediaDot = pageManager.getDotMedia(mediaDot.pageID,mediaDot.getIntX(), mediaDot.getIntY());
+                    if(mediaDot != null){
+                        Log.e(TAG,mediaDot.toString());
+
+                        if(mediaDot.penMac.equals(XmateNotesApplication.mBTMac)){
+                            if(mediaDot.isVideoDot()) {
+                                //跳转至ck
+                                Intent ckIntent = new Intent(MainActivity.this, CkplayerActivity.class);
+                                ckIntent.putExtra("time", mediaDot.videoTime);
+                                ckIntent.putExtra("videoID", mediaDot.videoID);
+                                startActivity(ckIntent);
+//                }else if(mediaDot.audioID != 0){
+                            }else {
+                                Log.e(TAG,"receiveRecognizeResult(): 跳转至笔迹复现页面");
+                                //跳转至笔迹复现页面
+                                Intent rpIntent = new Intent(MainActivity.this, ReplayActivity.class);
+//                    rpIntent.putExtra("audioID",mediaDot.audioID);
+                                rpIntent.putExtra("pageID",mediaDot.pageID);
+
+                                Log.e(TAG, "lR != null: "+(lR != null));
+                                if(lR != null){
+                                    //学程样例纸张
+                                    Log.e(TAG, "lR: "+lR.rect.toString());
+                                    //扩展“余光”
+                                    rpIntent.putExtra("rectLeft",Math.max(lR.rect.left - ReplayActivity.MARGIN, 0));
+                                    rpIntent.putExtra("rectTop",Math.max(lR.rect.top - ReplayActivity.MARGIN, 0));
+                                    rpIntent.putExtra("rectRight",Math.min(lR.rect.right + ReplayActivity.MARGIN, A3.ABSCISSA_RANGE));
+                                    rpIntent.putExtra("rectBottom",Math.min(lR.rect.bottom + ReplayActivity.MARGIN, A3.ORDINATE_RANGE));
+                                    rpIntent.putExtra("localCode",lR.getLocalCode());
+                                    rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
+                                    startActivity(rpIntent);
+                                }else {
+                                    //普通点阵纸张
+                                    rpIntent.putExtra("localCode","");
+                                    rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
+                                    startActivity(rpIntent);
+                                }
+                            }
+                        }
+
+//                if(mediaDot.y < 20){
+//                    pageSurfaceView.saveBmp(mediaDot.pageID+"-"+pageManager.getPageByPageID(mediaDot.pageID).addCurrentSaveBmpNumber());
+//
+//                    handlerToast("底图已存储");
+//
+//                }
+                    } else {
+
+                        if(lR != null){
+                            Log.e(TAG, "lR: "+lR.toString());
+                            if("资源卡".equals(lR.localName)){
+                                Log.e(TAG, "双击资源卡");
+                                //跳转至ck
+                                Intent ckIntent = new Intent(MainActivity.this,CkplayerActivity.class);
+                                ckIntent.putExtra("time",0.0f);
+
+//                    Random random = new Random();
+//                    int videoID = random.nextInt(5)+1;
+                                int videoID = lR.getVideoIDByAddInf();
+                                String videoName = lR.getVideoNameByAddInf();
+
+                                Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(videoID));
+                                Log.e(TAG, "ckplayer跳转至videoName: " + videoName);
+                                videoManager.addVideo(videoID, videoName);
+                                ckIntent.putExtra("videoID",videoID);
+                                ckIntent.putExtra("videoName",videoName);
+                                startActivity(ckIntent);
+                            }
+                        }
+
+                        //依次按照圆圈从左到右的顺序对不同笔迹类别进行颜色区分
+                        if(pageSurfaceView.isLRInforShow){
+                            if(pageSurfaceView.peoOrHW == 0){
+                                pageSurfaceView.peoOrHW = 1;
+                            }else if(pageSurfaceView.peoOrHW == 1){
+                                pageSurfaceView.peoOrHW = 2;
+                            }else if(pageSurfaceView.peoOrHW == 2){
+                                pageSurfaceView.peoOrHW = 1;
+                            }
+                        }
+
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean onLongPress(Command command) {
+                if(!super.onLongPress(command)){
+                    return false;
+                }
+
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(XmateNotesApplication.context, "长压命令", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+
+                handlerToast("长压命令");
+                SimpleDot simpleDot = command.getHandWriting().getFirstDot();
+                if(simpleDot != null) {
+                    MediaDot mediaDot = (MediaDot) coordinateConverter.convertOut(simpleDot);
+                    int pN = pageManager.getPageNumberByPageID(mediaDot.pageID);
+                    LocalRect lR = excelReader.getLocalRectByXY(pN, mediaDot.getIntX(), mediaDot.getIntY());
+                    if(lR == null){
+                        return false;
+                    }
+                    mediaDot = pageManager.getDotMedia(mediaDot.pageID,mediaDot.getIntX(), mediaDot.getIntY());
+                    if(mediaDot == null){
+                        if(!pageSurfaceView.isLRInforShow){
+                            //呈现局域统计信息
+                            Rect rectMaped = pageSurfaceView.mapRect(lR.rect);
+                            int diam = 30, padding = 5;
+                            pageSurfaceView.hwNumRect = new Rect(rectMaped.right-padding-diam, rectMaped.top+padding, rectMaped.right-padding, rectMaped.top+padding+diam);
+                            Log.e(TAG, "receiveRecognizeResult: hwNumRect: "+pageSurfaceView.hwNumRect);
+                            pageSurfaceView.hwNumber = pageManager.getPageByPageID(mediaDot.pageID).getHandWritingsNum(lR.getLocalCode());
+                            Rect rectPeo = new Rect(pageSurfaceView.hwNumRect);
+                            rectPeo.left -= diam*2;rectPeo.right -= diam*2;
+                            pageSurfaceView.peoNumRect = rectPeo;
+                            Log.e(TAG, "receiveRecognizeResult: peoNumRect: "+pageSurfaceView.peoNumRect);
+                            pageSurfaceView.peoNumber = pageManager.getPageByPageID(mediaDot.pageID).getPeopleNum(lR.getLocalCode());
+                            pageSurfaceView.pageId = mediaDot.pageID;
+                            pageSurfaceView.lR = lR;
+                            pageSurfaceView.peoOrHW = 0;
+
+                            pageSurfaceView.isLRInforShow = true;
+                        }else {
+                            //隐藏局域统计信息
+                            pageSurfaceView.isLRInforShow = false;
+                            pageSurfaceView.drawlR(pageSurfaceView.lR);
+                        }
+
+                    }else {
+                        //呈现笔迹详细信息
+                        if(!pageSurfaceView.isDdrawLocalHWMap){
+                            pageSurfaceView.isDdrawLocalHWMap = true;
+                            Page page = XmateNotesApplication.pageManager.getPageByPageID(mediaDot.pageID);
+                            Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
+                            Page.LocalHandwritingsMap lhwm = null;
+                            for (Page.LocalHandwritingsMap lh :page.getLocalHandwritings(lR.getLocalCode())) {
+                                if(lh.contains(mediaDot.getIntX(),mediaDot.getIntY())){
+                                    lhwm = lh;
+                                }
+                            }
+//                   Page.LocalHandwritingsMap lhwm  = page.getLocalHandwritings(lR.getLocalCode()).get(mediaDot.strokesID);
+                            ArrayList<MediaDot> edimaDots = page.getPageDotsBuffer();
+                            pageSurfaceView.drawLocalHWMap(lR, lhwm, edimaDots);
+                        }else {
+                            pageSurfaceView.isDdrawLocalHWMap = false;
+                            pageSurfaceView.pageId = mediaDot.pageID;
+                            pageSurfaceView.drawlR(lR);
+                        }
+
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean onCalligraphy(Command command) {
+                if (command != null) {
+                    if(command.getHandWriting().isClosed()){
+
+                        //普通书写基本延时响应
+                        writer.handWritingWorker = writer.addResponseWorker(
+                                HandWriting.DELAY_PERIOD + 1000, new Writer.ResponseTask() {
+                                    @Override
+                                    public void execute() {
+                                        LogUtil.e(TAG, "普通书写延迟响应开始");
+                                        writer.closeHandWriting();
+
+                                        handlerToast("普通书写完毕");
+
+                                        SimpleDot simpleDot = command.getHandWriting().getFirstDot();
+                                        if(simpleDot != null) {
+                                            MediaDot mediaDot = (MediaDot) coordinateConverter.convertOut(simpleDot);
+                                            int pN = pageManager.getPageNumberByPageID(mediaDot.pageID);
+                                            LocalRect lR = excelReader.getLocalRectByXY(pN, mediaDot.getIntX(), mediaDot.getIntY());
+
+                                            if(lR != null){
+                                                Log.e(TAG,"lR: "+lR);
+                                            }
+                                            if (audioRecorder) {
+                                                audioRecorder = false;
+                                                audioManager.stopRATimer();
+
+                                                Page p = pageManager.getPageByPageID(mediaDot.pageID);
+                                                p.addAudio(lR, audioManager.currentRecordAudioName);
+                                                if(lR != null){
+                                                    Log.e(TAG,"writeTimerFinished(): lR != null: "+(lR != null));
+                                                    int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
+                                                    Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
+                                                    pageSurfaceView.saveBmp(pN+"-"+lR.firstLocalCode+"-"+ lR.secondLocalCode+"-"+currentSaveBmpNumber, lR.rect);
+                                                    handlerToast("底图已存储");
+                                                }
+                                            }
+
+                                            //同页跨区域自动存储上一局域底图
+                                            if(lR != null){
+                                                if(lastLocalRect != null){
+                                                    if(lR.firstLocalCode != lastLocalRect.firstLocalCode || lR.secondLocalCode != lastLocalRect.secondLocalCode){
+
+                                                        int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
+                                                        Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
+                                                        pageSurfaceView.saveBmp(pN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
+                                                        handlerToast("底图已存储");
+                                                        lastLocalRect = lR;
+                                                    }
+                                                }else {
+                                                    lastLocalRect = lR;
+                                                }
+
+                                            }
+
+
+
+                                        }
+
+//                                        runOnUiThread(new Runnable() {
+//                                            @Override
+//                                            public void run() {
+//                                                Toast.makeText(XmateNotesApplication.context, "普通书写完毕", Toast.LENGTH_SHORT).show();
+//                                            }
+//                                        });
+                                    }
+                                }
+                        );
+
+                        writer.singleHandWritingWorker = writer.addResponseWorker(
+                                SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD, new Writer.ResponseTask() {
+                                    @Override
+                                    public void execute() {
+                                        LogUtil.e(TAG, "单次笔迹延迟响应开始");
+                                        writer.closeSingleHandWriting();
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(XmateNotesApplication.context, "单次笔迹完毕", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }
+                        );
+                    }
+                }
+
+                return super.onCalligraphy(command);
+            }
+
+            @Override
+            public boolean onZhiLingKongZhi(Command command) {
+                if(!super.onZhiLingKongZhi(command)){
+                    return false;
+                }
+
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+
+                //指令控制符
+                Log.e(TAG, "receiveRecognizeResult: 指令控制符命令 ");
+                handlerToast("指令控制符命令");
+                audioManager.startRATimer(null);
+                audioRecorder = true;
+                Log.e(TAG,"receiveRecognizeResult(): 开启录音");
+
+                return false;
+            }
+
+            @Override
+            public boolean onDui(Command command) {
+                if(!super.onDui(command)){
+                    return false;
+                }
+
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(XmateNotesApplication.context, "对勾命令", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+                handlerToast("对勾命令");
+
+                return false;
+            }
+
+            @Override
+            public boolean onBanDui(Command command) {
+                if(!super.onBanDui(command)){
+                    return false;
+                }
+
+                handlerToast("半对命令");
+
+                return false;
+            }
+
+            @Override
+            public boolean onBanBanDui(Command command) {
+                if(!super.onBanBanDui(command)){
+                    return false;
+                }
+
+                handlerToast("半半对命令");
+
+                return false;
+            }
+
+            @Override
+            public boolean onBanBanBanDui(Command command) {
+                if(!super.onBanBanDui(command)){
+                    return false;
+                }
+
+                handlerToast("半半半对命令");
+
+                return false;
+            }
+
+            @Override
+            public boolean onCha(Command command) {
+                if(!super.onCha(command)){
+                    return false;
+                }
+
+                handlerToast("错命令");
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -722,8 +1109,7 @@ public class MainActivity extends BaseActivity {
      * @return
      */
     private MediaDot createMediaDot(Dot dot){
-        MediaDot mediaDot = null;
-        mediaDot = new MediaDot(dot);
+        MediaDot mediaDot = new MediaDot(dot);
         mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
         mediaDot.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
         mediaDot.videoID = XmateNotesApplication.DEFAULT_INT;
@@ -743,69 +1129,65 @@ public class MainActivity extends BaseActivity {
      */
     private boolean isWriteFirst = true;
 
-    /**
-     * 将原始点数据进行预处理，然后传给命令统一处理模块
-     * @param dot
-     */
-    public void processEachDot(Dot dot) {
-
-        processEachDot(createMediaDot(dot));
-
-    }
-
     public void processEachDot(MediaDot mediaDot){
+        LogUtil.e(TAG, "封装MediaDot: "+mediaDot);
 
         lastMediaDot = curMediaDot;
         curMediaDot = mediaDot;
 
-        if(curMediaDot.type == Dot.DotType.PEN_DOWN){
+        if(curMediaDot.type == Dot.DotType.PEN_DOWN) {
 
-            if(pageManager.currentPageID != curMediaDot.pageID){//是否更换页码
+            if (pageManager.currentPageID != curMediaDot.pageID) {//是否更换页码
                 Page p = pageManager.getPageByPageID(pageManager.currentPageID);
-                if(p != null){
+                if (p != null) {
                     int pPN = p.getPageNumber();//上一页号
-                    if(pPN != -1){
+                    if (pPN != -1) {
                         //跨区域自动存储上一局域底图
-                        if(lastLocalRect != null){
+                        if (lastLocalRect != null) {
                             int currentSaveBmpNumber = p.addCurrentSaveBmpNumber();
-                            Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
-                            pageSurfaceView.saveBmp(pPN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
+                            Log.e(TAG, "currentSaveBmpNumber: " + currentSaveBmpNumber);
+                            pageSurfaceView.saveBmp(pPN + "-" + lastLocalRect.firstLocalCode + "-" + lastLocalRect.secondLocalCode + "-" + currentSaveBmpNumber, lastLocalRect.rect);
                             handlerToast("底图已存储");
                         }
                     }
+                    lastLocalRect = null;
+                    switchPage(curMediaDot.pageID);
                 }
-                lastLocalRect = null;
-                switchPage(curMediaDot.pageID);
             }
         }
 
-        if(curMediaDot.type == Dot.DotType.PEN_MOVE){
+            if (curMediaDot.type == Dot.DotType.PEN_MOVE) {
 
-        }
-
-        if(curMediaDot.type == Dot.DotType.PEN_UP){
-            isWriteFirst = true;
-        }
-
-        int result = XmateNotesApplication.DEFAULT_INT;//接收识别结果
-        result = XmateNotesApplication.instruction.processEachDot(curMediaDot);
-
-        if(result == 0){
-            if(isWriteFirst){
-                pageSurfaceView.drawMDots(Instruction.mediaDots);
-                isWriteFirst = false;
+            }
+            if (curMediaDot.type == Dot.DotType.PEN_UP) {
+                isWriteFirst = true;
             }
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    pageSurfaceView.drawMDot(curMediaDot);
-                }
-            }).start();
+            int result = XmateNotesApplication.DEFAULT_INT;//接收识别结果
+//            result = XmateNotesApplication.instruction.processEachDot(curMediaDot);
+
+            if (result == -1) {
+
+
+//                if (isWriteFirst) {
+//                    pageSurfaceView.drawMDots(Instruction.mediaDots);
+//                    isWriteFirst = false;
+//                }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pageSurfaceView.drawMDot(curMediaDot);
+                    }
+                }).start();
 
 //            drawImageSurfaceView.drawDot(dot);
+            }
+
+            if (this.writer != null) {
+                this.writer.processEachDot((MediaDot) this.coordinateConverter.convertIn(mediaDot));
+            }
         }
-    }
 
 
     private void processDots(Dot dot) {
@@ -816,15 +1198,16 @@ public class MainActivity extends BaseActivity {
             return;
         }
 */
-        processEachDot(dot);
         Log.e(TAG,"processDots");
+//        processEachDot((MediaDot) this.coordinateConverter.convertIn(createMediaDot(dot)));
+        processEachDot(createMediaDot(dot));
     }
 
     /**
      * 切换当前Page
      * @param pageID pageID
      */
-    private void switchPage(int pageID){
+    private void switchPage(long pageID){
         pageManager.currentPageID = pageID;
         int resID = pageManager.getResIDByPageID(pageID);
         if(resID != -1){
@@ -852,7 +1235,7 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    public void receiveRecognizeResult(Gesture ges, int pageID, int firstX, int firstY) {
+    public void receiveRecognizeResult(Gesture ges, long pageID, int firstX, int firstY) {
         super.receiveRecognizeResult(ges, pageID, firstX, firstY);
 
         Log.e(TAG,"receiveRecognizeResult(): ges: "+ges.getInsId()+" pageID: "+ pageID + " firstX: "+firstX+" firstY: "+firstY);
@@ -869,7 +1252,7 @@ public class MainActivity extends BaseActivity {
 
         }
 
-        if(ges.getInsId() == 0){//普通书写，包含在基础响应中
+//        if(ges.getInsId() == 0){//普通书写，包含在基础响应中
 //            Message message = new Message();
 //            message.what = 0;
 //            Bundle bundle = new Bundle();
@@ -879,240 +1262,188 @@ public class MainActivity extends BaseActivity {
 
 //            Toast.makeText(MainActivity.this, "普通书写", Toast.LENGTH_SHORT).show();
 //            java.lang.RuntimeException: Can't toast on a thread that has not called Looper.prepare()
-        }else if(ges.getInsId() == 1){//单击，包含在基础响应中
-
-        }else if(ges.getInsId() == 2){//双击
-            handlerToast("双击命令");
-
-            int pN = pageManager.getPageNumberByPageID(pageID);
-            //long start = System.currentTimeMillis();
-            LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
-            //Log.e(TAG,"start - end = "+(System.currentTimeMillis()-start)+" ms");
-            //耗时一般在十几ms以内
-            if(lR != null){
-                Log.e(TAG,"局域编码: "+lR.getLocalCode());
-            }
-
-            MediaDot mediaDot = pageManager.getDotMedia(pageID,firstX,firstY);
-            if(mediaDot != null){
-                Log.e(TAG,mediaDot.toString());
-
-                if(mediaDot.penMac.equals(XmateNotesApplication.mBTMac)){
-                    if(mediaDot.isVideoDot()) {
-                        //跳转至ck
-                        Intent ckIntent = new Intent(this, CkplayerActivity.class);
-                        ckIntent.putExtra("time", mediaDot.videoTime);
-                        ckIntent.putExtra("videoID", mediaDot.videoID);
-                        startActivity(ckIntent);
-//                }else if(mediaDot.audioID != 0){
-                    }else {
-                        Log.e(TAG,"receiveRecognizeResult(): 跳转至笔迹复现页面");
-                        //跳转至笔迹复现页面
-                        Intent rpIntent = new Intent(this,ReplayActivity.class);
-//                    rpIntent.putExtra("audioID",mediaDot.audioID);
-                        rpIntent.putExtra("pageID",mediaDot.pageID);
-
-                        Log.e(TAG, "lR != null: "+(lR != null));
-                        if(lR != null){
-                            //学程样例纸张
-                            Log.e(TAG, "lR: "+lR.rect.toString());
-                            //扩展“余光”
-                            rpIntent.putExtra("rectLeft",Math.max(lR.rect.left - ReplayActivity.MARGIN, 0));
-                            rpIntent.putExtra("rectTop",Math.max(lR.rect.top - ReplayActivity.MARGIN, 0));
-                            rpIntent.putExtra("rectRight",Math.min(lR.rect.right + ReplayActivity.MARGIN, A3.ABSCISSA_RANGE));
-                            rpIntent.putExtra("rectBottom",Math.min(lR.rect.bottom + ReplayActivity.MARGIN, A3.ORDINATE_RANGE));
-                            rpIntent.putExtra("localCode",lR.getLocalCode());
-                            rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
-                            startActivity(rpIntent);
-                        }else {
-                            //普通点阵纸张
-                            rpIntent.putExtra("localCode","");
-                            rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
-                            startActivity(rpIntent);
-                        }
-                    }
-                }
-
-//                if(mediaDot.y < 20){
-//                    pageSurfaceView.saveBmp(mediaDot.pageID+"-"+pageManager.getPageByPageID(mediaDot.pageID).addCurrentSaveBmpNumber());
+//        }else if(ges.getInsId() == 1){//单击，包含在基础响应中
 //
-//                    handlerToast("底图已存储");
+//        }else if(ges.getInsId() == 2){//双击
+//            handlerToast("双击命令");
 //
+//            int pN = pageManager.getPageNumberByPageID(pageID);
+//            //long start = System.currentTimeMillis();
+//            LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
+//            //Log.e(TAG,"start - end = "+(System.currentTimeMillis()-start)+" ms");
+//            //耗时一般在十几ms以内
+//            if(lR != null){
+//                Log.e(TAG,"局域编码: "+lR.getLocalCode());
+//            }
+//
+//            MediaDot mediaDot = pageManager.getDotMedia(pageID,firstX,firstY);
+//            if(mediaDot != null){
+//                Log.e(TAG,mediaDot.toString());
+//
+//                if(mediaDot.penMac.equals(XmateNotesApplication.mBTMac)){
+//                    if(mediaDot.isVideoDot()) {
+//                        //跳转至ck
+//                        Intent ckIntent = new Intent(this, CkplayerActivity.class);
+//                        ckIntent.putExtra("time", mediaDot.videoTime);
+//                        ckIntent.putExtra("videoID", mediaDot.videoID);
+//                        startActivity(ckIntent);
+////                }else if(mediaDot.audioID != 0){
+//                    }else {
+//                        Log.e(TAG,"receiveRecognizeResult(): 跳转至笔迹复现页面");
+//                        //跳转至笔迹复现页面
+//                        Intent rpIntent = new Intent(this, ReplayActivity.class);
+////                    rpIntent.putExtra("audioID",mediaDot.audioID);
+//                        rpIntent.putExtra("pageID",mediaDot.pageID);
+//
+//                        Log.e(TAG, "lR != null: "+(lR != null));
+//                        if(lR != null){
+//                            //学程样例纸张
+//                            Log.e(TAG, "lR: "+lR.rect.toString());
+//                            //扩展“余光”
+//                            rpIntent.putExtra("rectLeft",Math.max(lR.rect.left - ReplayActivity.MARGIN, 0));
+//                            rpIntent.putExtra("rectTop",Math.max(lR.rect.top - ReplayActivity.MARGIN, 0));
+//                            rpIntent.putExtra("rectRight",Math.min(lR.rect.right + ReplayActivity.MARGIN, A3.ABSCISSA_RANGE));
+//                            rpIntent.putExtra("rectBottom",Math.min(lR.rect.bottom + ReplayActivity.MARGIN, A3.ORDINATE_RANGE));
+//                            rpIntent.putExtra("localCode",lR.getLocalCode());
+//                            rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
+//                            startActivity(rpIntent);
+//                        }else {
+//                            //普通点阵纸张
+//                            rpIntent.putExtra("localCode","");
+//                            rpIntent.putExtra("localHWsMapID",mediaDot.strokesID);
+//                            startActivity(rpIntent);
+//                        }
+//                    }
 //                }
-            }else {
+//
+////                if(mediaDot.y < 20){
+////                    pageSurfaceView.saveBmp(mediaDot.pageID+"-"+pageManager.getPageByPageID(mediaDot.pageID).addCurrentSaveBmpNumber());
+////
+////                    handlerToast("底图已存储");
+////
+////                }
+//            }else {
+//
+//                if(lR != null){
+//                    Log.e(TAG, "lR: "+lR.toString());
+//                    if("资源卡".equals(lR.localName)){
+//                        Log.e(TAG, "双击资源卡");
+//                        //跳转至ck
+//                        Intent ckIntent = new Intent(this,CkplayerActivity.class);
+//                        ckIntent.putExtra("time",0.0f);
+//
+////                    Random random = new Random();
+////                    int videoID = random.nextInt(5)+1;
+//                        int videoID = lR.getVideoIDByAddInf();
+//                        String videoName = lR.getVideoNameByAddInf();
+//
+//                        Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(videoID));
+//                        Log.e(TAG, "ckplayer跳转至videoName: " + videoName);
+//                        videoManager.addVideo(videoID, videoName);
+//                        ckIntent.putExtra("videoID",videoID);
+//                        ckIntent.putExtra("videoName",videoName);
+//                        startActivity(ckIntent);
+//                    }
+//                }
+//
+//                //依次按照圆圈从左到右的顺序对不同笔迹类别进行颜色区分
+//                if(pageSurfaceView.isLRInforShow){
+//                    if(pageSurfaceView.peoOrHW == 0){
+//                        pageSurfaceView.peoOrHW = 1;
+//                    }else if(pageSurfaceView.peoOrHW == 1){
+//                        pageSurfaceView.peoOrHW = 2;
+//                    }else if(pageSurfaceView.peoOrHW == 2){
+//                        pageSurfaceView.peoOrHW = 1;
+//                    }
+//                }
+//
+//            }
 
-                if(lR != null){
-                    Log.e(TAG, "lR: "+lR.toString());
-                    if("资源卡".equals(lR.localName)){
-                        Log.e(TAG, "双击资源卡");
-                        //跳转至ck
-                        Intent ckIntent = new Intent(this,CkplayerActivity.class);
-                        ckIntent.putExtra("time",0.0f);
-
-//                    Random random = new Random();
-//                    int videoID = random.nextInt(5)+1;
-                        int videoID = lR.getVideoIDByAddInf();
-                        String videoName = lR.getVideoNameByAddInf();
-
-                        Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(videoID));
-                        Log.e(TAG, "ckplayer跳转至videoName: " + videoName);
-                        videoManager.addVideo(videoID, videoName);
-                        ckIntent.putExtra("videoID",videoID);
-                        ckIntent.putExtra("videoName",videoName);
-                        startActivity(ckIntent);
-                    }
-                }
-
-                //依次按照圆圈从左到右的顺序对不同笔迹类别进行颜色区分
-                if(pageSurfaceView.isLRInforShow){
-                    if(pageSurfaceView.peoOrHW == 0){
-                        pageSurfaceView.peoOrHW = 1;
-                    }else if(pageSurfaceView.peoOrHW == 1){
-                        pageSurfaceView.peoOrHW = 2;
-                    }else if(pageSurfaceView.peoOrHW == 2){
-                        pageSurfaceView.peoOrHW = 1;
-                    }
-                }
-
-            }
-
-        }else if(ges.getInsId() == 3){//长压
-            handlerToast("长压命令");
-            int pN = pageManager.getPageNumberByPageID(pageID);
-            LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
-            if(lR == null){
-                return;
-            }
-            MediaDot mediaDot = pageManager.getDotMedia(pageID,firstX,firstY);
-            if(mediaDot == null){
-                if(!pageSurfaceView.isLRInforShow){
-                    //呈现局域统计信息
-                    Rect rectMaped = pageSurfaceView.mapRect(lR.rect);
-                    int diam = 30, padding = 5;
-                    pageSurfaceView.hwNumRect = new Rect(rectMaped.right-padding-diam, rectMaped.top+padding, rectMaped.right-padding, rectMaped.top+padding+diam);
-                    Log.e(TAG, "receiveRecognizeResult: hwNumRect: "+pageSurfaceView.hwNumRect);
-                    pageSurfaceView.hwNumber = pageManager.getPageByPageID(pageID).getHandWritingsNum(lR.getLocalCode());
-                    Rect rectPeo = new Rect(pageSurfaceView.hwNumRect);
-                    rectPeo.left -= diam*2;rectPeo.right -= diam*2;
-                    pageSurfaceView.peoNumRect = rectPeo;
-                    Log.e(TAG, "receiveRecognizeResult: peoNumRect: "+pageSurfaceView.peoNumRect);
-                    pageSurfaceView.peoNumber = pageManager.getPageByPageID(pageID).getPeopleNum(lR.getLocalCode());
-                    pageSurfaceView.pageId = pageID;
-                    pageSurfaceView.lR = lR;
-                    pageSurfaceView.peoOrHW = 0;
-
-                    pageSurfaceView.isLRInforShow = true;
-                }else {
-                    //隐藏局域统计信息
-                    pageSurfaceView.isLRInforShow = false;
-                    pageSurfaceView.drawlR(pageSurfaceView.lR);
-                }
-
-            }else {
-                //呈现笔迹详细信息
-                if(!pageSurfaceView.isDdrawLocalHWMap){
-                    pageSurfaceView.isDdrawLocalHWMap = true;
-                    Page page = XmateNotesApplication.pageManager.getPageByPageID(mediaDot.pageID);
-                    Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
-                    Page.LocalHandwritingsMap lhwm = null;
-                    for (Page.LocalHandwritingsMap lh :page.getLocalHandwritings(lR.getLocalCode())) {
-                        if(lh.contains(mediaDot.getIntX(),mediaDot.getIntY())){
-                            lhwm = lh;
-                        }
-                    }
-//                   Page.LocalHandwritingsMap lhwm  = page.getLocalHandwritings(lR.getLocalCode()).get(mediaDot.strokesID);
-                    ArrayList<MediaDot> edimaDots = page.getPageDotsBuffer();
-                    pageSurfaceView.drawLocalHWMap(lR, lhwm, edimaDots);
-                }else {
-                    pageSurfaceView.isDdrawLocalHWMap = false;
-                    pageSurfaceView.pageId = mediaDot.pageID;
-                    pageSurfaceView.drawlR(lR);
-                }
-
-            }
-
-        }else if(ges.getInsId() == 4){
-            //指令控制符
-            Log.e(TAG, "receiveRecognizeResult: 指令控制符命令 ");
-            handlerToast("指令控制符命令");
-            audioManager.startRATimer(null);
-            audioRecorder = true;
-            Log.e(TAG,"receiveRecognizeResult(): 开启录音");
-        }else if(ges.getInsId() == 5){
-            //对钩
-            handlerToast("对钩命令");
-            Log.e(TAG, "receiveRecognizeResult: 对钩命令 ");
-        }else if(ges.getInsId() == 6){
-            handlerToast("半对1命令");
-        }else if(ges.getInsId() == 7){
-            handlerToast("半对2命令");
-        }else if(ges.getInsId() == 8){
-            handlerToast("半对3命令");
-        }else if(ges.getInsId() == 9){
-            handlerToast("错命令");
-        }else if(ges.getInsId() == 10){
-            handlerToast("未识别命令");
-        }
+//        }else if(ges.getInsId() == 3){//长压
+//
+//        }else if(ges.getInsId() == 4) {
+//            //指令控制符
+//            Log.e(TAG, "receiveRecognizeResult: 指令控制符命令 ");
+//            handlerToast("指令控制符命令");
+//            audioManager.startRATimer(null);
+//            audioRecorder = true;
+//            Log.e(TAG,"receiveRecognizeResult(): 开启录音");
+//        }
+//        }else if(ges.getInsId() == 5){
+//            //对钩
+//            handlerToast("对钩命令");
+//            Log.e(TAG, "receiveRecognizeResult: 对钩命令 ");
+//        }else if(ges.getInsId() == 6){
+//            handlerToast("半对1命令");
+//        }else if(ges.getInsId() == 7){
+//            handlerToast("半对2命令");
+//        }else if(ges.getInsId() == 8){
+//            handlerToast("半对3命令");
+//        }else if(ges.getInsId() == 9){
+//            handlerToast("错命令");
+//        }else if(ges.getInsId() == 10){
+//            handlerToast("未识别命令");
+//        }
 
     }
 
     @Override
-    public void writeTimerFinished(int pageID, int x, int y) {
+    public void writeTimerFinished(long pageID, int x, int y) {
         super.writeTimerFinished(pageID, x, y);
-
-        handlerToast("普通书写存储完毕");
-
-        Log.e(TAG,"writeTimerFinished(): audioRecorder: "+audioRecorder);
-
-        int pN = pageManager.getPageNumberByPageID(pageID);
-        LocalRect lR = excelReader.getLocalRectByXY(pN, x, y);
-
-        if(lR != null){
-            Log.e(TAG,"lR: "+lR);
-        }
-
-        //如果正在录音，普通书写延迟响应结束录音
-        if(audioRecorder == true){
-            audioRecorder = false;
-            audioManager.stopRATimer();
-
-            Page p = pageManager.getPageByPageID(pageID);
-            p.addAudio(lR, audioManager.currentRecordAudioName);
-            if(lR != null){
-                Log.e(TAG,"writeTimerFinished(): lR != null: "+(lR != null));
-//                while (Page.lockSaveBmpNumber == false){//确保录音结束相关逻辑处理完毕，拿到的SaveBmpNumber是最新的
-//                    Log.e(TAG,"Page.lockSaveBmpNumber = false");
-//                    try {
-//                        Thread.sleep(50);//避免这里死循环，而解锁的子线程
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+//
+//        handlerToast("普通书写存储完毕");
+//
+//        Log.e(TAG,"writeTimerFinished(): audioRecorder: "+audioRecorder);
+//
+//        int pN = pageManager.getPageNumberByPageID(pageID);
+//        LocalRect lR = excelReader.getLocalRectByXY(pN, x, y);
+//
+//        if(lR != null){
+//            Log.e(TAG,"lR: "+lR);
+//        }
+//
+//        //如果正在录音，普通书写延迟响应结束录音
+//        if(audioRecorder == true){
+//            audioRecorder = false;
+//            audioManager.stopRATimer();
+//
+//            Page p = pageManager.getPageByPageID(pageID);
+//            p.addAudio(lR, audioManager.currentRecordAudioName);
+//            if(lR != null){
+//                Log.e(TAG,"writeTimerFinished(): lR != null: "+(lR != null));
+////                while (Page.lockSaveBmpNumber == false){//确保录音结束相关逻辑处理完毕，拿到的SaveBmpNumber是最新的
+////                    Log.e(TAG,"Page.lockSaveBmpNumber = false");
+////                    try {
+////                        Thread.sleep(50);//避免这里死循环，而解锁的子线程
+////                    } catch (InterruptedException e) {
+////                        e.printStackTrace();
+////                    }
+////                }
+//                int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
+//                Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
+//                pageSurfaceView.saveBmp(pN+"-"+lR.firstLocalCode+"-"+ lR.secondLocalCode+"-"+currentSaveBmpNumber, lR.rect);
+//                handlerToast("底图已存储");
+////                Page.lockSaveBmpNumber = false;
+//            }
+//
+//        }
+//
+//        //同页跨区域自动存储上一局域底图
+//        if(lR != null){
+//            if(lastLocalRect != null){
+//                if(lR.firstLocalCode != lastLocalRect.firstLocalCode || lR.secondLocalCode != lastLocalRect.secondLocalCode){
+//
+//                    int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
+//                    Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
+//                    pageSurfaceView.saveBmp(pN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
+//                    handlerToast("底图已存储");
+//                    lastLocalRect = lR;
 //                }
-                int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
-                Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
-                pageSurfaceView.saveBmp(pN+"-"+lR.firstLocalCode+"-"+ lR.secondLocalCode+"-"+currentSaveBmpNumber, lR.rect);
-                handlerToast("底图已存储");
-//                Page.lockSaveBmpNumber = false;
-            }
-
-        }
-
-        //同页跨区域自动存储上一局域底图
-        if(lR != null){
-            if(lastLocalRect != null){
-                if(lR.firstLocalCode != lastLocalRect.firstLocalCode || lR.secondLocalCode != lastLocalRect.secondLocalCode){
-
-                    int currentSaveBmpNumber = pageManager.getPageByPageID(pageManager.currentPageID).addCurrentSaveBmpNumber();
-                    Log.e(TAG,"currentSaveBmpNumber: "+currentSaveBmpNumber);
-                    pageSurfaceView.saveBmp(pN+"-"+lastLocalRect.firstLocalCode+"-"+ lastLocalRect.secondLocalCode+"-"+currentSaveBmpNumber, lastLocalRect.rect);
-                    handlerToast("底图已存储");
-                    lastLocalRect = lR;
-                }
-            }else {
-                lastLocalRect = lR;
-            }
-
-        }
+//            }else {
+//                lastLocalRect = lR;
+//            }
+//
+//        }
     }
 
     /*

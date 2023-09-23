@@ -8,6 +8,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.example.xmatenotes.app.ax.A3;
+import com.example.xmatenotes.app.ax.AX;
 import com.example.xmatenotes.logic.manager.AudioManager;
 //import com.example.xmatenotes.logic.manager.ExcelA0Reader;
 import com.example.xmatenotes.logic.manager.ExcelReader;
@@ -70,7 +72,7 @@ public class XmateNotesApplication extends Application {
     /**
      * 当前点阵纸张幅面规格
      */
-    public static String AX = "A3";
+    public static AX ax = new A3();
 
     public static int screenWidth;
     public static int screenHeight;

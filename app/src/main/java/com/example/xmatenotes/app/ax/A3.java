@@ -2,8 +2,8 @@ package com.example.xmatenotes.app.ax;
 
 public class A3 extends AX{
     //(本子铺码) A3纸规格尺寸：297mm × 420mm
-    private static final int PAPER_WIDTH = 297;
-    private static final int PAPER_HEIGHT = 420;
+    public static final int PAPER_WIDTH = 297;
+    public static final int PAPER_HEIGHT = 420;
     //A3纸横坐标范围
     public static final int ABSCISSA_RANGE = (int) Math.round(PAPER_HEIGHT / XDIST_PERUNIT);
     //A3纸纵坐标范围

@@ -43,7 +43,7 @@ public class DotInfoActivity extends BaseActivity {
 //	private int xMin, xMax, yMin, yMax;//刻画当前笔划的坐标范围
 	private Rect rect = null;
 	private int xD,yD;//当前笔迹点坐标
-	private int page = XmateNotesApplication.DEFAULT_INT;//当前页码
+	private long page = XmateNotesApplication.DEFAULT_INT;//当前页码
 	private float time = XmateNotesApplication.DEFAULT_FLOAT;//存储当前视频碎片时刻信息
 	private int videoID = XmateNotesApplication.DEFAULT_INT;//存储当前视频碎片ID信息
 	private byte penID = XmateNotesApplication.DEFAULT_INT;//存储当前笔ID

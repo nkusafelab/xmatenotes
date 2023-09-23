@@ -55,7 +55,7 @@ public class PageManager {
     /**
      * 记录PageID到有序数组的映射关系，值用来索引三维数组
      */
-    private static Map<Integer, Integer> pageIDToArray;
+    private static Map<Long, Integer> pageIDToArray;
 
     /**
      * 记录PageID到真实页码信息的映射关系，值用于版面响应控制
@@ -74,7 +74,7 @@ public class PageManager {
     /**
      * 当前pageID
      */
-    public static int currentPageID;
+    public static long currentPageID;
 
     /**
      * 上一个点
@@ -161,7 +161,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果目标页已存储，则返回true
      */
-    public static boolean isSavePageByPageID(int pageID){
+    public static boolean isSavePageByPageID(long pageID){
         return pageIDToArray.containsKey(pageID);
     }
 
@@ -170,7 +170,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果目标页属于学程样例，则返回true
      */
-    public static boolean containsPageNumberByPageID(int pageID){
+    public static boolean containsPageNumberByPageID(long pageID){
         return pageIDToPageInf.containsKey(pageID);
     }
 
@@ -180,7 +180,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 返回目标页对应的Page对象
      */
-    public Page savePage(int pageID){
+    public Page savePage(long pageID){
         if(!isSavePageByPageID(pageID)){
             if (pageList.size() >= MAX_PAGE_NUMBER) {
                 Toast.makeText(XmateNotesApplication.context, "Page存储空间已满", Toast.LENGTH_SHORT).show();
@@ -203,7 +203,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果对应页对象已经存在，返回页码ID对应的页对象；否则返回null
      */
-    public static Page getPageByPageID(int pageID){
+    public static Page getPageByPageID(long pageID){
         if(isSavePageByPageID(pageID)){
             return pageList.get(pageIDToArray.get(pageID));
         }
@@ -215,7 +215,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果页码图片资源存在，返回资源ID；否则返回-1
      */
-    public static int getResIDByPageID(int pageID){
+    public static int getResIDByPageID(long pageID){
         if(containsPageNumberByPageID(pageID)){
             return pageIDToPageInf.get(pageID).getResId();
         }
@@ -227,7 +227,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果对应页号存在，返回页号；否则返回-1
      */
-    public static int getPageNumberByPageID(int pageID){
+    public static int getPageNumberByPageID(long pageID){
         if(containsPageNumberByPageID(pageID)){
             return pageIDToPageInf.get(pageID).getPageNumber();
         }
@@ -241,7 +241,7 @@ public class PageManager {
      * @param y 笔迹点纵坐标整数部分
      * @return 返回对应的MediaDot类型的点
      */
-    public MediaDot getDotMedia(int pageID, int x, int y){
+    public MediaDot getDotMedia(long pageID, int x, int y){
         return getPageByPageID(pageID).getDotMedia(x,y);
     }
 

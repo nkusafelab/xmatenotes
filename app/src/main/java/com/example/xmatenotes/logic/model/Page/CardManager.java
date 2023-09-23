@@ -159,7 +159,7 @@ public class CardManager {
 
     }
 
-    public void downLoad(int code, String cardAbsolutePath, ObjectInputResp objectInputResp){
+    public void downLoad(String code, String cardAbsolutePath, ObjectInputResp objectInputResp){
         File file = new File(cardAbsolutePath);
         if(!file.exists()){
             LogUtil.e(TAG, "目标文件夹不存在！");

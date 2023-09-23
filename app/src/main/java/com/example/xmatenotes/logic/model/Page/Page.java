@@ -46,7 +46,7 @@ public class Page implements Serializable {
     /**
      * 本页PageID属性
      */
-    private int pageID;
+    private long pageID;
 
     /**
      * 页号。初始值为-1
@@ -269,11 +269,11 @@ public class Page implements Serializable {
         this(-1);
     }
 
-    public Page(int pageID) {
+    public Page(long pageID) {
         this(pageID, -1);
     }
 
-    public Page(int pageID, int pageNumber) {
+    public Page(long pageID, int pageNumber) {
         this.pageID = pageID;
         this.pageNumber = pageNumber;
         excelReader = ExcelReader.getInstance();
@@ -526,7 +526,7 @@ public class Page implements Serializable {
         this.pageNumber = pageNumber;
     }
 
-    public int getPageID() {
+    public long getPageID() {
         return pageID;
     }
 

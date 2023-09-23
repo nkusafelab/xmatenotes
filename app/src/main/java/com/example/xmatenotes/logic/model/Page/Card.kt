@@ -31,8 +31,8 @@ class Card() : Serializable {
          * 生成卡片存储文件夹名
          */
         @JvmStatic
-        fun getCardName(code: Int, timelong: String): String {
-            return TAG+"#"+code.toString()+"#"+getFormatTime(timelong.toLong())
+        fun getCardName(code: String, timelong: String): String {
+            return TAG+"#"+code+"#"+getFormatTime(timelong.toLong())
         }
 
         /**
@@ -46,24 +46,24 @@ class Card() : Serializable {
         }
     }
 
-    public var subjectToColorMap:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
+    var subjectToColorMap:Map<String,Int> = mapOf("数学" to 0x7F82BB,"语文" to 0xB5E61D,"英语" to 0x9FFCFD,
         "物理" to 0xEF88BE,"化学" to 0xFFFD55,"生物" to 0x58135E,"政治" to 0x16417C)
 
 
     /**
      * 唯一标识符编码
      */
-    public var code = 2
+    var code = ""
 
     /**
      * 前置编码
      */
-    public var preCode = 1
+    var preCode = ""
 
     /**
      * 后置编码
      */
-    var postCode = 0
+    var postCode = ""
 
     var cardContext: CardContext = CardContext( "", "组长", 0F, 0F, 0F, 0F)
     var cardDataLabel: CardDataLabel = CardDataLabel("", "","语文", "一元一次不等式", "整体认知构建", "2", "七", "00", "00", "00", "秋季学期","20230911")
@@ -191,19 +191,19 @@ class Card() : Serializable {
         return createCoordinateConverter()
     }
 
-    fun setPreCode(preCode : String){
+    fun savePreCode(preCode : String){
         if (preCode.isNotEmpty()){
-            this.preCode = Integer.parseInt(preCode)
-            this.cardDataLabel.preCode = this.preCode.toString()
-            this.code = this.preCode+1
-            this.qrObject.pn = this.code.toString()
+            this.preCode = preCode
+            this.cardDataLabel.preCode = this.preCode
+//            this.code = this.preCode.substring(0,4)
+//            this.qrObject.pn = this.code
         }
     }
 
-    fun setPostCode(postCode: String){
+    fun savePostCode(postCode: String){
         if(postCode.isNotEmpty()){
-            this.postCode = Integer.parseInt(postCode)
-            this.cardDataLabel.postCode = this.postCode.toString()
+            this.postCode = postCode
+            this.cardDataLabel.postCode = this.postCode
         }
 
     }
@@ -331,6 +331,8 @@ class Card() : Serializable {
         }
 
         this.qrObject.time = System.currentTimeMillis().toString()
+        this.code = this.preCode.substring(0,4) + this.qrObject.time
+        this.qrObject.pn = this.code
     }
 
     /**
@@ -428,7 +430,7 @@ class Card() : Serializable {
      * 获取小组组型
      */
     fun getGroupClass() : String{
-        this.qrObject.gl = "萝卜+"
+        this.qrObject.gl = "06"
         return this.qrObject.gl
     }
 

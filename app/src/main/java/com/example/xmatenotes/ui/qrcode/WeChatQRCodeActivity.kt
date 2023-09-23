@@ -592,7 +592,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     LogUtil.e(TAG, "qrObject.pn: "+qrObject.pn+" cardData.preCode: "+cardData.preCode)
                     LogUtil.e(TAG, "qrObject.pn.equals(cardData.preCode.toString()): "+qrObject.pn.equals(cardData.preCode.toString()))
                     LogUtil.e(TAG, qrObject.toString())
-                    if(Integer.parseInt(qrObject.pn) != cardData.preCode){
+                    if(qrObject.pn != cardData.preCode){
                         getSubject(qrObject.te, object : BitableManager.BitableResp(){
                             override fun onFinish(appTableRecords: Array<out AppTableRecord>?) {
                                 super.onFinish(appTableRecords)
@@ -611,7 +611,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                                 super.onError(errorMsg)
                             }
                         })
-                        cardData.setPreCode(qrObject.pn)
+                        cardData.savePreCode(qrObject.pn)
                         cardData.setIteration(qrObject.data)
                         updateTopActionBar(cardData)
                         LogUtil.e(TAG, "使用二维码内容更新cardData")
@@ -1787,7 +1787,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         const val REQUEST_CODE_PICK_PHOTO = 0x12
         const val REQUEST_CODE_TAKE_PHOTO = 0x13
         const val CLASS_TABLEID = "tblpAZmppl1siFd7"
-        const val PERIOD_OF_DRAWING = 1000
+        const val PERIOD_OF_DRAWING = 100
     }
 
 }

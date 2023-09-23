@@ -201,6 +201,7 @@ public class DrawingImageView extends AppCompatImageView {
         postInvalidate();
     }
     public Path drawDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter converter){
+        LogUtil.e(TAG, "绘制笔迹");
         Path path = new Path();
         if(converter != null){
             for (SingleHandWriting singleHandWriting: singleHandWritingList) {

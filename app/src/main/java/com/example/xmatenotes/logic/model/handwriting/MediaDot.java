@@ -27,7 +27,7 @@ public class MediaDot extends SimpleDot {
     /**
      * 页号
      */
-    public int pageID;
+    public long pageID;
 
     /**
      * 笔Mac地址

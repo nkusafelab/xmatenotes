@@ -99,7 +99,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     private int offsetY;//绘制图片相对View在竖直方向上的偏移量
     private int offsetX;//绘制图片相对View在水平方向上的偏移量
 
-    public int pageId;//当前版面id
+    public long pageId;//当前版面id
     public LocalRect lR;//当前局域
     private ShapeDrawable peoNumSD;
     public Rect peoNumRect;

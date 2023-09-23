@@ -219,6 +219,11 @@ class CardProcessActivity : AppCompatActivity() {
                     return false
                 }
 
+                if (audioRecorder) {
+                    audioRecorder = false
+                    audioManager.stopRATimer()
+                }
+
                 runOnUiThread { Toast.makeText(XmateNotesApplication.context, "单击", Toast.LENGTH_SHORT).show() }
 
                 return false
@@ -256,10 +261,7 @@ class CardProcessActivity : AppCompatActivity() {
                         ) {
                             LogUtil.e(TAG, "普通书写延迟响应开始")
                             writer.closeHandWriting()
-                            if (audioRecorder) {
-                                audioRecorder = false
-                                audioManager.stopRATimer()
-                            }
+
                             runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写完毕", Toast.LENGTH_SHORT).show() }
                         }
 
@@ -327,6 +329,14 @@ class CardProcessActivity : AppCompatActivity() {
 //        }.start()
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (audioRecorder) {
+            audioRecorder = false
+            audioManager.stopRATimer()
+        }
+    }
+
     fun getCoordinateConverter(viewWidth: Int, viewHeight: Int): CoordinateConverter {
         return cardData.setDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
     }
@@ -354,7 +364,7 @@ class CardProcessActivity : AppCompatActivity() {
 
     fun processEachDot(simpleDot: SimpleDot){
         val mediaDot = MediaDot(simpleDot)
-        mediaDot.pageID = this.cardData.code
+        mediaDot.pageID = this.cardData.code.toLong()
         //如果正在录音，再次长压结束录音
         if (audioRecorder) {
             mediaDot.audioID = Integer.parseInt(cardData.getLastAudioName())

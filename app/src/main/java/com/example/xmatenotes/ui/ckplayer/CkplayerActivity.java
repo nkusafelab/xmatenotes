@@ -425,7 +425,7 @@ public class CkplayerActivity extends BaseActivity {
 	}
 
 	@Override
-	public void receiveRecognizeResult(Gesture ges, int pageID, int firstX, int firstY) {
+	public void receiveRecognizeResult(Gesture ges, long pageID, int firstX, int firstY) {
 		super.receiveRecognizeResult(ges, pageID, firstX, firstY);
 
 		Log.e(TAG,"receiveRecognizeResult(): "+"InsId: "+ges.getInsId()+" pageID: "+pageID+" firstX: "+firstX+" firstY: "+firstY);
@@ -517,7 +517,7 @@ public class CkplayerActivity extends BaseActivity {
 	}
 
 	@Override
-	public void writeTimerFinished(int pageID, int x, int y) {
+	public void writeTimerFinished(long pageID, int x, int y) {
 		super.writeTimerFinished(pageID, x, y);
 
 		if(playOrFalse == 0) {

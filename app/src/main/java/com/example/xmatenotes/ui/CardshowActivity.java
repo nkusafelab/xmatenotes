@@ -531,7 +531,7 @@ public class CardshowActivity extends BaseActivity{
 //    }
 
     @Override
-    public void writeTimerFinished(int pageID, int x, int y) {
+    public void writeTimerFinished(long pageID, int x, int y) {
         super.writeTimerFinished(pageID, x, y);
     }
 

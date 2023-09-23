@@ -121,7 +121,7 @@ public class VideoManager {
 		private int matesNumber = 0;
 		private ArrayList<Byte> mates = new ArrayList<Byte>();//存储当前视频对应的多个penID
 		private int pageNumber = 0;
-		private ArrayList<Integer> pages = new ArrayList<Integer>();//存储当前视频对应的多个page
+		private ArrayList<Long> pages = new ArrayList<>();//存储当前视频对应的多个page
 
 		public Video(int videoID, String videoName, int matesNumber, int pageNumber) {
 			super();
@@ -143,7 +143,7 @@ public class VideoManager {
 		}
 
 		//添加page
-		public void addPage(int pageID){
+		public void addPage(long pageID){
 			if(pages.contains(pageID)){
 				Log.e(TAG, "已经存在该page");
 				return;

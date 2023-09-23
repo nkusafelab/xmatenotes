@@ -263,10 +263,12 @@ public class AudioManager {
      */
     public void stopPlayAudio(){
         if(player != null){
-            LogUtil.e(TAG, "停止播放音频");
-            player.stop();
-            player.release();
-            player = null;
+            if(!player.isPlaying()){
+                LogUtil.e(TAG, "停止播放音频");
+                player.stop();
+                player.release();
+                player = null;
+            }
         }
     }
 
@@ -319,6 +321,7 @@ public class AudioManager {
             recorder.start();//开始录音
             LogUtil.e(TAG, "开始录音");
             RATimer = true;//打开录音专用计时器开关
+            LogUtil.e(TAG, "startRecordAudio: 开启录音: RATimer = true");
             recordStartTime = System.currentTimeMillis();//记录录音开始时间
             Log.e(TAG,"recordStartTime: "+recordStartTime);
 //            Toast.makeText(this,"开始录音",Toast.LENGTH_SHORT).show();
@@ -439,7 +442,7 @@ public class AudioManager {
                 //播放录音开始提示音
 //                comPlayAssetsAudio("startrecord.mp3");
                 try {
-                    comPlayAssetsAudio("beep.ogg");
+                    comPlayAssetsAudio("startrecord.mp3");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -448,7 +451,8 @@ public class AudioManager {
                 startRecordAudio(audioAbsolutePath);
                 long s = System.currentTimeMillis();
                 Log.e(TAG,"startRecordAudio()执行了 "+(s-a)+" ms");
-                while (RATimer == true){
+                LogUtil.e(TAG, "startRATimer: RATimer: "+RATimer);
+                while (RATimer){
 
                 }
                 Log.e(TAG, "录音进行了 "+String.valueOf((System.currentTimeMillis()-s)/1000)+" s");
@@ -456,8 +460,8 @@ public class AudioManager {
                 //播放录音结束提示音
 //                comPlayAssetsAudio("endrecord.mp3");
                 try {
-                    comPlayAssetsAudio("beep.ogg");
-                    comPlayAssetsAudio("beep.ogg");
+                    comPlayAssetsAudio("endrecord.mp3");
+//                    comPlayAssetsAudio("beep.ogg");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -467,10 +471,11 @@ public class AudioManager {
     }
 
     /**
-     * 结束录音。关闭录音线程和计时器。对应的开启录音方法为{@link #startRATimer()}
+     * 结束录音。关闭录音线程和计时器。对应的开启录音方法为{@link #startRATimer(String)}
      */
     public void stopRATimer(){
         RATimer = false;//关闭录音专用计时器开关
+        LogUtil.e(TAG, "stopRATimer: 关闭录音: RATimer = false");
     }
 
     /**
