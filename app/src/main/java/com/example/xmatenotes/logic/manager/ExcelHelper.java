@@ -20,7 +20,7 @@ public class ExcelHelper {
 
     private static final ExcelHelper excelHelper = new ExcelHelper();
 
-    private XSSFSheet curSheet = null;//当前打开的工作表
+    protected XSSFSheet curSheet = null;//当前打开的工作表
 
     /**
      * 摘要信息表
@@ -32,7 +32,7 @@ public class ExcelHelper {
      */
     private XSSFSheet indexSheet = null;//索引表
 
-    private XSSFWorkbook curWorkbook = null;//当前打开的excel
+    protected XSSFWorkbook curWorkbook = null;//当前打开的excel
     //存储excel表格的路径
     private String excelPath;
 
@@ -71,9 +71,8 @@ public class ExcelHelper {
      * @return
      */
     public boolean switchSheet(String sheetName){
-        XSSFSheet bufferSheet = openSheet(sheetName);
-        if(bufferSheet != null){
-            curSheet = bufferSheet;
+        curSheet = openSheet(sheetName);
+        if(curSheet != null){
             return true;
         }
         return false;
@@ -97,7 +96,7 @@ public class ExcelHelper {
      * @return 打开的工作表
      * 打开工作表前需要先打开excel
      */
-    private XSSFSheet openSheet(String sheetName){
+    protected XSSFSheet openSheet(String sheetName){
         if(curWorkbook != null){
             return curWorkbook.getSheet(sheetName);
         }

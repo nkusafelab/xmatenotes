@@ -9,8 +9,12 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ExcelManager extends ExcelHelper{
 
@@ -22,6 +26,8 @@ public class ExcelManager extends ExcelHelper{
      * 摘要信息表数据
      */
     private AbstractSheet abstractSheet;
+
+    private Map<String, DataSheet> dataSheetMap = new HashMap<>();
 
     private ExcelManager() {
     }
@@ -41,11 +47,40 @@ public class ExcelManager extends ExcelHelper{
         openExcel("excel/"+excelName);
 
         //解析摘要信息表
+        if(switchSheet(AbstractSheet.ABSTRACT_SHEET_NAME)){
+            this.abstractSheet = new AbstractSheet().parseAbstractSheet(this.curWorkbook);
+        }
 
         //解析数据表
+        Map<String, String> dataMap = this.abstractSheet.getMap(AbstractSheet.DATA_SHEET_NAME);
+        Set<Map.Entry<String, String>> set = dataMap.entrySet();
+        Iterator<Map.Entry<String, String>> it = set.iterator();
+        this.dataSheetMap.clear();
+        while (it.hasNext()){
+            Map.Entry<String, String> node = it.next();
+            String dataSheetName = node.getValue();
+            DataSheet dataSheet = parseDataSheet(dataSheetName);
+            this.dataSheetMap.put(dataSheet.getName(), dataSheet);
+        }
 
 
         return this;
+    }
+
+    /**
+     * 解析目标数据表
+     * @param dataSheetName 数据表名，确保为数据表
+     * @return
+     */
+    public DataSheet parseDataSheet(String dataSheetName){
+        DataSheet dataSheet = new DataSheet(dataSheetName);
+
+        //解析数据表头
+
+        //遍历数据表，填充dataSheet
+
+        return dataSheet;
+
     }
 
     /**
@@ -96,8 +131,6 @@ public class ExcelManager extends ExcelHelper{
                 add(getCellString(sheetHeaderRow.getCell(firstCol)),getCellString(sheetHeaderRow.getCell(firstCol+1)));
                 firstCol = firstCol +2;
             }
-
-
 
             return this;
         }
