@@ -19,6 +19,8 @@ public class ExcelManager extends ExcelHelper {
 
     private static final String TAG = "ExcelManager";
 
+    private static final String SEARCH_START = "Search1";
+
     private static final ExcelManager excelManager = new ExcelManager();
 //    private static final BitableManager bitableManager = BitableManager.getInstance();
 
@@ -136,6 +138,32 @@ public class ExcelManager extends ExcelHelper {
 
     public LocalData searchTable(int x, int y, int pageId, String command, String roleName){
         LocalData localData = new LocalData(x, y, pageId, command, roleName);
+
+        //搜索起始sheet
+        switchSheet(this.abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).get(SEARCH_START));
+
+        SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(curSheet);
+
+        int firstRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
+        int firstColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+        int headerIndex = rowNameToIndex(sheetHeader.get(SheetHeader.SHEET_HEADER_ROW));
+        int colIndex = firstColIndex;//实时列index
+        int rowIndex = firstRowIndex;//实时行index
+
+        XSSFRow headerRow = this.curSheet.getRow(headerIndex);
+        XSSFRow row = this.curSheet.getRow(firstRowIndex);
+        XSSFCell rowCell;
+        XSSFCell headerCell;
+        XSSFCell rowFirstCell = row.getCell(firstColIndex);
+        while (!isEmptyCell(rowFirstCell)){
+
+            rowCell = row.getCell(colIndex);
+            headerCell = headerRow.getCell(colIndex);
+            String headerCellName = getCellString(headerCell);
+            if(LocalData.PAGEID.equals(headerCellName)){
+
+            }
+        }
 
         return localData;
     }

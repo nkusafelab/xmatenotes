@@ -15,7 +15,13 @@ public class LocalData {
 
     private static final String COMMAND = "指令";
     private static final String ROLE = "角色";
-    private static final String PAGEID = "pageId";
+    public static final String PAGEID = "pageId";
+
+
+    public static final String MIN_X = "左上X";
+    public static final String MIN_Y = "左上Y";
+    public static final String MAX_X = "右下X";
+    public static final String MAX_Y = "右下Y";
 
     private int x;
 

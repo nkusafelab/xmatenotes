@@ -78,6 +78,7 @@ public class ExcelHelper {
     public boolean switchSheet(String sheetName){
         curSheet = openSheet(sheetName);
         if(curSheet != null){
+            LogUtil.e(TAG, "切换sheet: "+sheetName);
             return true;
         }
         return false;
@@ -119,6 +120,18 @@ public class ExcelHelper {
             return curWorkbook.getSheetAt(sheetNumber);
         }
         return null;
+    }
+
+    /**
+     *
+     * @param cell
+     * @return 若单元格不存在或内容为空，返回true
+     */
+    public boolean isEmptyCell(XSSFCell cell){
+        if(cell == null){
+            return true;
+        }
+        return ExcelUtil.isEmptyCell(cell);
     }
 
     /**
