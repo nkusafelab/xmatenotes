@@ -92,7 +92,7 @@ public class ExcelManager extends ExcelHelper{
             LogUtil.e(TAG, "");
 
             //遍历表头行直至空单元格为止，生成sheetHeaderMap
-            while(ExcelUtil.isEmptyCell(sheetHeaderRow.getCell(firstCol))){
+            while(!ExcelUtil.isEmptyCell(sheetHeaderRow.getCell(firstCol))){
                 add(getCellString(sheetHeaderRow.getCell(firstCol)),getCellString(sheetHeaderRow.getCell(firstCol+1)));
                 firstCol = firstCol +2;
             }
@@ -171,9 +171,14 @@ public class ExcelManager extends ExcelHelper{
             //解析表头行
             this.sheetHeader = new SheetHeader().parseSheetHeaderRow(this.abstractSheet);
 
-            //获取搜索起点
-            int firstRowNum = numToIndex(Integer.parseInt(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW)));
-            int firstColNum = colNameToIndex(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+            //获取搜索起点和搜索范围
+            final int firstRowNum = numToIndex(Integer.parseInt(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW)));
+            final int firstColNum = colNameToIndex(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+            int lastRowNum;
+
+            //实时搜索坐标
+            int rowNum;
+            int colNum;
 
             //下一个搜索起点
             int nextRowNum;
@@ -181,12 +186,14 @@ public class ExcelManager extends ExcelHelper{
             XSSFRow firstRow = this.abstractSheet.getRow(firstRowNum);
 
             XSSFCell cell = firstRow.getCell(firstColNum);
-            nextRowNum = cell.getRowIndex()+1;
+            lastRowNum = cell.getRowIndex();
+            nextRowNum = lastRowNum+1;
             CellRangeAddress cellRangeAddress = null;
             if(ExcelUtil.inMerger(this.abstractSheet, cell)){
                 cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
                 cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
-                nextRowNum = cellRangeAddress.getLastRow()+1;
+                lastRowNum = cellRangeAddress.getLastRow();
+                nextRowNum = lastRowNum+1;
             }
 
             while (!ExcelUtil.isEmptyCell(cell)){
@@ -195,18 +202,32 @@ public class ExcelManager extends ExcelHelper{
                 Map<String, String> map = getMap(fieldName);
                 if(map != null){
                     //获取字段键值对搜索起点
+                    rowNum = cell.getRowIndex();
+                    colNum = cell.getColumnIndex()+1;
 
-                    //循环存储键值对，直到键为空，循环停止；若值为空，存储null
-
+                    //循环存储键值对，直到键为空或到达该字段最后一行，循环停止；若值为空，存储null
+                    while(!ExcelUtil.isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum)) && rowNum <= lastRowNum){
+                        if(!ExcelUtil.isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum+1))){
+                            map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum+1)));
+                            rowNum = rowNum +1;
+                        }
+                        else{
+                            LogUtil.e(TAG,"键所对应的值为空");
+                            map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),null);
+                            rowNum = rowNum +1;
+                        }
+                    }
                 }
 
                 //确定下一字段搜索起点
                 cell = this.abstractSheet.getRow(nextRowNum).getCell(firstColNum);
-                nextRowNum = cell.getRowIndex()+1;
+                lastRowNum = cell.getRowIndex();
+                nextRowNum = lastRowNum+1;
                 if(ExcelUtil.inMerger(this.abstractSheet, cell)){
                     cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
                     cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
-                    nextRowNum = cellRangeAddress.getLastRow()+1;
+                    lastRowNum = cellRangeAddress.getLastRow();
+                    nextRowNum = lastRowNum+1;
                 }
 
             }
@@ -225,13 +246,22 @@ public class ExcelManager extends ExcelHelper{
                 return pageProperty;
             } else if(SEARCH_SHEET_NAME.equals(name)){
                 return searchSheet;
+            }else if(DATA_SHEET_NAME.equals(name)){
+                return dataSheet;
             }
-
-            LogUtil.e(TAG, "getMap(): 没有对应的map");
-            return null;
+            else if(RESPONSE_SHEET_NAME.equals(name)){
+                return responseSheet;
+            }
+            else if(BITABLE_PROPERTY.equals(name)){
+                return bitableProperty;
+            }else if(CONSTANT.equals(name)){
+                return constant;
+            }
+            else{
+                LogUtil.e(TAG, "getMap(): 没有对应的map");
+                return null;
+            }
         }
-
-
 
     }
 
