@@ -83,6 +83,11 @@ public class ExcelManager extends ExcelHelper {
         return this;
     }
 
+
+    public AbstractSheet getAbstractSheet() {
+        return abstractSheet;
+    }
+
     /**
      * 解析目标数据表
      * @param dataSheetName 数据表名，确保为数据表
@@ -212,7 +217,7 @@ public class ExcelManager extends ExcelHelper {
             LogUtil.e(TAG, "");
 
             //遍历表头行直至空单元格为止，生成sheetHeaderMap
-            while(!ExcelUtil.isEmptyCell(sheetHeaderRow.getCell(firstCol))){
+            while(!isEmptyCell(sheetHeaderRow.getCell(firstCol))){
                 add(getCellString(sheetHeaderRow.getCell(firstCol)),getCellString(sheetHeaderRow.getCell(firstCol+1)));
                 firstCol = firstCol +2;
             }
@@ -314,7 +319,7 @@ public class ExcelManager extends ExcelHelper {
                 nextRowNum = lastRowNum+1;
             }
 
-            while (!ExcelUtil.isEmptyCell(cell)){
+            while (!isEmptyCell(cell)){
                 String fieldName = getCellString(cell);
                 LogUtil.e(TAG, "parseAbstractSheet(): 搜索到字段: "+fieldName);
                 Map<String, String> map = getMap(fieldName);
@@ -324,8 +329,8 @@ public class ExcelManager extends ExcelHelper {
                     colNum = cell.getColumnIndex()+1;
 
                     //循环存储键值对，直到键为空或到达该字段最后一行，循环停止；若值为空，存储null
-                    while(!ExcelUtil.isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum)) && rowNum <= lastRowNum){
-                        if(!ExcelUtil.isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum+1))){
+                    while(!isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum)) && rowNum <= lastRowNum){
+                        if(!isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum+1))){
                             map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum+1)));
                             rowNum = rowNum +1;
                         }
