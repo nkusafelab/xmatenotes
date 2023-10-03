@@ -1,5 +1,9 @@
 package com.example.xmatenotes.logic.manager;
 
+import com.example.xmatenotes.util.ExcelUtil;
+import com.example.xmatenotes.util.LogUtil;
+
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -67,6 +71,12 @@ public class ExcelManager extends ExcelHelper{
         public SheetHeader parseSheetHeaderRow(XSSFSheet sheet){
             this.sheetHeaderRow = sheet.getRow(numToIndex(SHEETHEADEERROWNUM));
             int firstCol = colNameToIndex(SHEETHEADERCOLNAME);
+            LogUtil.e(TAG, "");
+            //判断是否为空
+            while(ExcelUtil.isEmptyCell(sheetHeaderRow.getCell(firstCol))){
+                add(getCellString(sheetHeaderRow.getCell(firstCol)),getCellString(sheetHeaderRow.getCell(firstCol+1)));
+                firstCol = firstCol +2;
+            }
 
             return this;
         }
