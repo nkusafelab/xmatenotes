@@ -1,5 +1,7 @@
 package com.example.xmatenotes.logic.manager;
 
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.network.BitableManager;
 import com.example.xmatenotes.util.ExcelUtil;
 import com.example.xmatenotes.util.LogUtil;
 import com.lark.oapi.service.docx.v1.model.Sheet;
@@ -22,12 +24,16 @@ public class ExcelManager extends ExcelHelper{
     private static final String TAG = "ExcelManager";
 
     private static final ExcelManager excelManager = new ExcelManager();
+    private static final BitableManager bitableManager = BitableManager.getInstance();
 
     /**
      * 摘要信息表数据
      */
     private AbstractSheet abstractSheet;
 
+    /**
+     * 数据表集合
+     */
     private Map<String, DataSheet> dataSheetMap = new HashMap<>();
 
     private ExcelManager() {
@@ -46,10 +52,12 @@ public class ExcelManager extends ExcelHelper{
 
         //打开目标表格
         openExcel("excel/"+excelName);
+        LogUtil.e(TAG, "init(): 打开目标表格完毕");
 
         //解析摘要信息表
         if(switchSheet(AbstractSheet.ABSTRACT_SHEET_NAME)){
             this.abstractSheet = new AbstractSheet().parseAbstractSheet(this.curWorkbook);
+            LogUtil.e(TAG, "init(): 解析摘要信息表完毕");
         }
 
         //解析数据表
@@ -64,6 +72,14 @@ public class ExcelManager extends ExcelHelper{
             this.dataSheetMap.put(dataSheet.getName(), dataSheet);
         }
 
+        LogUtil.e(TAG, "init(): 解析数据表完毕: "+dataSheetMap);
+
+        //初始化BitableManager
+        Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
+        if(bitableMap != null){
+            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("APPtoken"));
+            LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
+        }
 
         return this;
     }
@@ -119,6 +135,12 @@ public class ExcelManager extends ExcelHelper{
         }
 
         return dataSheet;
+    }
+
+    public LocalData searchTable(MediaDot dot, String command, String roleName){
+        LocalData localData = new LocalData();
+
+        return localData;
     }
 
     /**
@@ -334,6 +356,17 @@ public class ExcelManager extends ExcelHelper{
             }
         }
 
+        @Override
+        public String toString() {
+            return "AbstractSheet{" +
+                    "pageProperty=" + pageProperty +
+                    ", searchSheet=" + searchSheet +
+                    ", dataSheet=" + dataSheet +
+                    ", responseSheet=" + responseSheet +
+                    ", bitableProperty=" + bitableProperty +
+                    ", constant=" + constant +
+                    '}';
+        }
     }
 
 }

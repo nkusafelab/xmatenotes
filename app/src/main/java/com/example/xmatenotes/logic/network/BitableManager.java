@@ -113,6 +113,15 @@ public class BitableManager {
     /**
      * 初始化
      */
+    public void initial(String appId, String appSecret, String appToken){
+       this.appId = appId;
+       this.appSecret = appSecret;
+       this.appToken = appToken;
+    }
+
+    /**
+     * 初始化
+     */
     public void initial(String tableId){
         client = getClient();
         if(!tableId.equals(curTableId)){

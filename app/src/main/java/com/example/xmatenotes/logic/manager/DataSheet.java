@@ -47,4 +47,12 @@ public class DataSheet {
         LogUtil.e(TAG, "getMap(): 未找到目标主键！");
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "DataSheet{" +
+                "name='" + name + '\'' +
+                ", data=" + data +
+                '}';
+    }
 }
