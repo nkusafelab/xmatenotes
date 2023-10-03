@@ -33,11 +33,6 @@ public class LongPress extends ActionCommand {
     }
 
     @Override
-    public String getName() {
-        return getTag();
-    }
-
-    @Override
     public String getTag() {
         return TAG;
     }

@@ -24,9 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.xmatenotes.BluetoothLEService;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.model.DataList;
-import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.R;
@@ -40,7 +39,6 @@ import com.google.gson.reflect.TypeToken;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.lang.reflect.Type;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,7 +57,7 @@ public class CardshowActivity extends BaseActivity{
 
     private BluetoothLEService mService = null;              //蓝牙服务
 
-    private PageManager pageManager = null;
+    private OldPageManager oldPageManager = null;
 
     private MediaDot lastDot = null;
 
@@ -130,7 +128,7 @@ public class CardshowActivity extends BaseActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        this.writer = Writer.getInstance().init().bindCard(null).setResponser(new Responser() {
+        this.writer = Writer.getInstance().init().bindPage(null).setResponser(new Responser() {
             @Override
             public boolean onLongPress(Command command) {
                 if(!super.onLongPress(command)){

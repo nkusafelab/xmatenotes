@@ -22,7 +22,6 @@ public class SymbolicCommand extends Command{
     private CommandDetector commandDetector;
     private Command nextCommand;
     private int id;
-    private String name;
 
     static {
         System.loadLibrary("gestureteast");
@@ -39,17 +38,12 @@ public class SymbolicCommand extends Command{
     private SymbolicCommand(HandWriting handWriting, int id, String name) {
         super(handWriting);
         this.id = id;
-        this.name = name;
+        setName(name);
     }
 
     @Override
     public int getID() {
         return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override

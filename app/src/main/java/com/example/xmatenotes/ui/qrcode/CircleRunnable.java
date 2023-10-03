@@ -19,14 +19,22 @@ public class CircleRunnable implements Runnable {
     //控制线程是否终止运行
     private boolean isStart = true;
 
+    //控制可停止部分是否终止运行
+    private boolean isStopableCallBackStart = true;
+
+    /**
+     * 单次循环睡眠时间
+     */
+    private long sleepTime = 1000;
+
     public CircleRunnable(CircleCallBack circleCallBack) {
         this.circleCallBack = circleCallBack;
     }
 
     @Override
     public void run() {
-        while (true){
-            if(isStart){
+        while (isStart){
+            if(isStopableCallBackStart){
                 if(circleCallBack != null){
                     circleCallBack.stopableCallBack();
                 }
@@ -36,13 +44,25 @@ public class CircleRunnable implements Runnable {
                 circleCallBack.circleCallBack();
             }
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(sleepTime > 0){
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
+    }
+
+    /**
+     *
+     * @param sleepTime 小于等于0表示每次循环不睡眠
+     * @return
+     */
+    public CircleRunnable setSleepTime(long sleepTime) {
+        this.sleepTime = sleepTime;
+        return this;
     }
 
     /**
@@ -54,9 +74,24 @@ public class CircleRunnable implements Runnable {
     }
 
     /**
+     * 判断可停止部分是否已经停止
+     * @return
+     */
+    public boolean isStopableCallBackStart() {
+        return isStopableCallBackStart;
+    }
+
+    /**
      * 终止线程执行
      */
     public void stop(){
         isStart = false;
+    }
+
+    /**
+     * 终止stopable部分的执行
+     */
+    public void stopPart(){
+        isStopableCallBackStart = false;
     }
 }

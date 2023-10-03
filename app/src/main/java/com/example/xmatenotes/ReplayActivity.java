@@ -6,12 +6,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
 
+import com.example.xmatenotes.logic.model.Page.OldXueCheng;
 import com.example.xmatenotes.ui.BaseActivity;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.manager.AudioManager;
-import com.example.xmatenotes.logic.model.Page.Page;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 
 import java.util.ArrayList;
 
@@ -28,7 +28,7 @@ public class ReplayActivity extends BaseActivity {
 
     public final static long HANDWRITING_PERIOD = 30;//相邻两次笔迹间隔时间
 
-    private PageManager pageManager = null;
+    private OldPageManager oldPageManager = null;
     private AudioManager audioManager = null;
 //    private DrawImageView drawImageView = null;
     private PageSurfaceView pageSurfaceView = null;
@@ -46,7 +46,7 @@ public class ReplayActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_replay);
 
-        pageManager = PageManager.getInstance();
+        oldPageManager = OldPageManager.getInstance();
         //初始化音频管理器
         audioManager = AudioManager.getInstance();
         audioManager.audioInit(this);
@@ -72,7 +72,7 @@ public class ReplayActivity extends BaseActivity {
 
         LinearLayout replayView = (LinearLayout)findViewById(R.id.replayActivity);
 
-        int resID = pageManager.getResIDByPageID(pageID);
+        int resID = oldPageManager.getResIDByPageID(pageID);
         Log.e(TAG,"resID: "+resID);
         Rect originalRect = null;
         if(resID != -1){
@@ -107,12 +107,12 @@ public class ReplayActivity extends BaseActivity {
                 @Override
                 public void run() {
                     pageSurfaceView.setPenWidth(penWidth);
-                    Page page = pageManager.getPageByPageID(pageID);
-                    Log.e(TAG,"page != null?: "+(page != null));
-                    if(page != null){
-                        ArrayList<String> audioList = page.getAudioList(finalLocalCode);
-                        ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(finalLocalCode);
-                        ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
+                    OldXueCheng oldXueCheng = oldPageManager.getPageByPageID(pageID);
+                    Log.e(TAG,"page != null?: "+(oldXueCheng != null));
+                    if(oldXueCheng != null){
+                        ArrayList<String> audioList = oldXueCheng.getAudioList(finalLocalCode);
+                        ArrayList<OldXueCheng.LocalHandwritingsMap> localHwsMapList = oldXueCheng.getLocalHandwritings(finalLocalCode);
+                        ArrayList<MediaDot> mediaDots = oldXueCheng.getPageDotsBuffer();
                         Log.e(TAG,"获取timelongDots完成");
                         if(mediaDots == null || localHwsMapList == null){
                             try {
@@ -143,7 +143,7 @@ public class ReplayActivity extends BaseActivity {
                                 int lhmnumber = 0;//lhm下标
 
                                 Log.e(TAG, "localHwsMapList.size(): "+localHwsMapList.size());
-                                for(Page.LocalHandwritingsMap lhm : localHwsMapList){
+                                for(OldXueCheng.LocalHandwritingsMap lhm : localHwsMapList){
                                     pageSurfaceView.setPenColor(getColor());//更换画笔颜色
                                     for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
                                         MediaDot tD = mediaDots.get(i);

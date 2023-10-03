@@ -15,6 +15,10 @@ public interface CommandResponse {
 
     boolean onCalligraphy(Command command);
 
+    boolean onDelayHandWriting(Command command);
+
+    boolean onDelaySingleHandWriting(Command command);
+
     boolean onSymbolicCommand(Command command);
 
     boolean onZhiLingKongZhi(Command command);

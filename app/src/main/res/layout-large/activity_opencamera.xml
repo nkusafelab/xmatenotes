@@ -23,6 +23,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginEnd="70dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 android:layout_marginStart="10dp"
@@ -31,7 +32,8 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/TopBar_layout"
+                    android:paddingVertical="7dp"
+                    android:id="@+id/topBar_layout"
                     android:background="#EFE4B0"
                     >
 
@@ -40,43 +42,50 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="前置编码:"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         />
 
                     <TextView
-                        android:layout_marginStart="120dp"
+                        android:layout_marginStart="300dp"
                         android:id="@+id/subject_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="学科名:"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         />
 
                     <TextView
-                        android:layout_marginStart="220dp"
+                        android:layout_below="@id/precode_text"
                         android:id="@+id/unit_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="单元名:"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         />
 
                     <TextView
-                        android:layout_marginStart="420dp"
+                        android:layout_below="@id/subject_text"
+                        android:layout_marginStart="300dp"
                         android:id="@+id/stage_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="阶段:"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         />
 
                     <TextView
-                        android:layout_marginStart="560dp"
+                        android:layout_below="@id/subject_text"
+                        android:layout_marginStart="480dp"
                         android:id="@+id/classtime_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="课时:"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         />
 
 
@@ -113,7 +122,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="后置编码:"
-                            android:textSize="16dp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
                             android:textColor="@color/white"
                             android:layout_marginEnd="60dp"
                             android:layout_gravity="right|bottom">
@@ -121,94 +131,88 @@
                     </TextView>
 
                 </FrameLayout>
-                </LinearLayout>
 
-            <RelativeLayout
-                android:layout_width="75dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="35dp"
-                android:layout_marginBottom="10dp"
-                android:id="@+id/verticalBar_layout"
-                >
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="7dp"
+                    android:id="@+id/BottomBar_layout"
+                    android:background="#EFE4B0"
+                    >
 
-                <TextView
-                    android:id="@+id/week_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="第   周"
-                    android:textSize="16dp"
-                    android:layout_above="@id/group_text"
-                    />
-                <TextView
-                    android:id="@+id/group_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="小组:"
-                    android:textSize="16dp"
-                    android:layout_above="@id/room_text"
-                    />
+                    <TextView
+                        android:id="@+id/week_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="第   周"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        />
 
-                <TextView
-                    android:id="@+id/room_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="班级:"
-                    android:textSize="16dp"
-                    android:layout_above="@id/grade_text"
-                    />
-                <TextView
-                    android:id="@+id/grade_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="年级:"
-                    android:textSize="16dp"
-                    android:layout_above="@id/term_text"
-                    />
-                <TextView
-                    android:id="@+id/term_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="秋季学期"
-                    android:textSize="16dp"
-                    android:layout_above="@id/day_text"
-                    />
+                    <TextView
+                        android:id="@+id/group_text"
+                        android:layout_marginStart="100dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="小组:"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        />
 
-                <TextView
-                    android:id="@+id/day_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="20230729"
-                    android:textSize="16dp"
-                    android:layout_alignParentBottom="true"
+                    <TextView
+                        android:id="@+id/room_text"
+                        android:layout_marginStart="200dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="班级:"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        />
 
-                    />
-            </RelativeLayout>
+                    <TextView
+                        android:id="@+id/grade_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="300dp"
+                        android:text="年级:"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        />
+
+                    <TextView
+                        android:id="@+id/term_text"
+                        android:layout_marginStart="400dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="秋季学期"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        />
+
+                    <TextView
+                        android:id="@+id/day_text"
+                        android:layout_marginStart="500dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20230729"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        />
+                </RelativeLayout>
+
+                <Button
+                    android:id="@+id/btnCapture"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/circle_shape"
+                    android:text=" "
+                    android:textColor="#000000"
+                    android:textSize="30sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
-
-    <!--    <androidx.camera.view.PreviewView-->
-    <!--        android:id="@+id/previewView"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent"-->
-    <!--        android:layout_below="@id/horizontalBar_layout"-->
-    <!--        android:layout_toStartOf="@id/verticalBar_layout"-->
-    <!--        android:layout_alignStart="@id/horizontalBar_layout"-->
-    <!--        android:layout_marginBottom="10dp"-->
-    <!--        />-->
-
-        <Button
-            android:id="@+id/btnCapture"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="130dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/circle_shape"
-            android:text=" "
-            android:textColor="#000000"
-            android:textSize="22sp" />
-
     </RelativeLayout>
 
 <!--    <RelativeLayout-->

@@ -1,6 +1,6 @@
 package com.example.xmatenotes.logic.manager;
 
-import com.example.xmatenotes.logic.model.Page.Card;
+import com.example.xmatenotes.logic.model.Page.IPage;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
@@ -36,7 +36,7 @@ public class Writer {
     private Responser responser;
     private WriteTimer writeTimer;
 
-    private Card cardData;
+    private IPage page;
 
     private HandWriting handWritingBuffer = null;
     private SingleHandWriting singleHandWritingBuffer = null;
@@ -74,11 +74,11 @@ public class Writer {
 
     /**
      * 绑定版面对象
-     * @param cardData
+     * @param page
      * @return
      */
-    public Writer bindCard(Card cardData){
-        this.cardData = cardData;
+    public Writer bindPage(IPage page){
+        this.page = page;
         LogUtil.e(TAG, "Writer绑定Card");
         writeTimer = new WriteTimer();
         new Thread(writeTimer).start();
@@ -91,7 +91,7 @@ public class Writer {
      * @return
      */
     public Writer unBindCard(){
-        this.cardData = null;
+        this.page = null;
         LogUtil.e(TAG, "Writer解绑Card");
         writeTimer.stop();
         return this;
@@ -167,8 +167,8 @@ public class Writer {
             singleHandWritingBuffer = new SingleHandWriting();
 
             //设置进card
-            if(this.cardData != null){
-                this.cardData.addSingleHandWriting(singleHandWritingBuffer);
+            if(this.page != null){
+                this.page.addSingleHandWriting(singleHandWritingBuffer);
                 LogUtil.e(TAG, "新的单次笔迹开始");
             }
         }
@@ -213,15 +213,47 @@ public class Writer {
                 });
             } else if(com instanceof Calligraphy && com.getHandWriting().isClosed()){
                 this.updateStartTime();
-                LogUtil.e(TAG,"开启非动作命令延时识别计时器");
+                response(com);
+
                 this.symbolicDelayWorker = addResponseWorker(SymbolicCommand.SYMBOLIC_DELAY, new ResponseTask() {
                     @Override
                     public void execute() {
                         commandDetector.setSymbolicCommandAvailable(true);
-                        Command com = commandDetector.recognize(handWritingBuffer);
-                        response(com);
+                        commandDetector.recognize(handWritingBuffer);
+
+//                        response(comDelay);
                     }
                 });
+                LogUtil.e(TAG,"processEachDot: 开启非动作命令延时识别计时器");
+
+                //普通书写基本延时响应
+                this.handWritingWorker = addResponseWorker(
+                        HandWriting.DELAY_PERIOD, new ResponseTask() {
+                            @Override
+                            public void execute() {
+                                closeHandWriting();
+                                LogUtil.e(TAG, "close handWriting");
+                                Command command = com.clone();
+                                command.setName("DelayHandWriting");
+                                response(command);
+                            }
+                        }
+                );
+                LogUtil.e(TAG,"processEachDot: 开启普通书写延时响应任务");
+
+                this.singleHandWritingWorker = addResponseWorker(
+                        SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD, new ResponseTask() {
+                            @Override
+                            public void execute() {
+                                closeSingleHandWriting();
+                                LogUtil.e(TAG, "close singleHandWriting");
+                                Command command = com.clone();
+                                command.setName("DelaySingleHandWriting");
+                                response(command);
+                            }
+                        }
+                );
+                LogUtil.e(TAG,"processEachDot: 开启单次笔迹延时响应任务");
             } else {
                 this.updateStartTime();
                 response(com);
@@ -233,6 +265,20 @@ public class Writer {
     public void response(Command command){
         LogUtil.e(TAG, "识别结束");
         if(command != null){
+            if(command instanceof SymbolicCommand){
+                //如果有，移除普通书写延时响应任务
+                if(containsResponseWorker(handWritingWorker)){
+                    deleteResponseWorker(handWritingWorker);
+                    LogUtil.e(TAG, "移除普通书写延时响应任务");
+                }
+
+                //如果有，移除单次笔迹延时响应任务
+                if(containsResponseWorker(singleHandWritingWorker)){
+                    deleteResponseWorker(singleHandWritingWorker);
+                    LogUtil.e(TAG, "移除单次笔迹延时响应任务");
+                }
+            }
+
             command.addObserver(responser);
             LogUtil.e(TAG, "开始响应");
             command.response();
@@ -390,12 +436,12 @@ public class Writer {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ResponseWorker that = (ResponseWorker) o;
-            return workerId == that.workerId && delay == that.delay && isAvailable == that.isAvailable;
+            return workerId == that.workerId && delay == that.delay && isAvailable == that.isAvailable && Objects.equals(responseTask, that.responseTask);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(workerId, delay, isAvailable);
+            return Objects.hash(workerId, delay, isAvailable, responseTask);
         }
 
         @Override

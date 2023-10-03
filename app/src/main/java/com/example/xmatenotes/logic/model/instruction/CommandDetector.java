@@ -1,15 +1,14 @@
 package com.example.xmatenotes.logic.model.instruction;
 
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
-import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.util.LogUtil;
 
 public class CommandDetector {
     private static final String TAG = "CommandDetector";
 
-    private static PageManager pageManager;
+    private static OldPageManager oldPageManager;
 
     Command actionCommand = new ActionCommand();
     Command symbolicCommand = new SymbolicCommand(this);

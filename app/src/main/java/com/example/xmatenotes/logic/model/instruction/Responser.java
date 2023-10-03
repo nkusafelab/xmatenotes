@@ -107,6 +107,18 @@ public abstract class Responser implements Observer, CommandResponse {
     }
 
     @Override
+    public boolean onDelayHandWriting(Command command) {
+        LogUtil.e(TAG, "onDelayHandWriting");
+        return true;
+    }
+
+    @Override
+    public boolean onDelaySingleHandWriting(Command command) {
+        LogUtil.e(TAG, "onDelaySingleHandWriting");
+        return true;
+    }
+
+    @Override
     public boolean onSymbolicCommand(Command command) {
         LogUtil.e(TAG, "onSymbolicCommand");
         HandWriting handWriting = command.getHandWriting();

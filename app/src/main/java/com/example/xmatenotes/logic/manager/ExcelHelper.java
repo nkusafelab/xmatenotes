@@ -20,7 +20,7 @@ public class ExcelHelper {
 
     private static final ExcelHelper excelHelper = new ExcelHelper();
 
-    private XSSFSheet sheet = null;//当前打开的工作表
+    private XSSFSheet curSheet = null;//当前打开的工作表
 
     /**
      * 摘要信息表
@@ -32,14 +32,14 @@ public class ExcelHelper {
      */
     private XSSFSheet indexSheet = null;//索引表
 
-    private XSSFWorkbook workbook = null;//当前打开的excel
+    private XSSFWorkbook curWorkbook = null;//当前打开的excel
     //存储excel表格的路径
     private String excelPath;
 
     private InputStream excelStream = null;
 
 
-    private ExcelHelper(){
+    protected ExcelHelper(){
 
     }
 
@@ -73,7 +73,7 @@ public class ExcelHelper {
     public boolean switchSheet(String sheetName){
         XSSFSheet bufferSheet = openSheet(sheetName);
         if(bufferSheet != null){
-            sheet = bufferSheet;
+            curSheet = bufferSheet;
             return true;
         }
         return false;
@@ -88,7 +88,7 @@ public class ExcelHelper {
 
     private void createWorkbook(InputStream inputStream) throws IOException {
         excelStream = inputStream;
-        workbook = new XSSFWorkbook(excelStream);
+        curWorkbook = new XSSFWorkbook(excelStream);
     }
 
     /**
@@ -98,8 +98,8 @@ public class ExcelHelper {
      * 打开工作表前需要先打开excel
      */
     private XSSFSheet openSheet(String sheetName){
-        if(workbook != null){
-            return workbook.getSheet(sheetName);
+        if(curWorkbook != null){
+            return curWorkbook.getSheet(sheetName);
         }
         return null;
     }
@@ -111,8 +111,8 @@ public class ExcelHelper {
      * 打开工作表前需要先打开excel
      */
     private XSSFSheet openSheet(int sheetNumber){
-        if(workbook != null){
-            return workbook.getSheetAt(sheetNumber);
+        if(curWorkbook != null){
+            return curWorkbook.getSheetAt(sheetNumber);
         }
         return null;
     }
@@ -258,12 +258,13 @@ public class ExcelHelper {
         if(column < 1){
             Log.e(TAG,"非法列名");
             return null;
-        }if(row < 1){
+        }
+        if(row < 1){
             Log.e(TAG,"非法行名");
             return null;
         }
-        int colInt = column -1;
-        int rowInt = row -1;
+        int colInt = numToIndex(column);
+        int rowInt = numToIndex(row);
         if(desSheet != null){
             if (desSheet.getRow(rowInt) == null){
                 Log.e(TAG,"不存在目标行");
@@ -300,38 +301,61 @@ public class ExcelHelper {
      * 调用此方法前请确保已经通过swithSheet()方法切换到了目标sheet！
      */
     private XSSFCell getCell(int row, int column){
-        return getCell(sheet, row, column);
+        return getCell(curSheet, row, column);
+    }
+
+    /**
+     * 将字母组合形式的列名转换为代码中使用的index
+     * @param colName 列名 (A,B,C,...,AA,AB,AC,...)
+     * @return index (0,1,2,...)
+     */
+    protected int colNameToIndex(String colName){
+        return numToIndex(colNameToNumber(colName));
     }
 
     /**
      * 将字母组合形式的列名转换为列号
-     * @param column 列名 (A,B,C,...,AA,AB,AC,...)
+     * @param colName 列名 (A,B,C,...,AA,AB,AC,...)
      * @return 列号 (1,2,3,...)
      * 若列名不合法，获取失败，返回-1
      */
-    private int colNameToNumber(String column){
+    protected int colNameToNumber(String colName){
         int num = 0;
-        if(column.length() >0){
-            StringBuilder col = new StringBuilder(column.toUpperCase());
+        if(colName.length() >0){
+            StringBuilder col = new StringBuilder(colName.toUpperCase());
             for(int i=0;i<col.length();i++){
                 char c = col.charAt(i);
                 if(c >='A' && c<='Z'){
                     num *= 26;
                     num += (c - 'A'+1);
                 }else{
-                    Log.e(TAG,"非法列名");
+                    Log.e(TAG,"colNameToNumber(): 非法列名");
                     return -1;
                 }
             }
         }else{
-            Log.e(TAG,"非法列名");
+            Log.e(TAG,"colNameToNumber(): 非法列名");
             return -1;
         }
         return num;
     }
 
-    //如果目标单元格属于合并单元格，则返回合并区域左上角的单元格
-    private XSSFCell getMergedCell(XSSFSheet desSheet, XSSFCell cell){
+    /**
+     * 将行号或列号转换为代码中使用的index
+     * @param num 行号或列号 (1,2,3,...)
+     * @return index (0,1,2,...)
+     */
+    protected int numToIndex(int num){
+        return num-1;
+    }
+
+    /**
+     * 如果目标单元格属于合并单元格，则返回合并区域左上角的单元格
+     * @param desSheet
+     * @param cell
+     * @return
+     */
+    protected XSSFCell getMergedCell(XSSFSheet desSheet, XSSFCell cell){
         if(ExcelUtil.inMerger(desSheet, cell)){
             CellRangeAddress cellRangeAddress = ExcelUtil.getMergedCellAddress(desSheet,cell);
             cell = desSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
@@ -344,11 +368,11 @@ public class ExcelHelper {
      * @return 若当前未打开工作表，返回空字符串
      */
     public String getCurrentSheetName(){
-        if(sheet == null){
+        if(curSheet == null){
             Log.e(TAG,"getCurrentSheetName(): 未打开工作表");
-            return "";
+            return null;
         }
-        return sheet.getSheetName();
+        return curSheet.getSheetName();
     }
 
     /**
@@ -356,11 +380,11 @@ public class ExcelHelper {
      * @throws IOException
      */
     public void close() throws IOException {
-        sheet = null;
+        curSheet = null;
         indexSheet = null;
         abstractSheet = null;
-        if(workbook != null){
-            workbook.close();
+        if(curWorkbook != null){
+            curWorkbook.close();
         }
         if(excelStream != null){
             excelStream.close();

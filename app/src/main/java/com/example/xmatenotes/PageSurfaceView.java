@@ -25,14 +25,14 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.app.ax.A3;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
+import com.example.xmatenotes.logic.model.Page.OldXueCheng;
 import com.example.xmatenotes.ui.BaseActivity;
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.TimelongDot;
 import com.example.xmatenotes.logic.manager.LocalRect;
-import com.example.xmatenotes.logic.model.Page.Page;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.File;
@@ -306,8 +306,8 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         drawlRInforPaint.setTextSize(20);
         drawlRInforTextPaint.setTextSize(15);
         drawlRInforPaint.setColor(Color.YELLOW);
-        hwNumber = XmateNotesApplication.pageManager.getPageByPageID(pageId).getHandWritingsNum(lR.getLocalCode());
-        peoNumber = XmateNotesApplication.pageManager.getPageByPageID(pageId).getPeopleNum(lR.getLocalCode());
+        hwNumber = XmateNotesApplication.oldPageManager.getPageByPageID(pageId).getHandWritingsNum(lR.getLocalCode());
+        peoNumber = XmateNotesApplication.oldPageManager.getPageByPageID(pageId).getPeopleNum(lR.getLocalCode());
 //        canvas.drawRect(new Rect(500,500,1000,1000),paint);
         Log.e(TAG, "drawlRInfor: hwNumRect: "+hwNumRect);
         Log.e(TAG, "drawlRInfor: peoNumRect: "+peoNumRect);
@@ -356,9 +356,9 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * @param lR
      */
     public void drawlROnPeoNum(LocalRect lR, Canvas canvas){
-        Page page = XmateNotesApplication.pageManager.getPageByPageID(pageId);
-        ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(lR.getLocalCode());
-        ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
+        OldXueCheng oldXueCheng = XmateNotesApplication.oldPageManager.getPageByPageID(pageId);
+        ArrayList<OldXueCheng.LocalHandwritingsMap> localHwsMapList = oldXueCheng.getLocalHandwritings(lR.getLocalCode());
+        ArrayList<MediaDot> mediaDots = oldXueCheng.getPageDotsBuffer();
         if(mediaDots == null || localHwsMapList == null){
             return;
         }
@@ -372,7 +372,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         Map<String, Integer> map = new HashMap<>();
         colorNumber = -1;MediaDot preD = null;MediaDot d = null;
         float maxY = 0,minX = Float.MAX_VALUE;
-        for(Page.LocalHandwritingsMap lhm : localHwsMapList){
+        for(OldXueCheng.LocalHandwritingsMap lhm : localHwsMapList){
             for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
                 d = mediaDots.get(i);
                 if(!d.isEmptyDot()){
@@ -414,9 +414,9 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * @param lR
      */
     public void drawlROnHwNum(LocalRect lR, Canvas canvas){
-        Page page = PageManager.getPageByPageID(pageId);
-        ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(lR.getLocalCode());
-        ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
+        OldXueCheng oldXueCheng = OldPageManager.getPageByPageID(pageId);
+        ArrayList<OldXueCheng.LocalHandwritingsMap> localHwsMapList = oldXueCheng.getLocalHandwritings(lR.getLocalCode());
+        ArrayList<MediaDot> mediaDots = oldXueCheng.getPageDotsBuffer();
         if(mediaDots == null || localHwsMapList == null){
             return;
         }
@@ -429,7 +429,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         p.setColor(Color.BLACK);
         colorNumber = -1;MediaDot preD = null;MediaDot d = null;
         float maxY = 0,minX = Float.MAX_VALUE;
-        for(Page.LocalHandwritingsMap lhm : localHwsMapList){
+        for(OldXueCheng.LocalHandwritingsMap lhm : localHwsMapList){
             int color = getColor();
             for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
                 d = mediaDots.get(i);
@@ -463,16 +463,16 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * @param lR
      */
     public void drawlR(LocalRect lR){
-        Page page = PageManager.getPageByPageID(pageId);
-        ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(lR.getLocalCode());
-        ArrayList<MediaDot> mediaDots = page.getPageDotsBuffer();
+        OldXueCheng oldXueCheng = OldPageManager.getPageByPageID(pageId);
+        ArrayList<OldXueCheng.LocalHandwritingsMap> localHwsMapList = oldXueCheng.getLocalHandwritings(lR.getLocalCode());
+        ArrayList<MediaDot> mediaDots = oldXueCheng.getPageDotsBuffer();
         if(mediaDots == null || localHwsMapList == null){
             return;
         }
 
         restoreRect(lR.rect);
 
-        for(Page.LocalHandwritingsMap lhm : localHwsMapList){
+        for(OldXueCheng.LocalHandwritingsMap lhm : localHwsMapList){
             for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
                 MediaDot tD = mediaDots.get(i);
                 if(!tD.isEmptyDot()){
@@ -487,7 +487,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     /**
      * 按照特别需要画出当前单次笔迹
      */
-    public void drawLocalHWMap(LocalRect lR, Page.LocalHandwritingsMap lhwm ,ArrayList<MediaDot> mediaDots){
+    public void drawLocalHWMap(LocalRect lR, OldXueCheng.LocalHandwritingsMap lhwm , ArrayList<MediaDot> mediaDots){
         restoreRect(lhwm.getBounds());
         MediaDot d = null, preD = null;
         RectF rectF = null;Paint p = new Paint(paint);p.setStrokeWidth(3);
@@ -1164,13 +1164,13 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         simpleDot.setY(simpleDot.getFloatY()*A3.ORDINATE_RANGE/bitmap.getHeight());
 
         MediaDot mediaDot = new MediaDot(simpleDot);
-        mediaDot.pageID = XmateNotesApplication.pageManager.currentPageID;
+        mediaDot.pageID = XmateNotesApplication.oldPageManager.currentPageID;
         mediaDot.penMac = XmateNotesApplication.mBTMac;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 if("MainActivity".equals(BaseActivity.baseActivity.getClass().getSimpleName())){
-                    BaseActivity.baseActivity.processEachDot(mediaDot);
+//                    BaseActivity.baseActivity.processEachDot(mediaDot);
                 }else {
                     XmateNotesApplication.instruction.processEachDot(mediaDot);
                 }

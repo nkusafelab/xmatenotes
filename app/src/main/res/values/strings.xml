@@ -6,6 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="unknown_device">Unknown device</string>
     <string name="action_ckplayer">视频笔记</string>
+    <string name="xuecheng_notes">学程笔记</string>
     <string name="action_clear">清除数据</string>
     <string name="action_setup">设置</string>
     <string name="dot_info">本地笔迹信息</string>
@@ -14,7 +15,7 @@
 
     <string name="name">笔名</string>
     <string name="address">蓝牙地址</string>
-    <string name="page">幅面</string>
+    <string name="oldXueCheng">幅面</string>
 
     <!--未来可能实现的内容
     <string name="pen_boot_version">BOOT版本</string>

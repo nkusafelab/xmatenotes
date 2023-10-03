@@ -22,11 +22,6 @@ public class Calligraphy extends Command {
     }
 
     @Override
-    public String getName() {
-        return getTag();
-    }
-
-    @Override
     public String getTag() {
         return TAG;
     }

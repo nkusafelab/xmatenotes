@@ -1,10 +1,13 @@
 package com.example.xmatenotes.ui;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.xmatenotes.BluetoothLEService;
 import com.example.xmatenotes.R;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.util.ActivityCollector;
@@ -113,7 +117,28 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    public void processEachDot(MediaDot mediaDot) {
+    @SuppressLint("HandlerLeak")
+    public Handler handler = new Handler(){
+        @SuppressLint("NewApi") @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case 0:
+                    String toast = msg.getData().getString("Toast");
+                    Toast.makeText(XmateNotesApplication.context, toast, Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+    protected void showToast(String toast){
+        Message message = new Message();
+        message.what = 0;
+        Bundle bundle = new Bundle();
+        bundle.putString("Toast",toast);
+        message.setData(bundle);
+        handler.sendMessage(message);
     }
 
     /**
@@ -132,20 +157,6 @@ public class BaseActivity extends AppCompatActivity {
                 getSupportActionBar().setTitle(getResources().getString(R.string.app_name)+"（蓝牙未连接）");
             }
         }
-    }
-
-    /**
-     * 全局的toast
-     *
-     * @param msg
-     */
-    public void showToast(String msg) {
-
-        if (mToast == null) {
-            mToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-        }
-        mToast.setText(msg);
-        mToast.show();
     }
 
 }

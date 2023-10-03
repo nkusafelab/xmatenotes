@@ -12,8 +12,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
+import com.example.xmatenotes.logic.model.Page.OldXueCheng;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
-import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
@@ -29,7 +29,7 @@ import lombok.SneakyThrows;
  * <p>包括音频的录制、存储和播放等</p>
  * @see MediaRecorder
  * @see MediaPlayer
- * @see PageManager
+ * @see OldPageManager
  */
 public class AudioManager {
     private static final String TAG = "AudioManager";
@@ -54,7 +54,7 @@ public class AudioManager {
     //存储该页中音频与所属笔迹点的映射关系
     public static Map<String,AudioDotsMap> audioRangeMap = new HashMap<>();
 
-    private PageManager pageManager = null;
+    private OldPageManager oldPageManager = null;
 
     public static int audioFirstDot;//记录当前录音期间的第一个普通书写笔迹点在其所在页的dotsbuffer中的索引
     public static int audioLastDot;//记录当前录音期间的最后一个普通书写笔迹点在其所在页的dotsbuffer中的索引
@@ -132,7 +132,7 @@ public class AudioManager {
         //默认录音文件保存位置
         this.audioPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/XAppSounds";
 
-        pageManager = PageManager.getInstance();
+        oldPageManager = OldPageManager.getInstance();
         Log.e(TAG,"PageManager.getInstance()");
 
         //判断安卓版本
@@ -336,7 +336,7 @@ public class AudioManager {
      * 开始录音，录音文件名采用默认方式
      */
     public void startRecordAudio(){
-        String audioFileName = Page.createRecordAudioName(++recordAudioNumber);
+        String audioFileName = OldXueCheng.createRecordAudioName(++recordAudioNumber);
         setCurrentRecordAudioName(audioFileName);
         startRecordAudio(audioPath+"/"+audioFileName+".mp4");
     }
@@ -374,14 +374,14 @@ public class AudioManager {
                 mD.setY(-2);
                 mD.timelong = System.currentTimeMillis();
                 mD.type = Dot.DotType.PEN_UP;
-                mD.pageID = PageManager.currentPageID;
+                mD.pageID = OldPageManager.currentPageID;
                 mD.audioID = recordAudioNumber;
                 mD.penMac = XmateNotesApplication.mBTMac;
-                pageManager.writeDot(mD);
+                oldPageManager.writeDot(mD);
 //                Page p = pageManager.getPageByPageID(mD.pageID);
 //                audioLastDot = p.getPageDotsBufferSize()-1;
 //                addAudio();
-                Page.isAudioRangeBeginTrue = false;
+                OldXueCheng.isAudioRangeBeginTrue = false;
             }catch (IllegalStateException e){
                 recorder = null;
                 recorder = new MediaRecorder();

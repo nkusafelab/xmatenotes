@@ -11,7 +11,7 @@ import java.util.Collections;
 import com.example.xmatenotes.ui.BaseActivity;
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.tqltech.tqlpencomm.bean.Dot;
 
@@ -32,7 +32,7 @@ public class DotInfoActivity extends BaseActivity {
 	private final static String FILE_NAME = "XmateNotes";//存储文件名
 
 	private PenMacManager penMacManager;//所有mac地址管理对象
-	private PageManager pageManager = null;
+	private OldPageManager oldPageManager = null;
     
 	private ArrayList<String> data = new ArrayList<String>();
 	private ArrayList<String> dataSquare = new ArrayList<String>();
@@ -55,7 +55,7 @@ public class DotInfoActivity extends BaseActivity {
 		setContentView(R.layout.activity_information);
 
 		penMacManager = PenMacManager.getInstance();
-		pageManager = PageManager.getInstance();
+		oldPageManager = OldPageManager.getInstance();
 
 		loadData();
 		Collections.reverse(dataSquare);

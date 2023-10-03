@@ -29,7 +29,7 @@ import com.example.xmatenotes.DotInfoActivity;
 import com.example.xmatenotes.R;
 import com.example.xmatenotes.logic.manager.ExcelReader;
 import com.example.xmatenotes.logic.manager.LocalRect;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.example.xmatenotes.logic.manager.VideoManager;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
@@ -118,7 +118,7 @@ public class CkplayerActivity extends BaseActivity {
 	private PenMacManager penMacManager = null;//管理所有mac地址的对象
 	private ExcelReader excelReader = null;//操作excel的对象
 	private VideoManager videoManager = null;
-	private PageManager pageManager = null;
+	private OldPageManager oldPageManager = null;
 
 	/**
 	 * 当前MediaDot
@@ -447,7 +447,7 @@ public class CkplayerActivity extends BaseActivity {
 //			ckTextView.setText("[视频编号： "+(v1.getVideoID())+" ][视频名称： "+v1.getVideoName()+" ][笔记人数："+v1.getMatesNumber()+" ][笔记页数： "+v1.getPageNumber()+" ]");
 
 			//如果正在书写区答题，退出视频笔记
-			int pN = pageManager.getPageNumberByPageID(pageID);
+			int pN = oldPageManager.getPageNumberByPageID(pageID);
 			LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
 //			if("书写区".equals(lR.localName)){
 //				finish();
@@ -456,13 +456,13 @@ public class CkplayerActivity extends BaseActivity {
 		}else if(ges.getInsId() == 1){//单击，包含在基础响应中
 
 		}else if(ges.getInsId() == 2) {//双击
-			MediaDot mediaDot = pageManager.getDotMedia(pageID,firstX,firstY);
+			MediaDot mediaDot = oldPageManager.getDotMedia(pageID,firstX,firstY);
 			if(mediaDot != null){
 				if(mediaDot.isVideoDot() && mediaDot.penMac.equals(XmateNotesApplication.mBTMac)){//跳转
 					seekTime(mediaDot.videoTime, mediaDot.videoID);
 				}
 			}else {
-				int pN = pageManager.getPageNumberByPageID(pageID);
+				int pN = oldPageManager.getPageNumberByPageID(pageID);
 				LocalRect lR = excelReader.getLocalRectByXY(pN, firstX, firstY);
 
 				if (lR != null) {
@@ -811,7 +811,7 @@ public class CkplayerActivity extends BaseActivity {
 		boolean bBind = bindService(getServiceIntent, ckServiceConnection, BIND_AUTO_CREATE);
 
         bleManager = PenCommAgent.GetInstance(getApplication());
-		pageManager = PageManager.getInstance();
+		oldPageManager = OldPageManager.getInstance();
 		videoManager = VideoManager.getInstance();
 		penMacManager = PenMacManager.getInstance();//必须在加载数据之前
 		excelReader = ExcelReader.getInstance();

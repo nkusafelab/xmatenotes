@@ -32,11 +32,6 @@ public class DoubleClick extends ActionCommand{
     }
 
     @Override
-    public String getName() {
-        return getTag();
-    }
-
-    @Override
     public String getTag() {
         return TAG;
     }

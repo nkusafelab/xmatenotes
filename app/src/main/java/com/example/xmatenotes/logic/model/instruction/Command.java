@@ -1,10 +1,13 @@
 package com.example.xmatenotes.logic.model.instruction;
 
+import androidx.annotation.NonNull;
+
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
+import com.example.xmatenotes.util.LogUtil;
 
 import java.util.Observable;
 
-public abstract class Command extends Observable {
+public abstract class Command extends Observable implements Cloneable {
 
     private static final String TAG = "Command";
 
@@ -13,17 +16,32 @@ public abstract class Command extends Observable {
     //识别是否有效
     private boolean available = true;
 
+    private String name;
+
     public Command(){
 
     }
 
     public Command(HandWriting handWriting) {
         this.handWriting = handWriting;
+        setName(getTag());
     }
 
     public abstract int getID();
 
-    public abstract String getName();
+    public String getName(){
+        if(this.name != null){
+            return this.name;
+        }
+
+        LogUtil.e(TAG, "getName(): this.name为null");
+        return null;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
     public String getTag(){
         return TAG;
     }
@@ -53,4 +71,17 @@ public abstract class Command extends Observable {
         super.notifyObservers(getName());
     }
 
+    @NonNull
+    @Override
+    public Command clone() {
+        Command command = null;
+        try {
+            command = (Command)super.clone();
+            command.setHandWriting(this.handWriting.clone());
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return command;
+    }
 }

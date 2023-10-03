@@ -21,6 +21,7 @@ import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.Storager
 import com.example.xmatenotes.logic.model.Page.Card
 import com.example.xmatenotes.logic.model.Page.QRObject
+import com.example.xmatenotes.logic.model.Page.getSubjectColor
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.qrcode.CircleRunnable.CircleCallBack
 import com.example.xmatenotes.util.LogUtil
@@ -114,7 +115,9 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
      */
     private var keyDown:Boolean = false
 
-    private lateinit var circleRunnable : CircleRunnable
+    private lateinit var updataDataRunnable : CircleRunnable
+
+    private lateinit var showPointsRunnable : CircleRunnable
 
     private var averageQRPoints = AveragePoints()
 
@@ -183,28 +186,19 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         viewfinderView = findViewById(R.id.QRViewfinderView) //p-oijhgvcvxfu2
         viewfinderView.isShowScanner = false
 
-        Thread {
-            while (true) {
-                if (System.currentTimeMillis() - timeLastUpDate > 500) {
-                    //镜头中长时间没有识别出二维码则取消红框显示
-                    viewfinderView.isShowPoints = false
-                }
-            }
-        }.start()
-
-        Thread {
-            var startTime = System.currentTimeMillis()
-            while (true){
-//                LogUtil.e(TAG,
-//                    "System.currentTimeMillis(): "+System.currentTimeMillis()+" startTime: $startTime"
-//                )
-                if(System.currentTimeMillis() - startTime > 1000){
-                    LogUtil.e(TAG, "1秒内画了"+number+"次")
-                    number = 0
-                    startTime = System.currentTimeMillis()
-                }
-            }
-        }.start()
+//        Thread {
+//            var startTime = System.currentTimeMillis()
+//            while (true){
+////                LogUtil.e(TAG,
+////                    "System.currentTimeMillis(): "+System.currentTimeMillis()+" startTime: $startTime"
+////                )
+//                if(System.currentTimeMillis() - startTime > 1000){
+//                    LogUtil.e(TAG, "1秒内画了"+number+"次")
+//                    number = 0
+//                    startTime = System.currentTimeMillis()
+//                }
+//            }
+//        }.start()
 
         preCodeText = findViewById(R.id.precode_text)
         postCodeText = findViewById(R.id.postcode_text)
@@ -251,7 +245,22 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         LogUtil.e(TAG, "初始化cardData完成")
 
         bitableManager.initial(CLASS_TABLEID)
-        circleRunnable = CircleRunnable(object : CircleCallBack {
+
+        showPointsRunnable = CircleRunnable(object  : CircleCallBack {
+            override fun stopableCallBack() {
+                if (System.currentTimeMillis() - timeLastUpDate > 500) {
+                    //镜头中长时间没有识别出二维码则取消红框显示
+                    viewfinderView.isShowPoints = false
+                }
+            }
+
+            override fun circleCallBack() {
+
+            }
+        }).setSleepTime(100)
+        Thread(showPointsRunnable).start()
+
+        updataDataRunnable = CircleRunnable(object : CircleCallBack {
 
             override fun stopableCallBack() {
                 updateData()
@@ -265,7 +274,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             }
 
         })
-        Thread(circleRunnable).start()
+        Thread(updataDataRunnable).start()
 
         ivResult.setImageBitmap(null)
         cameraScan.setAnalyzeImage(true)
@@ -278,7 +287,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             override fun onFinish(appTableRecords: Array<out AppTableRecord>?) {
                 super.onFinish(appTableRecords)
                 synchronized(this){
-                    if (circleRunnable.isAlive) {
+                    if (updataDataRunnable.isStopableCallBackStart) {
                         runOnUiThread {
                             for (appTableRecord in appTableRecords!!) {
                                 cardData.cardDataLabel.subjectName =
@@ -288,8 +297,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                                 cardData.cardDataLabel.week =
                                     appTableRecord.fields["教学周"].toString()
 
-                                updateTopActionBar(cardData)
-                                updateOrganInfor(cardData)
+                                updateUI(cardData)
                                 LogUtil.e(TAG, "更新Subject")
                             }
                         }
@@ -320,6 +328,16 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //            }
 //        })
 
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (showPointsRunnable.isAlive){
+            showPointsRunnable.stop()
+        }
+        if (updataDataRunnable.isAlive){
+            updataDataRunnable.stop()
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -543,10 +561,12 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     }
 
     override fun onScanResultCallback(result: AnalyzeResult<List<String>>) {
+        LogUtil.e(TAG, "onScanResultCallback: beigin")
         // 停止分析
         if(keyDown){
             cameraScan.setAnalyzeImage(false)
         }
+
         LogUtil.d(TAG, result.result.toString())
 
         // 当初始化 WeChatScanningAnalyzer 时，如果是需要二维码的位置信息，则会返回 WeChatScanningAnalyzer.QRCodeAnalyzeResult
@@ -555,6 +575,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         if (result is MLScanningAnalyzer.MLQRCodeAnalyzeResult) { // 如果需要处理结果二维码的位置信息
             //取预览当前帧图片并显示，为结果点提供参照
 //            ivResult.setImageBitmap(previewView.bitmap)
+
             var qrBitMapPoints = ArrayList<org.opencv.core.Point>() //存储镜头中二维码四角坐标
             var qrEdgeBitmapPoints = ArrayList<org.opencv.core.Point>() //存储镜头中含白边的二维码四角坐标
             var pageBitMapPoints = ArrayList<org.opencv.core.Point>() //存储镜头中版面四角坐标
@@ -579,7 +600,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 //将二维码字符串解析为数据对象
                 var qrO : QRObject? = null
                 try {
-                    qrO = gson.fromJson<QRObject>(it, QRObject::class.java)
+                    qrO = gson.fromJson(it, QRObject::class.java)
                     qrObjectList.add(qrO)
                     isQRPToPagePList.add(true)
                 } catch (e: JsonSyntaxException) {
@@ -597,7 +618,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                             override fun onFinish(appTableRecords: Array<out AppTableRecord>?) {
                                 super.onFinish(appTableRecords)
                                 synchronized(this){
-                                    circleRunnable.stop()
+                                    updataDataRunnable.stopPart()
                                     runOnUiThread {
                                         for (appTableRecord in appTableRecords!!){
                                             cardData.cardDataLabel.subjectName = appTableRecord.fields["科目"].toString()
@@ -680,25 +701,24 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
                 var desWidth : Int = srcPWidth
                 var desHeight: Int = srcPHeight
-                var isrotated = false
-                if(srcPWidth < srcPHeight){
-                    isrotated = true
-                }
+//                var isrotated = false
+//                if(srcPWidth < srcPHeight){
+//                    isrotated = true
+//                }
                 var points = ArrayList<Point>()
-                var rectCrop: org.opencv.core.Rect
-                if(isrotated){
-
-                    points.add(Point(0.0, srcPWidth.toDouble()))
-                    points.add(Point(0.0, 0.0))
-                    points.add(Point(srcPHeight.toDouble(), 0.0))
-                    points.add(Point(srcPHeight.toDouble(), srcPWidth.toDouble()))
-                    desPoints = transformoocPoint(points, srcPHeight, srcPWidth, srcVWidth, srcVHeight)
-                    desWidth = (desPoints.get(3).x - desPoints.get(1).x).toInt()
-                    desHeight = (desPoints.get(3).y - desPoints.get(1).y).toInt()
-                    rectCrop = org.opencv.core.Rect(desPoints.get(1).x.toInt(),
-                        desPoints.get(1).y.toInt(), desWidth, desHeight
-                    )
-                } else {
+                //                if(isrotated){
+//
+//                    points.add(Point(0.0, srcPWidth.toDouble()))
+//                    points.add(Point(0.0, 0.0))
+//                    points.add(Point(srcPHeight.toDouble(), 0.0))
+//                    points.add(Point(srcPHeight.toDouble(), srcPWidth.toDouble()))
+//                    desPoints = transformoocPoint(points, srcPHeight, srcPWidth, srcVWidth, srcVHeight)
+//                    desWidth = (desPoints.get(3).x - desPoints.get(1).x).toInt()
+//                    desHeight = (desPoints.get(3).y - desPoints.get(1).y).toInt()
+//                    rectCrop = org.opencv.core.Rect(desPoints.get(1).x.toInt(),
+//                        desPoints.get(1).y.toInt(), desWidth, desHeight
+//                    )
+//                } else {
 
                     points.add(Point(0.0, 0.0))
                     points.add(Point(srcPWidth.toDouble(), 0.0))
@@ -707,11 +727,11 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                     desPoints = transformoocPoint(points, srcPWidth, srcPHeight, srcVWidth, srcVHeight)
                     desWidth = (desPoints.get(2).x - desPoints.get(0).x).toInt()
                     desHeight = (desPoints.get(2).y - desPoints.get(0).y).toInt()
-                    rectCrop = org.opencv.core.Rect(desPoints.get(0).x.toInt(),
+                    var rectCrop = org.opencv.core.Rect(desPoints.get(0).x.toInt(),
                         desPoints.get(0).y.toInt(), desWidth, desHeight
                     )
 
-                }
+//                }
 
 //                if ((srcPWidth / srcPHeight) > (srcVWidth!! / srcVHeight!!)) {
 //                    desWidth = srcVWidth
@@ -757,7 +777,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 )
 
                 if(pageBitMapPs != null){
-                    Log.e(TAG, "onScanResultCallback: pageBitMapPoints != null")
+                    Log.e(TAG, "onScanResultCallback: pageBitMapPoints != null: $pageBitMapPoints")
                     var square: ArrayList<RectF>? = null
                     var bMap = result.bitmap?.let {
                         var perspectiveTransform = getPerspectiveTransform(pageBitMapPs, desPoints)
@@ -804,6 +824,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
 //                    ivResult.setImageBitmap(bitmap)
                         Storager.cardCache = cardData
+                        LogUtil.e(TAG, "Storager.cardCache == null: "+(Storager.cardCache == null))
                         BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
 
                         //初始化回false为下次做准备
@@ -1520,7 +1541,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //        return WeChatScanningAnalyzer()
         // 如果需要返回结果二维码位置信息，则初始化分析器时，参数传 true 即可
 //        return WeChatScanningAnalyzer(true)
-//        return return OpenCVScanningAnalyzer(true)
+//        return OpenCVScanningAnalyzer(true)
         return MLScanningAnalyzer(true);
     }
 
@@ -1751,19 +1772,19 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
     /**
      * 改变卡片背景颜色及按钮颜色响应
      */
-    fun backgroundColorChange(string: String){
-        runOnUiThread {
-            var drawable: Drawable = getResources().getDrawable(R.drawable.camera_background)
-            if (cardData.subjectToColorMap[string] != null) {
-                var red: Int = cardData.subjectToColorMap[string]!! and 0xff0000 shr 16
-                var green: Int = cardData.subjectToColorMap[string]!! and 0x00ff00 shr 8
-                var blue: Int = cardData.subjectToColorMap[string]!! and 0x0000ff
+    fun backgroundColorChange(subjectName: String){
+        synchronized(this){
+            runOnUiThread {
+                var drawable: Drawable = getResources().getDrawable(R.drawable.camera_background)
+                var red: Int = getSubjectColor(subjectName)!! and 0xff0000 shr 16
+                var green: Int = getSubjectColor(subjectName)!! and 0x00ff00 shr 8
+                var blue: Int = getSubjectColor(subjectName)!! and 0x0000ff
                 drawable.setColorFilter(Color.rgb(red, green, blue), PorterDuff.Mode.SRC_ATOP)
 
                 //backgroundLayout.setBackgroundDrawable(drawable)
                 backgroundLayout.background = drawable
 
-                captureButton.text = string
+                captureButton.text = subjectName
 
                 val background: Drawable = captureButton.background.mutate()
                 var offset = 50 //颜色整体偏移量
@@ -1777,7 +1798,6 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                 captureButton.background = background
             }
         }
-
     }
 
     companion object {

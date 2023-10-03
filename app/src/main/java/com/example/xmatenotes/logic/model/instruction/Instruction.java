@@ -11,7 +11,7 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.manager.AudioManager;
 import com.example.xmatenotes.logic.manager.ExcelReader;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.tqltech.tqlpencomm.bean.Dot;
 
@@ -31,7 +31,7 @@ public class Instruction {
         System.loadLibrary("gestureteast");
     }
 
-    private static PageManager pageManager;
+    private static OldPageManager oldPageManager;
     private static PenMacManager penMacManager;
     private static AudioManager audioManager;
     private static ExcelReader excelReader;
@@ -93,7 +93,7 @@ public class Instruction {
     public static ArrayList<SimpleDot> simpleDots;//SimpleDot类型笔迹点暂存区
 
     public Instruction() {
-        pageManager = PageManager.getInstance();
+        oldPageManager = OldPageManager.getInstance();
         penMacManager = PenMacManager.getInstance();
         audioManager = AudioManager.getInstance();
         excelReader = ExcelReader.getInstance();
@@ -453,8 +453,8 @@ public class Instruction {
         Log.e(TAG, "System.currentTimeMillis(): " + System.currentTimeMillis());
 
         //存储pageID
-        pageManager.savePage(mediaDot.pageID);
-        pageManager.currentPageID = mediaDot.pageID;
+        oldPageManager.savePage(mediaDot.pageID);
+        oldPageManager.currentPageID = mediaDot.pageID;
 
         penMacManager.putMac(XmateNotesApplication.mBTMac);
 
@@ -716,7 +716,7 @@ public class Instruction {
                                 mD.setY(-5);
                                 mD.timelong = System.currentTimeMillis();
                                 mD.type = Dot.DotType.PEN_UP;
-                                pageManager.writeDot(mD);
+                                oldPageManager.writeDot(mD);
 
 //                                Page p = PageManager.getPageByPageID(hwDotFirst.PageID);//使用普通书写笔迹第一个点
 //                                if(p != null){
@@ -759,7 +759,7 @@ public class Instruction {
                                 mD.setY(-4);
                                 mD.timelong = System.currentTimeMillis();
                                 mD.type = Dot.DotType.PEN_UP;
-                                pageManager.writeDot(mD);
+                                oldPageManager.writeDot(mD);
 //                                        String localCode = lR.firstLocalCode+"-"+ lR.secondLocalCode;
 //                                        p.addLocalHwsMapEnd(localCode);
                             }
@@ -774,7 +774,7 @@ public class Instruction {
                 singleHandwritingTimer.start();
 
                 //确保这一步在HandWriting.SINGLE_HANDWRITING_DELAY_PERIOD时间范围内一定执行完
-                pageManager.writeDots(mediaDots);
+                oldPageManager.writeDots(mediaDots);
 //                Log.e(TAG, "response：pause()");
 //                int page = pageIDToArray.get(dots.get(0).PageID);
 //                Log.e(TAG, "普通书写填充page: " + page);

@@ -13,7 +13,7 @@ import com.example.xmatenotes.app.ax.AX;
 import com.example.xmatenotes.logic.manager.AudioManager;
 //import com.example.xmatenotes.logic.manager.ExcelA0Reader;
 import com.example.xmatenotes.logic.manager.ExcelReader;
-import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.example.xmatenotes.logic.manager.VideoManager;
 import com.example.xmatenotes.logic.manager.Writer;
@@ -62,7 +62,7 @@ public class XmateNotesApplication extends Application {
 
     public static PenCommAgent bleManager = null;
     public static ExcelReader excelReader = null;
-    public static PageManager pageManager = null;
+    public static OldPageManager oldPageManager = null;
     public static PenMacManager penMacManager = null;
     public static VideoManager videoManager = null;
     public static AudioManager audioManager = null;
@@ -112,7 +112,7 @@ public class XmateNotesApplication extends Application {
         videoManager = VideoManager.getInstance();
 
         Log.e(TAG,"PageManager.getInstance() start");
-        pageManager = PageManager.getInstance();
+//        oldPageManager = OldPageManager.getInstance();
         Log.e(TAG,"PageManager.getInstance() end");
 
         instruction = new Instruction();

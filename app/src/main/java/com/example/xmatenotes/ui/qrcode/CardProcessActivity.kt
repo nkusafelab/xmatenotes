@@ -1,5 +1,7 @@
 package com.example.xmatenotes.ui.qrcode
 
+import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -21,10 +23,8 @@ import com.example.xmatenotes.logic.manager.Storager
 import com.example.xmatenotes.logic.manager.Writer
 import com.example.xmatenotes.logic.model.Page.Card
 import com.example.xmatenotes.logic.model.Page.CardManager
-import com.example.xmatenotes.logic.model.handwriting.HandWriting
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
-import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
@@ -94,12 +94,13 @@ class CardProcessActivity : AppCompatActivity() {
         }
 
         bitmap = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
+        LogUtil.e(TAG, "Storager.cardCache == null: "+(Storager.cardCache == null))
         cardData = Storager.cardCache
         Storager.cardCache = null
         var cardAbsolutePath = cardManager.mkdirs(cardData)
         cardManager.downLoad(cardData.preCode, cardAbsolutePath, object : CardManager.ObjectInputResp {
             override fun onFinish(card: Card?) {
-                LogUtil.e(TAG, "card == null: "+(card == null))
+                LogUtil.e(TAG, "onCreate: card == null: "+(card == null))
                 if (card != null){
                     var handWritingNumber = 0
                     //区分新旧笔迹
@@ -110,7 +111,7 @@ class CardProcessActivity : AppCompatActivity() {
 
                     //融合笔迹点集合
                     cardData.addDotList(0, card.cardResource.dotList)
-                    LogUtil.e(TAG, "融合旧的singleHandWriting数量为"+card.cardResource.dotList.size+" HandWriting数量为: "+handWritingNumber)
+                    LogUtil.e(TAG, "onCreate: 融合旧的singleHandWriting数量为"+card.cardResource.dotList.size+" HandWriting数量为: "+handWritingNumber)
                     //融合音频文件名集合
                     cardData.addAudioNameList(0, card.getAudioNameList())
                     //融合笔迹范围，暂不处理
@@ -118,7 +119,7 @@ class CardProcessActivity : AppCompatActivity() {
             }
 
             override fun onError(errorMsg: String?) {
-                LogUtil.e(TAG, "获取前代卡片数据失败")
+                LogUtil.e(TAG, "onCreate: 获取前代卡片数据失败")
             }
 
         })
@@ -149,6 +150,13 @@ class CardProcessActivity : AppCompatActivity() {
             imageView.setImageBitmap(it)
 
         }
+
+//        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+//            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+//        }
+//        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission_group.STORAGE) != PackageManager.PERMISSION_GRANTED){
+//            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission_group.STORAGE), 2)
+//        }
 
 //        if(bitmap!=null) {
 //            // 检测结果：二维码的位置信息
@@ -199,17 +207,59 @@ class CardProcessActivity : AppCompatActivity() {
 //        }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            1 -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+                    Toast.makeText(this, "You denied the permission WRITE_EXTERNAL_STORAGE", Toast.LENGTH_SHORT).show()
+                }
+            }
+            2 -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+                    Toast.makeText(this, "You denied the permission STORAGE", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     override fun onResume() {
+
+        bitmap?.let {
+            if(it.width >= it.height){
+                //横屏
+                if(requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+//                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                }
+            } else {
+                //竖屏
+                if(requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+//                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                }
+            }
+        }
         super.onResume()
 
-        this.writer = Writer.getInstance().init().bindCard(cardData).setResponser(object : Responser() {
+        this.writer = Writer.getInstance().init().bindPage(cardData).setResponser(object : Responser() {
             override fun onLongPress(command: Command?):Boolean {
                 if(!super.onLongPress(command)){
                     return false
                 }
 
-                cardManager.save(cardData, bitmap?.let { generateCardBmp(cardData, it) })
                 runOnUiThread { Toast.makeText(XmateNotesApplication.context, "长压命令", Toast.LENGTH_SHORT).show() }
+                cardManager.save(cardData, bitmap?.let { generateCardBmp(cardData, it) })
 
                 return false
             }
@@ -255,28 +305,33 @@ class CardProcessActivity : AppCompatActivity() {
                 if (command != null) {
                     if(command.handWriting.isClosed){
 
-                        //普通书写基本延时响应
-                        writer.handWritingWorker = writer.addResponseWorker(
-                            HandWriting.DELAY_PERIOD+1000
-                        ) {
-                            LogUtil.e(TAG, "普通书写延迟响应开始")
-                            writer.closeHandWriting()
-
-                            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写完毕", Toast.LENGTH_SHORT).show() }
-                        }
-
-                        writer.singleHandWritingWorker = writer.addResponseWorker(
-                            SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD
-                        ) {
-                            LogUtil.e(TAG, "单次笔迹延迟响应开始")
-                            writer.closeSingleHandWriting()
-                            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "单次笔迹完毕", Toast.LENGTH_SHORT).show() }}
+//                        //普通书写基本延时响应
+//                        writer.addResponseWorker(
+//                            HandWriting.DELAY_PERIOD
+//                        ) {
+//                            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写完毕", Toast.LENGTH_SHORT).show() }
+//                        }
+//
+//                        writer.addResponseWorker(
+//                            SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD
+//                        ) {
+//                            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "单次笔迹完毕", Toast.LENGTH_SHORT).show() }}
                     }
                 }
 
                 //绘制笔迹
                 imageView.drawDots(cardData.cardResource.dotList)
                 return super.onCalligraphy(command)
+            }
+
+            override fun onDelayHandWriting(command: Command?): Boolean {
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "普通书写完毕", Toast.LENGTH_SHORT).show() }
+                return super.onDelayHandWriting(command)
+            }
+
+            override fun onDelaySingleHandWriting(command: Command?): Boolean {
+                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "单次笔迹完毕", Toast.LENGTH_SHORT).show() }
+                return super.onDelaySingleHandWriting(command)
             }
 
             override fun onZhiLingKongZhi(command: Command?):Boolean {
@@ -354,8 +409,8 @@ class CardProcessActivity : AppCompatActivity() {
         val coordinateConverter = CoordinateConverter(
             bitmap.width.toFloat(),
             bitmap.height.toFloat(),
-            imageView.coordinateConverter.realWidth,
-            imageView.coordinateConverter.realHeight
+            imageView.coordinateConverter.coordinateScaler.realWidth,
+            imageView.coordinateConverter.coordinateScaler.realHeight
         )
         var path = imageView.drawDots(cardData.cardResource.dotList, coordinateConverter)
         canvas.drawPath(path, paint)

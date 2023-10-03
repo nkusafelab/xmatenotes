@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
 
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.manager.Storager;
 import com.example.xmatenotes.logic.network.BitableManager;
 import com.example.xmatenotes.util.LogUtil;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 负责卡片数据的本地存储、上传、下载、解析
@@ -31,7 +33,8 @@ public class CardManager {
     private static BitableManager bitableManager = BitableManager.getInstance();
 
     private CardManager(){
-        absoluteRootPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+rootPath;
+//        absoluteRootPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+rootPath;在MUUI Pad 14.0.06上没有创建文件或文件夹的权限
+        absoluteRootPath = Objects.requireNonNull(XmateNotesApplication.context.getExternalFilesDir(null)).getAbsolutePath()+"/"+rootPath;
     }
 
     public static CardManager getInstance(){
