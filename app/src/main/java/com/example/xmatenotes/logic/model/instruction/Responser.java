@@ -3,7 +3,7 @@ package com.example.xmatenotes.logic.model.instruction;
 import android.graphics.Color;
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

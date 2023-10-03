@@ -24,7 +24,7 @@ import com.example.xmatenotes.logic.model.Page.QRObject
 import com.example.xmatenotes.logic.model.Page.getSubjectColor
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.qrcode.CircleRunnable.CircleCallBack
-import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.logic.presetable.LogUtil
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.king.mlkit.vision.camera.AnalyzeResult

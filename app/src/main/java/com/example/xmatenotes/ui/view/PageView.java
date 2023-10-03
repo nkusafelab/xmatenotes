@@ -24,8 +24,7 @@ import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
 import com.example.xmatenotes.ui.PageActivity;
-import com.example.xmatenotes.ui.qrcode.CardProcessActivity;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.List;

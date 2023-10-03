@@ -1,14 +1,11 @@
 package com.example.xmatenotes.logic.model.Page;
 
 import android.graphics.Bitmap;
-import android.os.Environment;
-import android.util.Log;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.manager.Storager;
 import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.util.LogUtil;
-import com.lark.oapi.service.bitable.v1.model.AppTableField;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
 
 import java.io.File;

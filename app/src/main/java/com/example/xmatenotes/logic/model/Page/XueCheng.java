@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.model.Page;
 
 import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 
 import java.util.HashMap;
 import java.util.Iterator;

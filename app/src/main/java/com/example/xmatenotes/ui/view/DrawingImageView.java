@@ -1,21 +1,16 @@
 package com.example.xmatenotes.ui.view;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,7 +18,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.SimpleAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,7 +35,7 @@ import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.ArrayList;

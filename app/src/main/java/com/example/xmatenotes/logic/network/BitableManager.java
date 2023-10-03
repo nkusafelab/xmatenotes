@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.network;
 
 import android.util.Log;
 
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;

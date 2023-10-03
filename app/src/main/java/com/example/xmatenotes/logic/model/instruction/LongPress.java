@@ -4,8 +4,7 @@ import static com.example.xmatenotes.logic.model.instruction.SingleClick.SINGLE_
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
-import com.example.xmatenotes.logic.model.instruction.Instruction;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 
 /**
  * <p><strong>长压</strong></p>

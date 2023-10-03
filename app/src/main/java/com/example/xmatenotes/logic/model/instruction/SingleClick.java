@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.model.instruction;
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 
 /**
  * 单击

@@ -29,7 +29,7 @@ import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.view.DrawingImageView
-import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.logic.presetable.LogUtil
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat

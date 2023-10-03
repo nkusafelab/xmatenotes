@@ -8,7 +8,7 @@ import com.example.xmatenotes.logic.model.Role
 import com.example.xmatenotes.logic.model.handwriting.SerializableRectF
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
-import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.logic.presetable.LogUtil
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*

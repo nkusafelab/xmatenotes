@@ -1,6 +1,4 @@
-package com.example.xmatenotes.logic.manager;
-
-import com.example.xmatenotes.util.LogUtil;
+package com.example.xmatenotes.logic.presetable;
 
 import java.util.ArrayList;
 import java.util.HashMap;

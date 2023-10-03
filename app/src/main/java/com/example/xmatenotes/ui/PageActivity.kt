@@ -24,7 +24,7 @@ import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.view.PageView
-import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.logic.presetable.LogUtil
 
 /**
  * 支持屏幕NK-cola的活动

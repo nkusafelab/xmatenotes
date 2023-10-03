@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.model.Page;
 
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 
 /**
  * 学程卡片，组成完整学程页面

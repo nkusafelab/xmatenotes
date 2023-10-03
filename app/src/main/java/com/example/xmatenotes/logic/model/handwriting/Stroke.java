@@ -1,12 +1,11 @@
 package com.example.xmatenotes.logic.model.handwriting;
 
 import android.graphics.Color;
-import android.graphics.RectF;
 
 import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.google.gson.Gson;
 import com.tqltech.tqlpencomm.bean.Dot;
 

@@ -11,7 +11,7 @@ import com.example.xmatenotes.logic.model.instruction.DoubleClick;
 import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.logic.model.instruction.SingleClick;
 import com.example.xmatenotes.logic.model.instruction.SymbolicCommand;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.HashMap;

@@ -52,7 +52,7 @@ import com.example.xmatenotes.logic.model.instruction.Command;
 import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.google.common.collect.ArrayListMultimap;
 import com.king.wechat.qrcode.WeChatQRCodeDetector;
 import com.tqltech.tqlpencomm.bean.Dot;

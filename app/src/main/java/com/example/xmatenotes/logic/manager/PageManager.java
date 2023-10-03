@@ -7,14 +7,11 @@ import android.widget.Toast;
 import com.example.xmatenotes.R;
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.Page.Card;
-import com.example.xmatenotes.logic.model.Page.CardManager;
-import com.example.xmatenotes.logic.model.Page.OldXueCheng;
 import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.Page.XueCheng;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
-import com.example.xmatenotes.logic.model.instruction.Instruction;
 import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
 
 import java.io.File;

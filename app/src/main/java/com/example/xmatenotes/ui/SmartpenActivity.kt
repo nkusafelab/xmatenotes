@@ -13,7 +13,7 @@ import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.manager.PenMacManager
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
-import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.logic.presetable.LogUtil
 import com.tqltech.tqlpencomm.bean.Dot
 
 /**

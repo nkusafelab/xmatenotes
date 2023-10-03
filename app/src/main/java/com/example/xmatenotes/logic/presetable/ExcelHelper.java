@@ -1,9 +1,7 @@
-package com.example.xmatenotes.logic.manager;
+package com.example.xmatenotes.logic.presetable;
 
+import android.content.Context;
 import android.util.Log;
-
-import com.example.xmatenotes.app.XmateNotesApplication;
-import com.example.xmatenotes.util.ExcelUtil;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -19,6 +17,8 @@ public class ExcelHelper {
     private static final String TAG = "ExcelHelper";
 
     private static final ExcelHelper excelHelper = new ExcelHelper();
+
+    protected Context context;
 
     protected XSSFSheet curSheet = null;//当前打开的工作表
 
@@ -45,6 +45,11 @@ public class ExcelHelper {
 
     public static ExcelHelper getInstance(){
         return excelHelper;
+    }
+
+    public ExcelHelper init(Context context){
+        this.context = context;
+        return this;
     }
 
     /*************************基础方法**************************/
@@ -81,7 +86,7 @@ public class ExcelHelper {
     private void createWorkbook(String path) throws IOException {
         if(excelHelper != null){
             excelPath = path;
-            createWorkbook(XmateNotesApplication.context.getApplicationContext().getAssets().open(path));
+            createWorkbook(context.getAssets().open(path));
         }
     }
 

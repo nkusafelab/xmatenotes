@@ -33,7 +33,7 @@ import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.instruction.Command;
 import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.logic.presetable.LogUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.tqltech.tqlpencomm.bean.Dot;

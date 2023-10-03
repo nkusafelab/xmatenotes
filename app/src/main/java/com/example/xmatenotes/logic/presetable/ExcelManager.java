@@ -1,10 +1,8 @@
-package com.example.xmatenotes.logic.manager;
+package com.example.xmatenotes.logic.presetable;
 
-import com.example.xmatenotes.logic.model.handwriting.MediaDot;
-import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.util.ExcelUtil;
-import com.example.xmatenotes.util.LogUtil;
-import com.lark.oapi.service.docx.v1.model.Sheet;
+import android.content.Context;
+
+//import com.example.xmatenotes.logic.network.BitableManager;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -12,19 +10,17 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ExcelManager extends ExcelHelper{
+public class ExcelManager extends ExcelHelper {
 
     private static final String TAG = "ExcelManager";
 
     private static final ExcelManager excelManager = new ExcelManager();
-    private static final BitableManager bitableManager = BitableManager.getInstance();
+//    private static final BitableManager bitableManager = BitableManager.getInstance();
 
     /**
      * 摘要信息表数据
@@ -48,7 +44,8 @@ public class ExcelManager extends ExcelHelper{
      * @param excelName 目标表格相对路径 eg:A3学程样例·纸分区坐标.xlsx
      * @return
      */
-    public ExcelManager init(String excelName){
+    public ExcelManager init(Context context, String excelName){
+        super.init(context);
 
         //打开目标表格
         openExcel("excel/"+excelName);
@@ -75,11 +72,11 @@ public class ExcelManager extends ExcelHelper{
         LogUtil.e(TAG, "init(): 解析数据表完毕: "+dataSheetMap);
 
         //初始化BitableManager
-        Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
-        if(bitableMap != null){
-            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("APPtoken"));
-            LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
-        }
+//        Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
+//        if(bitableMap != null){
+//            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("APPtoken"));
+//            LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
+//        }
 
         return this;
     }
@@ -137,8 +134,8 @@ public class ExcelManager extends ExcelHelper{
         return dataSheet;
     }
 
-    public LocalData searchTable(MediaDot dot, String command, String roleName){
-        LocalData localData = new LocalData();
+    public LocalData searchTable(int x, int y, int pageId, String command, String roleName){
+        LocalData localData = new LocalData(x, y, pageId, command, roleName);
 
         return localData;
     }
