@@ -313,12 +313,21 @@ public class ExcelHelper {
     }
 
     /**
+     * 将行名转换为代码中使用的index
+     * @param rowName 行名 (1,2,3,...)
+     * @return index (0,1,2,...)
+     */
+    protected int rowNameToIndex(String rowName){
+        return numToIndex(Integer.parseInt(rowName));
+    }
+
+    /**
      * 将字母组合形式的列名转换为列号
      * @param colName 列名 (A,B,C,...,AA,AB,AC,...)
      * @return 列号 (1,2,3,...)
      * 若列名不合法，获取失败，返回-1
      */
-    protected int colNameToNumber(String colName){
+    private int colNameToNumber(String colName){
         int num = 0;
         if(colName.length() >0){
             StringBuilder col = new StringBuilder(colName.toUpperCase());
@@ -344,7 +353,7 @@ public class ExcelHelper {
      * @param num 行号或列号 (1,2,3,...)
      * @return index (0,1,2,...)
      */
-    protected int numToIndex(int num){
+    private int numToIndex(int num){
         return num-1;
     }
 

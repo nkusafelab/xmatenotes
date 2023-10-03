@@ -2,6 +2,7 @@ package com.example.xmatenotes.logic.manager;
 
 import com.example.xmatenotes.util.ExcelUtil;
 import com.example.xmatenotes.util.LogUtil;
+import com.lark.oapi.service.docx.v1.model.Sheet;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -75,12 +76,49 @@ public class ExcelManager extends ExcelHelper{
     public DataSheet parseDataSheet(String dataSheetName){
         DataSheet dataSheet = new DataSheet(dataSheetName);
 
+        XSSFSheet sheet = openSheet(dataSheetName);//打开数据表，根据表名
+
         //解析数据表头
+        SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(sheet);
+
+        int firstRow = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
+        int lastRow = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_ROW));
+        int firstCol = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+        int lastCol = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_COLUMN));
+        int header = rowNameToIndex(sheetHeader.get(SheetHeader.SHEET_HEADER_ROW));
+        String key = sheetHeader.get(SheetHeader.PRIMARY_KEY);
+
+        int rowNum = firstRow;
 
         //遍历数据表，填充dataSheet
 
-        return dataSheet;
+        while(rowNum <= lastRow){
+            int colNum = firstCol;
+            XSSFRow row  = sheet.getRow(rowNum); //当前所在的行数
+            XSSFRow rowHead = sheet.getRow(header); //表头行所在的行
+            Map<String,String> map = new HashMap();
 
+            while(colNum<=lastCol){
+
+                XSSFCell cell = row.getCell(colNum);
+
+                CellRangeAddress cellRangeAddress = null;
+                if(ExcelUtil.inMerger(sheet, cell)){
+                    cellRangeAddress = ExcelUtil.getMergedCellAddress(sheet,cell);
+                    cell = sheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+
+                }
+                map.put(getCellString(rowHead.getCell(colNum)),getCellString(cell));
+
+                colNum = colNum +1;
+            }
+            String curKey = map.get(key);
+
+            dataSheet.addMap(curKey,map);
+            rowNum = rowNum +1;
+        }
+
+        return dataSheet;
     }
 
     /**
@@ -92,7 +130,7 @@ public class ExcelManager extends ExcelHelper{
         /**
          * 表头行列号
          */
-        private static final int SHEETHEADEERROWNUM = 1;
+        private static final String SHEETHEADEERROWNUM = "1";
 
         private static final String SHEETHEADERCOLNAME = "A";
         private static final String EFFECTIVE_FIRST_ROW = "有效首行";
@@ -122,7 +160,7 @@ public class ExcelManager extends ExcelHelper{
          * @return
          */
         public SheetHeader parseSheetHeaderRow(XSSFSheet sheet){
-            this.sheetHeaderRow = sheet.getRow(numToIndex(SHEETHEADEERROWNUM));
+            this.sheetHeaderRow = sheet.getRow(rowNameToIndex(SHEETHEADEERROWNUM));
             int firstCol = colNameToIndex(SHEETHEADERCOLNAME);
             LogUtil.e(TAG, "");
 
@@ -205,7 +243,7 @@ public class ExcelManager extends ExcelHelper{
             this.sheetHeader = new SheetHeader().parseSheetHeaderRow(this.abstractSheet);
 
             //获取搜索起点和搜索范围
-            final int firstRowNum = numToIndex(Integer.parseInt(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW)));
+            final int firstRowNum = rowNameToIndex(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
             final int firstColNum = colNameToIndex(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
             int lastRowNum;
 
