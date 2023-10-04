@@ -31,6 +31,11 @@ public class LocalData {
     public static final String ROW_SEARCH_END = "尾行";
     public static final String LIMIT = "权限边界";
 
+    /**
+     * 索引与多维表格交互的数据
+     */
+    public static final String BITABLE = "BITABLE";
+
     private int x;
 
     private int y;

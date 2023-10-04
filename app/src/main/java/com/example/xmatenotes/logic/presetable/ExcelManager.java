@@ -197,6 +197,7 @@ public class ExcelManager extends ExcelHelper {
      */
     public LocalData getLocalDataInSearchSheet(XSSFSheet searchSheet, int rowStart, int rowEnd, LocalData localData){
 
+        LogUtil.e(TAG, "getLocalDataInSearchSheet(): 开始搜索sheet: "+searchSheet.getSheetName());
         SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(searchSheet);
 
         int minRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
@@ -466,6 +467,7 @@ public class ExcelManager extends ExcelHelper {
                         }
                     }
                     localData.addField(headerCellName, rowCellTrueValue);
+                    LogUtil.e(TAG, "getLocalDataInSearchSheet(): 存入键值对: "+headerCellName+" : "+rowCellTrueValue);
                 }
                 colIndex++;
             }
@@ -492,18 +494,17 @@ public class ExcelManager extends ExcelHelper {
         int unifiedY = 0;
 
         //转换统一坐标
-        String minX  = String.valueOf(pageId)+"MINX";
+        String minX  = pageId+"MINX";
 
         LogUtil.e(TAG,"拼凑出的常量的键为"+minX);
 
-        String minY = String.valueOf(pageId)+"MINY";
+        String minY = pageId+"MINY";
 
         LogUtil.e(TAG,"拼凑出的常量的键为"+minY);
 
-        unifiedX = x + Integer.getInteger(abstractSheet.getMap(AbstractSheet.CONSTANT).get(minX));
+        unifiedX = x + Integer.parseInt(abstractSheet.getMap(AbstractSheet.CONSTANT).get(minX));
 
-        unifiedY = y +  Integer.getInteger(abstractSheet.getMap(AbstractSheet.CONSTANT).get(minY));
-
+        unifiedY = y +  Integer.parseInt(abstractSheet.getMap(AbstractSheet.CONSTANT).get(minY));
 
         return new BaseDot(unifiedX, unifiedY);
     }
@@ -532,6 +533,7 @@ public class ExcelManager extends ExcelHelper {
      */
     public LocalData getLocalDataInResponseSheet(XSSFSheet responseSheet, LocalData localData){
 
+        LogUtil.e(TAG, "getLocalDataInResponseSheet(): 开始搜索sheet: "+responseSheet.getSheetName());
         SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(responseSheet);
 
         int minRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
@@ -546,15 +548,66 @@ public class ExcelManager extends ExcelHelper {
 
         //生成筛选匹配值列表
         List<String> filterList = new ArrayList<>();
-        for(int colNum = filterFirstCol; colNum <= filterLastCol;colNum++){
-            filterList.add((String) localData.getFieldValue(getCellString(headerRow.getCell(colNum))));
+        for(int colIndex = filterFirstCol; colIndex <= filterLastCol;colIndex++){
+            filterList.add((String) localData.getFieldValue(getCellString(headerRow.getCell(colIndex))));
         }
 
-        for(int rowIndex = minRowIndex; rowIndex <= maxRowIndex; ){
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for(int rowIndex = minRowIndex; rowIndex <= maxRowIndex; rowIndex++){
+
+            XSSFRow row = this.curSheet.getRow(rowIndex);
+            int colIndex = filterFirstCol;
+            XSSFCell rowCell;
+            while (colIndex <= maxColIndex) {
+                rowCell = row.getCell(colIndex);
+                CellRangeAddress cellRangeAddress = null;
+                if (ExcelUtil.inMerger(this.curSheet, rowCell)) {
+                    cellRangeAddress = ExcelUtil.getMergedCellAddress(this.curSheet, rowCell);
+                    rowCell = this.curSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+                }
+                if(!isEmptyCell(rowCell)) {
+                    String rowCellStringValue = getCellString(rowCell);
+                    Object rowCellTrueValue = null;
+                    CellCite cellCite = new CellCite().parseCell(rowCellStringValue, localData);
+                    switch (cellCite.type) {
+                        case CellCite.VALUE:
+                        case CellCite.CONSTANT_CITE:
+                        case CellCite.DATA_SHEET_CITE:
+                        case CellCite.FIELD_CITE:
+                            rowCellTrueValue = cellCite.value;
+                            break;
+                        case CellCite.SHEET_CITE:
+                            //跳转sheet
+                            if (this.abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME).containsKey(cellCite.key)) {
+                                switchSheet((String) cellCite.value);
+                                return getLocalDataInResponseSheet(curSheet, localData);
+                            }
+                            break;
+                        default:
+                    }
+                    if(colIndex <= filterLastCol){
+                        if(!((String)rowCellTrueValue).equals(filterList.get(colIndex - filterFirstCol))){
+                            break;
+                        }
+                    } else {
+                        String key = getCellString(headerRow.getCell(colIndex));
+                        Object value = rowCellTrueValue;
+                        map.put(key, value);
+                        LogUtil.e(TAG, "getLocalDataInResponseSheet(): 存入键值对: "+key+" : "+value+" 行index： "+rowIndex);
+                    }
+                }
+                colIndex++;
+            }
+            if(colIndex > maxColIndex){
+                mapList.add(map);
+                map = new HashMap<>();
+            }
 
         }
 
-
+        localData.addField(responseSheet.getSheetName(), mapList);
 
         return localData;
     }
