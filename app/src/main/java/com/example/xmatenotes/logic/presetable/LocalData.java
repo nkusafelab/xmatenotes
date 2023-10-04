@@ -26,6 +26,7 @@ public class LocalData {
     public static final String MAX_Y = "右下Y";
     public static final String ROW_SEARCH_START = "首行";
     public static final String ROW_SEARCH_END = "尾行";
+    public static final String LIMIT = "权限边界";
 
     private int x;
 

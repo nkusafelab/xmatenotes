@@ -182,7 +182,7 @@ public class ExcelManager extends ExcelHelper {
      * 在搜索sheet中填充localdata
      * @param searchSheet
      * @param localData
-     * @return
+     * @return null表示没有查找到匹配的区域或没有权限
      */
     public LocalData getLocalDataInSearchSheet(XSSFSheet searchSheet, int rowStart, int rowEnd, LocalData localData){
 
@@ -199,17 +199,73 @@ public class ExcelManager extends ExcelHelper {
 
         XSSFRow headerRow = this.curSheet.getRow(headerIndex);
 
-        for(int rowIndex = Math.max(minRowIndex, rowStart); rowIndex <= Math.min(maxRowIndex, rowEnd); ){
+        int realMinRowIndex = Math.max(minRowIndex, rowStart);//实时最小行index
+        int realMaxRowIndex = Math.min(maxRowIndex, rowEnd);//实时最大行index
 
+        int colIndex = minColIndex;//实时列index
+
+        for(int rowIndex = realMinRowIndex; rowIndex <= realMaxRowIndex; ){
+
+            boolean isCompareCoordinates = false;//是否比对过坐标
             XSSFRow row = this.curSheet.getRow(rowIndex);
             XSSFCell rowCell;
-            for(int colIndex = minColIndex; colIndex <= maxColIndex; ){
+            while (colIndex <= maxColIndex){
+
                 rowCell = row.getCell(colIndex);
+                CellRangeAddress cellRangeAddress = null;
+                if(ExcelUtil.inMerger(this.curSheet, rowCell)){
+                    cellRangeAddress = ExcelUtil.getMergedCellAddress(this.curSheet,rowCell);
+                    rowCell = this.curSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+                    if(!isCompareCoordinates && this.abstractSheet.getMap(AbstractSheet.AREA_CODE_IDENTIFICATION).containsKey(getCellString(headerRow.getCell(rowCell.getColumnIndex())))){
+                        int quickColIndex = colIndex;
+                        int firstRowNum = cellRangeAddress.getFirstRow();
+                        int lastRowNum = cellRangeAddress.getLastRow();
+                        XSSFRow firstRow = this.curSheet.getRow(firstRowNum);
+                        XSSFRow lastRow = this.curSheet.getRow(lastRowNum);
+                        while (quickColIndex <= maxColIndex){
+                            String headerCellName = getCellString(headerRow.getCell(quickColIndex));
+
+                            //二级搜索索引表比对坐标前区域pageId相同，不必比较
+                            if(LocalData.MIN_X.equals(headerCellName)){
+                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getX()){
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
+                                }
+                            }
+                            if(LocalData.MIN_Y.equals(headerCellName)){
+                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getY()){
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
+                                }
+                            }
+                            if(LocalData.MAX_X.equals(headerCellName)){
+                                if(getCellInt(lastRow.getCell(quickColIndex)) < localData.getX()){
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
+                                }
+                            }
+                            if(LocalData.MAX_Y.equals(headerCellName)){
+                                if(getCellInt(lastRow.getCell(quickColIndex)) < localData.getY()){
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
+                                } else {
+                                    realMaxRowIndex = cellRangeAddress.getLastRow();
+                                    localData.addField(getCellString(headerRow.getCell(colIndex)), getCellString(rowCell));
+                                    colIndex++;
+                                    break;
+                                }
+                            }
+                            quickColIndex++;
+                        }
+                        break;
+                    }
+
+                }
                 if(!isEmptyCell(rowCell)){
                     String headerCellName = getCellString(headerRow.getCell(colIndex));
-                    String rowCellValue = getCellString(rowCell);
+                    String rowCellStringValue = getCellString(rowCell);
                     Object rowCellTrueValue = null;
-                    CellCite cellCite = new CellCite().parseCell(rowCellValue, localData);
+                    CellCite cellCite = new CellCite().parseCell(rowCellStringValue, localData);
                     switch (cellCite.type) {
                         case CellCite.VALUE:
                         case CellCite.CONSTANT_CITE:
@@ -239,22 +295,32 @@ public class ExcelManager extends ExcelHelper {
                     }
                     if(LocalData.MIN_X.equals(headerCellName)){
                         if((int)rowCellTrueValue > localData.getX()){
+                            colIndex -= 0;
+                            rowIndex++;
                             break;
                         }
                     }
                     if(LocalData.MIN_Y.equals(headerCellName)){
                         if((int)rowCellTrueValue > localData.getY()){
+                            colIndex -= 1;
+                            rowIndex++;
                             break;
                         }
                     }
                     if(LocalData.MAX_X.equals(headerCellName)){
                         if((int)rowCellTrueValue < localData.getX()){
+                            colIndex -= 2;
+                            rowIndex++;
                             break;
                         }
                     }
                     if(LocalData.MAX_Y.equals(headerCellName)){
                         if((int)rowCellTrueValue < localData.getY()){
+                            colIndex -= 3;
+                            rowIndex++;
                             break;
+                        } else {
+                            isCompareCoordinates = true;
                         }
                     }
                     if(LocalData.ROW_SEARCH_START.equals(headerCellName)){
@@ -263,14 +329,36 @@ public class ExcelManager extends ExcelHelper {
                     if(LocalData.ROW_SEARCH_END.equals(headerCellName)){
                         rowSearchEnd = (String) rowCellTrueValue;
                     }
+                    if(LocalData.LIMIT.equals(headerCellName)){
+                        //检查权限
+                        if(!checkLimit((String)rowCellTrueValue, localData)){
+                            LogUtil.e(TAG, "getLocalDataInSearchSheet(): 不具有目标区域操作权限！");
+                            return null;
+                        }
+                    }
                     localData.addField(headerCellName, rowCellTrueValue);
                 }
                 colIndex++;
             }
-            rowIndex++;
+            if(colIndex == maxColIndex){
+                //无后续响应
+                return localData;
+            }
+//            rowIndex++;
         }
 
-        return localData;
+        LogUtil.e(TAG, "getLocalDataInSearchSheet(): 未找到匹配的目标区域！");
+        return null;
+    }
+
+    /**
+     * 根据权限信息检查是否具有目标区域操作权限
+     * @param rowCellTrueValue
+     * @param localData
+     * @return
+     */
+    private boolean checkLimit(String rowCellTrueValue, LocalData localData) {
+        return false;
     }
 
     /**
@@ -481,6 +569,7 @@ public class ExcelManager extends ExcelHelper {
         private static final String ABSTRACT_SHEET_NAME = "摘要信息表";
         private static final String PAGE_PROPERTY = "版面属性";
         private static final String SEARCH_SHEET_NAME = "搜索sheet";
+        private static final String AREA_CODE_IDENTIFICATION = "区域编码标识";
         private static final String DATA_SHEET_NAME = "数据sheet";
         private static final String RESPONSE_SHEET_NAME = "响应sheet";
         private static final String BITABLE_PROPERTY = "远程多维表格属性";
@@ -502,6 +591,11 @@ public class ExcelManager extends ExcelHelper {
          * 搜索sheet
          */
         private Map<String, String> searchSheet = new HashMap<>();
+
+        /**
+         * 区域编码标识
+         */
+        private Map<String, String> areaCodeSheet = new HashMap<>();
 
         /**
          * 数据sheet
@@ -610,6 +704,8 @@ public class ExcelManager extends ExcelHelper {
                 return pageProperty;
             } else if(SEARCH_SHEET_NAME.equals(name)){
                 return searchSheet;
+            }else if(AREA_CODE_IDENTIFICATION.equals(name)){
+                return areaCodeSheet;
             }else if(DATA_SHEET_NAME.equals(name)){
                 return dataSheet;
             }
