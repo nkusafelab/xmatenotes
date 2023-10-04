@@ -83,6 +83,10 @@ public class LocalData {
         return (String) this.data.get(ROLE);
     }
 
+    public String getCommand(){
+        return (String) this.data.get(COMMAND);
+    }
+
     public LocalData addField(String fieldName, Object fieldValue){
         this.data.put(fieldName, fieldValue);
         return this;

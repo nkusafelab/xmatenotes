@@ -9,7 +9,7 @@ import java.io.Serializable;
 /**
  * 点基类
  */
-public class BaseDot implements Serializable,Cloneable {
+public class BaseDot implements Serializable,Cloneable,Comparable<BaseDot> {
 
     private static final String TAG = "BaseDot";
     private static final long serialVersionUID = -2969091827840758620L;
@@ -128,5 +128,16 @@ public class BaseDot implements Serializable,Cloneable {
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    @Override
+    public int compareTo(BaseDot o) {
+        if(this.fx > o.fx && this.fy > o.fy){
+            return 1;
+        }
+        if(this.fx < o.fx && this.fy < o.fy){
+            return -1;
+        }
+        return 0;
     }
 }

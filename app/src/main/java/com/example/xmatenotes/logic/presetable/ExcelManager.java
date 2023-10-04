@@ -4,6 +4,8 @@ import android.content.Context;
 
 //import com.example.xmatenotes.logic.network.BitableManager;
 
+import com.example.xmatenotes.logic.model.handwriting.BaseDot;
+
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -188,7 +190,7 @@ public class ExcelManager extends ExcelHelper {
     }
 
     /**
-     * 在搜索sheet中填充localdata
+     * 在搜索sheet中填充localdata，筛选条件为坐标匹配
      * @param searchSheet
      * @param localData
      * @return null表示没有查找到匹配的区域或没有权限
@@ -361,6 +363,22 @@ public class ExcelManager extends ExcelHelper {
     }
 
     /**
+     * 将局部坐标转换为幅面统一坐标系坐标
+     * @param pageId
+     * @param x
+     * @param y
+     * @return
+     */
+    public BaseDot parseDot(int pageId, int x, int y){
+        int unifiedX = 0;
+        int unifiedY = 0;
+
+        //转换统一坐标
+
+        return new BaseDot(unifiedX, unifiedY);
+    }
+
+    /**
      * 根据权限信息检查是否具有目标区域操作权限
      * @param rowCellTrueValue
      * @param localData
@@ -377,12 +395,36 @@ public class ExcelManager extends ExcelHelper {
     }
 
     /**
-     * 在响应sheet中填充localdata
+     * 在响应sheet中填充localdata，筛选条件为行匹配
      * @param responseSheet
      * @param localData
      * @return
      */
     public LocalData getLocalDataInResponseSheet(XSSFSheet responseSheet, LocalData localData){
+
+        SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(responseSheet);
+
+        int minRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
+        int minColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+        int maxRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_ROW));
+        int maxColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_COLUMN));
+        int headerIndex = rowNameToIndex(sheetHeader.get(SheetHeader.SHEET_HEADER_ROW));
+        int filterFirstCol = colNameToIndex(sheetHeader.get(SheetHeader.FILTER_FIRST_COLUMN));
+        int filterLastCol = colNameToIndex(sheetHeader.get(SheetHeader.FILTER_LAST_COLUMN));
+
+        XSSFRow headerRow = this.curSheet.getRow(headerIndex);
+
+        //生成筛选匹配值列表
+        List<String> filterList = new ArrayList<>();
+        for(int colNum = filterFirstCol; colNum <= filterLastCol;colNum++){
+            filterList.add((String) localData.getFieldValue(getCellString(headerRow.getCell(colNum))));
+        }
+
+        for(int rowIndex = minRowIndex; rowIndex <= maxRowIndex; ){
+
+        }
+
+
 
         return localData;
     }
@@ -631,6 +673,7 @@ public class ExcelManager extends ExcelHelper {
          * 常量
          */
         private Map<String, String> constant = new HashMap<>();
+
 
         /**
          * 解析摘要信息表
