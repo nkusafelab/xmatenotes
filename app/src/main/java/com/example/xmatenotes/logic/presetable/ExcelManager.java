@@ -235,37 +235,102 @@ public class ExcelManager extends ExcelHelper {
                         XSSFRow lastRow = this.curSheet.getRow(lastRowNum);
                         while (quickColIndex <= maxColIndex){
                             String headerCellName = getCellString(headerRow.getCell(quickColIndex));
-
-                            //二级搜索索引表比对坐标前区域pageId相同，不必比较
-                            if(LocalData.MIN_X.equals(headerCellName)){
-                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getX()){
-                                    rowIndex = cellRangeAddress.getLastRow()+1;
-                                    break;
-                                }
-                            }
-                            if(LocalData.MIN_Y.equals(headerCellName)){
-                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getY()){
-                                    rowIndex = cellRangeAddress.getLastRow()+1;
-                                    break;
-                                }
-                            }
-                            if(LocalData.MAX_X.equals(headerCellName)){
-                                if(getCellInt(lastRow.getCell(quickColIndex)) < localData.getX()){
-                                    rowIndex = cellRangeAddress.getLastRow()+1;
-                                    break;
-                                }
-                            }
-                            if(LocalData.MAX_Y.equals(headerCellName)){
-                                if(getCellInt(lastRow.getCell(quickColIndex)) < localData.getY()){
-                                    rowIndex = cellRangeAddress.getLastRow()+1;
-                                    break;
+                            if(LocalData.MIN_PAGEID.equals(headerCellName)){
+                                int pageId = getCellInt(firstRow.getCell(quickColIndex));
+                                int x = getCellInt(firstRow.getCell(quickColIndex+1));
+                                int y = getCellInt(firstRow.getCell(quickColIndex+2));
+                                BaseDot minDot = parseDot(pageId, x, y);
+                                BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                                if(localDot.compareTo(minDot) > 0){
+                                    quickColIndex += 3;
+                                    continue;
                                 } else {
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
+                                }
+                            }
+                            if(LocalData.MAX_PAGEID.equals(headerCellName)){
+                                int pageId = getCellInt(lastRow.getCell(quickColIndex));
+                                int x = getCellInt(lastRow.getCell(quickColIndex+1));
+                                int y = getCellInt(lastRow.getCell(quickColIndex+2));
+                                BaseDot minDot = parseDot(pageId, x, y);
+                                BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                                if(localDot.compareTo(minDot) < 0){
                                     realMaxRowIndex = cellRangeAddress.getLastRow();
                                     localData.addField(getCellString(headerRow.getCell(colIndex)), getCellString(rowCell));
                                     colIndex++;
                                     break;
+                                } else {
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
                                 }
                             }
+                            if(LocalData.MIN_X.equals(headerCellName)){
+                                int x = getCellInt(rowCell);
+                                int y = getCellInt(row.getCell(colIndex+1));
+                                BaseDot minDot = new BaseDot(x, y);
+                                BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                                if(localDot.compareTo(minDot) > 0){
+                                    quickColIndex += 2;
+                                    continue;
+                                } else {
+                                    rowIndex++;
+                                    break;
+                                }
+                            }
+                            if(LocalData.MAX_X.equals(headerCellName)) {
+                                int x = getCellInt(rowCell);
+                                int y = getCellInt(row.getCell(colIndex + 1));
+                                BaseDot maxDot = new BaseDot(x, y);
+                                BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                                if (localDot.compareTo(maxDot) < 0) {
+                                    realMaxRowIndex = cellRangeAddress.getLastRow();
+                                    localData.addField(getCellString(headerRow.getCell(colIndex)), getCellString(rowCell));
+                                    colIndex++;
+                                    break;
+                                } else {
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
+                                    break;
+                                }
+                            }
+
+
+//                            if(LocalData.PAGEID.equals(headerCellName)){
+//                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getX()){
+//                                    rowIndex = cellRangeAddress.getLastRow()+1;
+//                                    break;
+//                                }
+//                            }
+//
+//                            if(LocalData.MIN_X.equals(headerCellName)){
+//                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getX()){
+//                                    rowIndex = cellRangeAddress.getLastRow()+1;
+//                                    break;
+//                                }
+//                            }
+//                            if(LocalData.MIN_Y.equals(headerCellName)){
+//                                if(getCellInt(firstRow.getCell(quickColIndex)) > localData.getY()){
+//                                    rowIndex = cellRangeAddress.getLastRow()+1;
+//                                    break;
+//                                }
+//                            }
+//                            if(LocalData.MAX_X.equals(headerCellName)){
+//                                if(getCellInt(lastRow.getCell(quickColIndex)) < localData.getX()){
+//                                    rowIndex = cellRangeAddress.getLastRow()+1;
+//                                    break;
+//                                }
+//                            }
+//                            if(LocalData.MAX_Y.equals(headerCellName)){
+//                                if(getCellInt(lastRow.getCell(quickColIndex)) < localData.getY()){
+//                                    rowIndex = cellRangeAddress.getLastRow()+1;
+//                                    break;
+//                                } else {
+//                                    realMaxRowIndex = cellRangeAddress.getLastRow();
+//                                    localData.addField(getCellString(headerRow.getCell(colIndex)), getCellString(rowCell));
+//                                    colIndex++;
+//                                    break;
+//                                }
+//                            }
                             quickColIndex++;
                         }
                         break;
@@ -299,41 +364,94 @@ public class ExcelManager extends ExcelHelper {
                             break;
                         default:
                     }
-                    if(LocalData.PAGEID.equals(headerCellName)){
-                        if((int)rowCellTrueValue != localData.getPageId()){
+
+                    if(LocalData.MIN_PAGEID.equals(headerCellName)){
+                        int pageId = getCellInt(rowCell);
+                        int x = getCellInt(row.getCell(colIndex+1));
+                        int y = getCellInt(row.getCell(colIndex+2));
+                        BaseDot minDot = parseDot(pageId, x, y);
+                        BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                        if(localDot.compareTo(minDot) > 0){
+                            localData.setLeft(x);
+                            localData.setTop(y);
+                            colIndex += 3;
+                            continue;
+                        } else {
+                            rowIndex++;
                             break;
                         }
                     }
+                    if(LocalData.MAX_PAGEID.equals(headerCellName)){
+                        int pageId = getCellInt(rowCell);
+                        int x = getCellInt(row.getCell(colIndex+1));
+                        int y = getCellInt(row.getCell(colIndex+2));
+                        BaseDot maxDot = parseDot(pageId, x, y);
+                        BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                        if(localDot.compareTo(maxDot) < 0){
+                            localData.setRight(x);
+                            localData.setBottom(y);
+                            colIndex += 3;
+                            isCompareCoordinates = true;
+                            continue;
+                        } else {
+                            colIndex -= 3;
+                            rowIndex++;
+                            break;
+                        }
+                    }
+//                    if(LocalData.PAGEID.equals(headerCellName)){
+//                        if((int)rowCellTrueValue != localData.getPageId()){
+//                            break;
+//                        }
+//                    }
                     if(LocalData.MIN_X.equals(headerCellName)){
-                        if((int)rowCellTrueValue > localData.getX()){
-                            colIndex -= 0;
+                        int x = getCellInt(rowCell);
+                        int y = getCellInt(row.getCell(colIndex+1));
+                        BaseDot minDot = new BaseDot(x, y);
+                        BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                        if(localDot.compareTo(minDot) > 0){
+                            localData.setLeft(x);
+                            localData.setTop(y);
+                            colIndex += 2;
+                            continue;
+                        } else {
                             rowIndex++;
                             break;
                         }
                     }
-                    if(LocalData.MIN_Y.equals(headerCellName)){
-                        if((int)rowCellTrueValue > localData.getY()){
-                            colIndex -= 1;
-                            rowIndex++;
-                            break;
-                        }
-                    }
+//                    if(LocalData.MIN_Y.equals(headerCellName)){
+//                        if((int)rowCellTrueValue > localData.getY()){
+//                            colIndex -= 1;
+//                            rowIndex++;
+//                            break;
+//                        }
+//                    }
                     if(LocalData.MAX_X.equals(headerCellName)){
-                        if((int)rowCellTrueValue < localData.getX()){
+                        int x = getCellInt(rowCell);
+                        int y = getCellInt(row.getCell(colIndex+1));
+                        BaseDot maxDot = new BaseDot(x, y);
+                        BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                        if(localDot.compareTo(maxDot) < 0){
+                            localData.setRight(x);
+                            localData.setBottom(y);
+                            colIndex += 2;
+                            isCompareCoordinates = true;
+                            continue;
+                        } else {
                             colIndex -= 2;
                             rowIndex++;
                             break;
                         }
                     }
-                    if(LocalData.MAX_Y.equals(headerCellName)){
-                        if((int)rowCellTrueValue < localData.getY()){
-                            colIndex -= 3;
-                            rowIndex++;
-                            break;
-                        } else {
-                            isCompareCoordinates = true;
-                        }
-                    }
+//                    if(LocalData.MAX_Y.equals(headerCellName)){
+//                        if((int)rowCellTrueValue < localData.getY()){
+//                            colIndex -= 3;
+//                            rowIndex++;
+//                            break;
+//                        } else {
+//                            isCompareCoordinates = true;
+//                        }
+//                    }
                     if(LocalData.ROW_SEARCH_START.equals(headerCellName)){
                         rowSearchStart = (String) rowCellTrueValue;
                     }
@@ -351,7 +469,7 @@ public class ExcelManager extends ExcelHelper {
                 }
                 colIndex++;
             }
-            if(colIndex == maxColIndex){
+            if(colIndex >= maxColIndex){
                 //无后续响应
                 return localData;
             }

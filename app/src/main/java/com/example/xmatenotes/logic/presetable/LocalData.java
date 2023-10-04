@@ -2,6 +2,7 @@ package com.example.xmatenotes.logic.presetable;
 
 import android.graphics.Rect;
 
+import com.example.xmatenotes.logic.model.handwriting.BaseDot;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 
 import java.util.ArrayList;
@@ -22,8 +23,10 @@ public class LocalData {
 
     public static final String MIN_X = "左上X";
     public static final String MIN_Y = "左上Y";
+    public static final String MIN_PAGEID = "左上pageId";
     public static final String MAX_X = "右下X";
     public static final String MAX_Y = "右下Y";
+    public static final String MAX_PAGEID = "右下pageId";
     public static final String ROW_SEARCH_START = "首行";
     public static final String ROW_SEARCH_END = "尾行";
     public static final String LIMIT = "权限边界";
@@ -52,7 +55,7 @@ public class LocalData {
         return this;
     }
 
-    public LocalData setLTop(int top){
+    public LocalData setTop(int top){
         this.localBound.top = top;
         return this;
     }
