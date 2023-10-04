@@ -237,9 +237,9 @@ public class ExcelManager extends ExcelHelper {
                         while (quickColIndex <= maxColIndex){
                             String headerCellName = getCellString(headerRow.getCell(quickColIndex));
                             if(LocalData.MIN_PAGEID.equals(headerCellName)){
-                                int pageId = (int) new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex)), localData).value;
-                                int x = (int) new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex+1)), localData).value;
-                                int y = (int) new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex+2)), localData).value;
+                                int pageId = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex)), localData).value));
+                                int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex+1)), localData).value));
+                                int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex+2)), localData).value));
                                 BaseDot minDot = parseDot(pageId, x, y);
                                 BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
                                 if(localDot.compareTo(minDot) > 0){
@@ -251,9 +251,9 @@ public class ExcelManager extends ExcelHelper {
                                 }
                             }
                             if(LocalData.MAX_PAGEID.equals(headerCellName)){
-                                int pageId = (int) new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex)), localData).value;
-                                int x = (int) new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+1)), localData).value;
-                                int y = (int) new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+2)), localData).value;
+                                int pageId = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex)), localData).value));
+                                int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+1)), localData).value));
+                                int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+2)), localData).value));
 //                                int pageId = getCellInt(lastRow.getCell(quickColIndex));
 //                                int x = getCellInt(lastRow.getCell(quickColIndex+1));
 //                                int y = getCellInt(lastRow.getCell(quickColIndex+2));
@@ -270,8 +270,9 @@ public class ExcelManager extends ExcelHelper {
                                 }
                             }
                             if(LocalData.MIN_X.equals(headerCellName)){
-                                int x = (int) new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex)), localData).value;
-                                int y = (int) new CellCite().parseCell(getCellString(firstRow.getCell(quickColIndex+1)), localData).value;
+                                int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex)), localData).value));
+                                int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+1)), localData).value));
+
                                 BaseDot minDot = new BaseDot(x, y);
                                 BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
                                 if(localDot.compareTo(minDot) > 0){
@@ -283,8 +284,9 @@ public class ExcelManager extends ExcelHelper {
                                 }
                             }
                             if(LocalData.MAX_X.equals(headerCellName)) {
-                                int x = (int) new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex)), localData).value;
-                                int y = (int) new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+1)), localData).value;
+                                int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex)), localData).value));
+                                int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(lastRow.getCell(quickColIndex+1)), localData).value));
+
                                 BaseDot maxDot = new BaseDot(x, y);
                                 BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
                                 if (localDot.compareTo(maxDot) < 0) {
@@ -370,9 +372,9 @@ public class ExcelManager extends ExcelHelper {
                     }
 
                     if(LocalData.MIN_PAGEID.equals(headerCellName)){
-                        int pageId = (int) rowCellTrueValue;
-                        int x = (int) new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value;
-                        int y = (int) new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+2)), localData).value;
+                        int pageId = Integer.parseInt(String.valueOf(rowCellTrueValue));
+                        int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value));
+                        int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+2)), localData).value));
                         BaseDot minDot = parseDot(pageId, x, y);
                         BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
                         if(localDot.compareTo(minDot) > 0){
@@ -386,9 +388,9 @@ public class ExcelManager extends ExcelHelper {
                         }
                     }
                     if(LocalData.MAX_PAGEID.equals(headerCellName)){
-                        int pageId = (int) rowCellTrueValue;
-                        int x = (int) new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value;
-                        int y = (int) new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+2)), localData).value;
+                        int pageId = Integer.parseInt(String.valueOf(rowCellTrueValue));
+                        int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value));
+                        int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+2)), localData).value));
                         BaseDot maxDot = parseDot(pageId, x, y);
                         BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
                         if(localDot.compareTo(maxDot) < 0){
@@ -409,8 +411,8 @@ public class ExcelManager extends ExcelHelper {
 //                        }
 //                    }
                     if(LocalData.MIN_X.equals(headerCellName)){
-                        int x = (int) rowCellTrueValue;
-                        int y = (int) new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value;
+                        int x = Integer.parseInt(String.valueOf(rowCellTrueValue));
+                        int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value));
                         BaseDot minDot = new BaseDot(x, y);
                         BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
                         if(localDot.compareTo(minDot) > 0){
@@ -431,8 +433,8 @@ public class ExcelManager extends ExcelHelper {
 //                        }
 //                    }
                     if(LocalData.MAX_X.equals(headerCellName)){
-                        int x = (int) rowCellTrueValue;
-                        int y = (int) new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value;
+                        int x = Integer.parseInt(String.valueOf(rowCellTrueValue));
+                        int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value));
                         BaseDot maxDot = new BaseDot(x, y);
                         BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
                         if(localDot.compareTo(maxDot) < 0){
