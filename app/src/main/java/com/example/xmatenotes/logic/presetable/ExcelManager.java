@@ -144,6 +144,15 @@ public class ExcelManager extends ExcelHelper {
         return dataSheet;
     }
 
+    /**
+     *
+     * @param x
+     * @param y
+     * @param pageId
+     * @param command
+     * @param roleName 身份信息&权限标识符
+     * @return
+     */
     public LocalData getLocalData(int x, int y, int pageId, String command, String roleName){
         LocalData localData = new LocalData(x, y, pageId, command, roleName);
 
@@ -358,7 +367,13 @@ public class ExcelManager extends ExcelHelper {
      * @return
      */
     private boolean checkLimit(String rowCellTrueValue, LocalData localData) {
-        return false;
+
+        if(rowCellTrueValue.contains(localData.getRole())){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     /**
