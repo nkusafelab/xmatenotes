@@ -885,17 +885,26 @@ public class ExcelManager extends ExcelHelper {
             XSSFRow firstRow = this.abstractSheet.getRow(firstRowNum);
 
             XSSFCell cell = firstRow.getCell(firstColNum);
-            lastRowNum = cell.getRowIndex();
-            nextRowNum = lastRowNum+1;
+//            lastRowNum = cell.getRowIndex();
+//            nextRowNum = lastRowNum+1;
             CellRangeAddress cellRangeAddress = null;
-            if(ExcelUtil.inMerger(this.abstractSheet, cell)){
-                cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
-                cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
-                lastRowNum = cellRangeAddress.getLastRow();
-                nextRowNum = lastRowNum+1;
-            }
+//            if(ExcelUtil.inMerger(this.abstractSheet, cell)){
+//                cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
+//                cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+//                lastRowNum = cellRangeAddress.getLastRow();
+//                nextRowNum = lastRowNum+1;
+//            }
 
             while (!isEmptyCell(cell)){
+                lastRowNum = cell.getRowIndex();
+                nextRowNum = lastRowNum+1;
+                if(ExcelUtil.inMerger(this.abstractSheet, cell)){
+                    cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
+                    cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+                    lastRowNum = cellRangeAddress.getLastRow();
+                    nextRowNum = lastRowNum+1;
+                }
+
                 String fieldName = getCellString(cell);
                 LogUtil.e(TAG, "parseAbstractSheet(): 搜索到字段: "+fieldName);
                 Map<String, String> map = getMap(fieldName);
@@ -920,14 +929,6 @@ public class ExcelManager extends ExcelHelper {
 
                 //确定下一字段搜索起点
                 cell = this.abstractSheet.getRow(nextRowNum).getCell(firstColNum);
-                lastRowNum = cell.getRowIndex();
-                nextRowNum = lastRowNum+1;
-                if(ExcelUtil.inMerger(this.abstractSheet, cell)){
-                    cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
-                    cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
-                    lastRowNum = cellRangeAddress.getLastRow();
-                    nextRowNum = lastRowNum+1;
-                }
 
             }
 

@@ -65,6 +65,16 @@ public class HandWriting implements Serializable,Cloneable {
      */
     private int audioId = XmateNotesApplication.DEFAULT_INT;
 
+    /**
+     * 视频文件ID
+     */
+    private int videoId = XmateNotesApplication.DEFAULT_INT;
+
+    /**
+     * 视频时间戳
+     */
+    private float videoTime = XmateNotesApplication.DEFAULT_FLOAT;
+
     /***************************形态信息*****************************/
     /**
      * 颜色
@@ -176,8 +186,11 @@ public class HandWriting implements Serializable,Cloneable {
         stroke.addDot(sDot);
 
         if(sDot instanceof  MediaDot){
-            sDot = (MediaDot)sDot;
-            this.audioId = ((MediaDot) sDot).audioID;
+            MediaDot mDot = (MediaDot)sDot;
+            this.audioId = mDot.audioID;
+            this.videoId = mDot.videoID;
+            this.videoTime = mDot.videoTime;
+            sDot = mDot;
         }
 
         isClosed = false;
@@ -289,6 +302,36 @@ public class HandWriting implements Serializable,Cloneable {
 
     public void setAudioId(int audioId) {
         this.audioId = audioId;
+    }
+
+    public boolean hasAudio(){
+        if(this.audioId != XmateNotesApplication.DEFAULT_INT){
+            return true;
+        }
+        return false;
+    }
+
+    public int getVideoId() {
+        return videoId;
+    }
+
+    public void setVideoId(int videoId) {
+        this.videoId = videoId;
+    }
+
+    public boolean hasVideo(){
+        if(this.videoId != XmateNotesApplication.DEFAULT_INT){
+            return true;
+        }
+        return false;
+    }
+
+    public float getVideoTime() {
+        return videoTime;
+    }
+
+    public void setVideoTime(float videoTime) {
+        this.videoTime = videoTime;
     }
 
     /**

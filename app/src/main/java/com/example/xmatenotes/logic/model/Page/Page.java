@@ -229,6 +229,18 @@ public class Page implements IPage,Serializable {
         }
     }
 
+    public HandWriting getHandWritingByCoordinate(SimpleDot dot){
+        for(SingleHandWriting singleHandWriting : this.dotList){
+            for(HandWriting handWriting : singleHandWriting.getHandWritings()){
+                if(handWriting.contains(dot)){
+                    return handWriting;
+                }
+            }
+        }
+        LogUtil.e(TAG, "getHandWritingByCoordinate(): 未找到目标坐标上的笔迹！");
+        return null;
+    }
+
     /**
      * 根据坐标获取可能叠加的音频，若无音频，返回null
      */

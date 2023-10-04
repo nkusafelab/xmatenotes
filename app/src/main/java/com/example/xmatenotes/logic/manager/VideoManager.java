@@ -3,7 +3,12 @@ package com.example.xmatenotes.logic.manager;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+
+import com.example.xmatenotes.ui.MainActivity;
+import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
 
 /**
  * <p><strong>视频管理类</strong></p>
@@ -74,6 +79,18 @@ public class VideoManager {
 		}
 		videos.add(new Video(id,videoName,0,0));
 		videosNumber++;
+	}
+
+	/**
+	 * 启动视频笔记活动
+	 * @param context 启动源
+	 */
+	public static void startVideoNoteActivity(Context context, int videoID, float videoTime){
+		//跳转至ck
+		Intent ckIntent = new Intent(context, CkplayerActivity.class);
+		ckIntent.putExtra("videoTime", videoTime);
+		ckIntent.putExtra("videoID", videoID);
+		context.startActivity(ckIntent);
 	}
 	
 	public int getVideosNumber() {

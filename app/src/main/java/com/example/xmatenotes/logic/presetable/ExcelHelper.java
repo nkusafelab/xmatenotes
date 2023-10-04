@@ -180,10 +180,10 @@ public class ExcelHelper {
         if(cell == null){
             return null;
         }
-        if(cell.getCellType() != Cell.CELL_TYPE_STRING){
-            Log.e(TAG,"目标单元格内容不是字符串");
-            return null;
-        }
+//        if(cell.getCellType() != Cell.CELL_TYPE_STRING){
+//            Log.e(TAG,"目标单元格内容不是字符串");
+//            return null;
+//        }
         return ExcelUtil.getCellString(cell);
     }
 
@@ -213,9 +213,9 @@ public class ExcelHelper {
             Log.e(TAG,"目标单元格内容为空");
             return null;
         }
-        if(cell.getCellType() != Cell.CELL_TYPE_NUMERIC){
-            Log.e(TAG,"目标单元格内容不是数字类型");
-        }
+//        if(cell.getCellType() != Cell.CELL_TYPE_NUMERIC){
+//            Log.e(TAG,"目标单元格内容不是数字类型");
+//        }
         return ExcelUtil.getCellInt(cell);
     }
 

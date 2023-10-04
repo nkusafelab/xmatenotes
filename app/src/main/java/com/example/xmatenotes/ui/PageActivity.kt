@@ -12,9 +12,11 @@ import android.os.Bundle
 import android.widget.Toast
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
+import com.example.xmatenotes.app.XmateNotesApplication.videoManager
 import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.PageManager
+import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.manager.Writer
 import com.example.xmatenotes.logic.model.Page.Page
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
@@ -222,7 +224,14 @@ open class PageActivity : BaseActivity() {
             }
 
             command?.handWriting?.firstDot?.let {coordinate->
-                if(coordinate is MediaDot)
+                page.getHandWritingByCoordinate(coordinate)?.let {
+                    if(it.hasVideo()){
+                        //跳转视频播放
+                        VideoManager.startVideoNoteActivity(this@PageActivity, it.videoId, it.videoTime);
+                    } else {
+                        //跳转笔迹动态复现
+                    }
+                }
                 page.getAudioNameByCoordinate(coordinate)?.let { audioName ->
                     LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
                     audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
