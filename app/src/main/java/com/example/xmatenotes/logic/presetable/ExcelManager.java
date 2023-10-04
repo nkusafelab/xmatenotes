@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -329,14 +330,85 @@ public class ExcelManager extends ExcelHelper {
          */
         public Object value;
 
-        public List<Map<String, String>> dataList;
-
         public CellCite parseCell(String cellString, LocalData localData){
 
             //解析类型
+            if (cellString.contains("#")){
+                if(cellString.contains("final")){ //如果是常量类型
+                    this.type = CONSTANT_CITE;
+                    this.key = cellString.replace("#final ","");
+                    this.value = abstractSheet.getMap(AbstractSheet.CONSTANT).get(this.key);
+
+                    LogUtil.e(TAG,this.value.toString());
+                }
+                else if (cellString.contains("data")){  //数据表类型的引用
+                    this.type = DATA_SHEET_CITE;
+
+                    cellString.replace("#data ",""); //去除标识
+
+                    String[] parts = cellString.split("/");
+
+                    int num = parts.length -1;
+
+                    if (num == 2){
+                        String dataname = parts[0];
+                        String key1 = parts[1];
+                        String key2 = parts[2];
+                        this.key = key2;
+                        this.value = dataSheetMap.get(dataname).getMap(key1).get(key2);
+                    }
+                    else if(num ==3){
+                        String dataname = parts[0];
+                        String key1 = parts[1];
+                        String key2 = parts[2];
+                        String key3 = parts[3];
+
+                        LogUtil.e(TAG,"数据表的信息"+key1+key2+key3);
+                        this.key = key3;
+                        String temp = dataSheetMap.get(dataname).getMap(key1).get(key2);//验证是否符合条件的中间变量
+
+                        List<String> dataList = new ArrayList<>();
+                        Map<String, Map<String, String>> map = dataSheetMap.get(dataname).getData();
+                        for(String k : map.keySet()){
+                            if(dataSheetMap.get(dataname).getMap(k).get(key2).equals(temp)){
+                                dataList.add(dataSheetMap.get(dataname).getMap(k).get(key3));
+                            }
+                        }
+                        this.value = dataList;
+                    }
+                    else{
+                        LogUtil.e(TAG,"数据表引用错误");
+                    }
+                }
+                else if(cellString.contains("field")){  //字段类型的引用
+                    this.type = FIELD_CITE;
+                    this.key = cellString.replace("#field ","");
+                    this.value = localData.getFieldValue(this.key);
+
+                    LogUtil.e(TAG,"字段类型值为"+this.value.toString());
+                }
+                else if(cellString.contains("sheet")){ //sheet引用
+                    this.type = SHEET_CITE;
+                    this.key = cellString.replace("#sheet ","");
+                    if(abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).containsKey(this.key)){
+                        this.value = abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).get(this.key);
+                    }
+                    else if(abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME).containsKey(this.key)){
+                        this.value = abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME).get(this.key);
+                    }
+
+                }
+                else{
+                    LogUtil.e(TAG,"不是正确的字段格式");
+                }
+            }
+            else{
+                this.type = VALUE;
+                this.key = cellString;
+                this.value = cellString;
+            }
 
             //解析真实值
-
             return this;
         }
 

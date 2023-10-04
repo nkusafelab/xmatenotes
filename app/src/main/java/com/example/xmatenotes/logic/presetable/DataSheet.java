@@ -55,6 +55,10 @@ public class DataSheet {
         return null;
     }
 
+    public Map<String, Map<String, String>> getData() {
+        return data;
+    }
+
     @Override
     public String toString() {
         return "DataSheet{" +
