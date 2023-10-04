@@ -8,6 +8,11 @@ public class DataSheet {
 
     private String name;
 
+    /**
+     * 主键所在字段
+     */
+    private String primaryField;
+
     private Map<String, Map<String, String>> data = new HashMap<>();
 
     public DataSheet(String name) {
@@ -27,6 +32,14 @@ public class DataSheet {
 
     public String getName() {
         return name;
+    }
+
+    public String getPrimaryField() {
+        return primaryField;
+    }
+
+    public void setPrimaryField(String primaryField) {
+        this.primaryField = primaryField;
     }
 
     /**

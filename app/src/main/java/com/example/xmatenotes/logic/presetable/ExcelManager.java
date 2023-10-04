@@ -12,6 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -107,6 +108,7 @@ public class ExcelManager extends ExcelHelper {
         int lastCol = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_COLUMN));
         int header = rowNameToIndex(sheetHeader.get(SheetHeader.SHEET_HEADER_ROW));
         String key = sheetHeader.get(SheetHeader.PRIMARY_KEY);
+        dataSheet.setPrimaryField(key);
 
         int rowNum = firstRow;
 
@@ -141,36 +143,203 @@ public class ExcelManager extends ExcelHelper {
         return dataSheet;
     }
 
-    public LocalData searchTable(int x, int y, int pageId, String command, String roleName){
+    public LocalData getLocalData(int x, int y, int pageId, String command, String roleName){
         LocalData localData = new LocalData(x, y, pageId, command, roleName);
 
         //搜索起始sheet
         switchSheet(this.abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).get(SEARCH_START));
+        getLocalDataInSearchSheet(curSheet, Integer.MIN_VALUE, Integer.MAX_VALUE, localData);
 
-        SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(curSheet);
+//        Map<String, String> searchSheetMap = this.abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME);
+//        if(searchSheetMap != null){
+//            Set<Map.Entry<String, String>> set = searchSheetMap.entrySet();
+//            Iterator<Map.Entry<String, String>> it = set.iterator();
+//            while (it.hasNext()){
+//                Map.Entry<String, String> node = it.next();
+//                String searchSheetName = node.getValue();
+//                switchSheet(searchSheetName);
+//                getLocalDataInSearchSheet(curSheet, localData);
+//            }
+//        }
+//
+//        Map<String, String> responseSheetMap = this.abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME);
+//        if(responseSheetMap != null){
+//            Set<Map.Entry<String, String>> set = responseSheetMap.entrySet();
+//            Iterator<Map.Entry<String, String>> it = set.iterator();
+//            while (it.hasNext()){
+//                Map.Entry<String, String> node = it.next();
+//                String responseSheetName = node.getValue();
+//                switchSheet(responseSheetName);
+//                getLocalDataInResponseSheet(curSheet, localData);
+//            }
+//        }
 
-        int firstRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
-        int firstColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+        return localData;
+    }
+
+    /**
+     * 在搜索sheet中填充localdata
+     * @param searchSheet
+     * @param localData
+     * @return
+     */
+    public LocalData getLocalDataInSearchSheet(XSSFSheet searchSheet, int rowStart, int rowEnd, LocalData localData){
+
+        SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(searchSheet);
+
+        int minRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
+        int minColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+        int maxRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_ROW));
+        int maxColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_COLUMN));
         int headerIndex = rowNameToIndex(sheetHeader.get(SheetHeader.SHEET_HEADER_ROW));
-        int colIndex = firstColIndex;//实时列index
-        int rowIndex = firstRowIndex;//实时行index
+
+        String rowSearchStart = null;
+        String rowSearchEnd = null;
 
         XSSFRow headerRow = this.curSheet.getRow(headerIndex);
-        XSSFRow row = this.curSheet.getRow(firstRowIndex);
-        XSSFCell rowCell;
-        XSSFCell headerCell;
-        XSSFCell rowFirstCell = row.getCell(firstColIndex);
-        while (!isEmptyCell(rowFirstCell)){
 
-            rowCell = row.getCell(colIndex);
-            headerCell = headerRow.getCell(colIndex);
-            String headerCellName = getCellString(headerCell);
-            if(LocalData.PAGEID.equals(headerCellName)){
+        for(int rowIndex = Math.max(minRowIndex, rowStart); rowIndex <= Math.min(maxRowIndex, rowEnd); ){
 
+            XSSFRow row = this.curSheet.getRow(rowIndex);
+            XSSFCell rowCell;
+            for(int colIndex = minColIndex; colIndex <= maxColIndex; ){
+                rowCell = row.getCell(colIndex);
+                if(!isEmptyCell(rowCell)){
+                    String headerCellName = getCellString(headerRow.getCell(colIndex));
+                    String rowCellValue = getCellString(rowCell);
+                    Object rowCellTrueValue = null;
+                    CellCite cellCite = new CellCite().parseCell(rowCellValue, localData);
+                    switch (cellCite.type) {
+                        case CellCite.VALUE:
+                        case CellCite.CONSTANT_CITE:
+                        case CellCite.DATA_SHEET_CITE:
+                        case CellCite.FIELD_CITE:
+                            rowCellTrueValue = cellCite.value;
+                            break;
+                        case CellCite.SHEET_CITE:
+                            //跳转sheet
+                            if(this.abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).containsKey(cellCite.key)){
+                                if(rowSearchStart != null && rowSearchEnd != null){
+                                    switchSheet((String) cellCite.value);
+                                    return getLocalDataInSearchSheet(curSheet, rowNameToIndex(rowSearchStart), rowNameToIndex(rowSearchEnd), localData);
+                                }
+
+                            } else if(this.abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME).containsKey(cellCite.key)){
+                                switchSheet((String) cellCite.value);
+                                return getLocalDataInResponseSheet(curSheet, localData);
+                            }
+                            break;
+                        default:
+                    }
+                    if(LocalData.PAGEID.equals(headerCellName)){
+                        if((int)rowCellTrueValue != localData.getPageId()){
+                            break;
+                        }
+                    }
+                    if(LocalData.MIN_X.equals(headerCellName)){
+                        if((int)rowCellTrueValue > localData.getX()){
+                            break;
+                        }
+                    }
+                    if(LocalData.MIN_Y.equals(headerCellName)){
+                        if((int)rowCellTrueValue > localData.getY()){
+                            break;
+                        }
+                    }
+                    if(LocalData.MAX_X.equals(headerCellName)){
+                        if((int)rowCellTrueValue < localData.getX()){
+                            break;
+                        }
+                    }
+                    if(LocalData.MAX_Y.equals(headerCellName)){
+                        if((int)rowCellTrueValue < localData.getY()){
+                            break;
+                        }
+                    }
+                    if(LocalData.ROW_SEARCH_START.equals(headerCellName)){
+                        rowSearchStart = (String) rowCellTrueValue;
+                    }
+                    if(LocalData.ROW_SEARCH_END.equals(headerCellName)){
+                        rowSearchEnd = (String) rowCellTrueValue;
+                    }
+                    localData.addField(headerCellName, rowCellTrueValue);
+                }
+                colIndex++;
             }
+            rowIndex++;
         }
 
         return localData;
+    }
+
+    /**
+     * 在响应sheet中填充localdata
+     * @param responseSheet
+     * @param localData
+     * @return
+     */
+    public LocalData getLocalDataInResponseSheet(XSSFSheet responseSheet, LocalData localData){
+
+        return localData;
+    }
+
+    /**
+     * 单元格引用类
+     */
+    public class CellCite {
+        private static final String TAG = "CellCite";
+
+        /**
+         * 直接值
+         */
+        public static final int VALUE = 0;
+
+        /**
+         * 常量引用
+         */
+        public static final int CONSTANT_CITE= 1;
+
+        /**
+         * 数据表引用
+         */
+        public static final int DATA_SHEET_CITE= 2;
+
+        /**
+         * 字段引用
+         */
+        public static final int FIELD_CITE= 3;
+
+        /**
+         * sheet引用
+         */
+        public static final int SHEET_CITE= 4;
+
+        /**
+         * 引用类型
+         */
+        public int type;
+
+        /**
+         * 键名
+         */
+        public String key;
+
+        /**
+         * 真实值
+         */
+        public Object value;
+
+        public List<Map<String, String>> dataList;
+
+        public CellCite parseCell(String cellString, LocalData localData){
+
+            //解析类型
+
+            //解析真实值
+
+            return this;
+        }
+
     }
 
     /**

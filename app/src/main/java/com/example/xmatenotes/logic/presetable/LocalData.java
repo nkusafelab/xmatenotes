@@ -4,7 +4,9 @@ import android.graphics.Rect;
 
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,12 +24,16 @@ public class LocalData {
     public static final String MIN_Y = "左上Y";
     public static final String MAX_X = "右下X";
     public static final String MAX_Y = "右下Y";
+    public static final String ROW_SEARCH_START = "首行";
+    public static final String ROW_SEARCH_END = "尾行";
 
     private int x;
 
     private int y;
 
     private Rect localBound = new Rect();
+
+    private List<Map<String, String>> datalist = new ArrayList<>();
 
     private Map<String, Object> data = new HashMap<>();
 
@@ -76,7 +82,7 @@ public class LocalData {
         return (String) this.data.get(ROLE);
     }
 
-    public LocalData addField(String fieldName, String fieldValue){
+    public LocalData addField(String fieldName, Object fieldValue){
         this.data.put(fieldName, fieldValue);
         return this;
     }
