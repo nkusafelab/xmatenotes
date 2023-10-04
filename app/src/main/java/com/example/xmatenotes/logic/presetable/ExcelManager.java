@@ -492,6 +492,18 @@ public class ExcelManager extends ExcelHelper {
         int unifiedY = 0;
 
         //转换统一坐标
+        String minX  = String.valueOf(pageId)+"MINX";
+
+        LogUtil.e(TAG,"拼凑出的常量的键为"+minX);
+
+        String minY = String.valueOf(pageId)+"MINY";
+
+        LogUtil.e(TAG,"拼凑出的常量的键为"+minY);
+
+        unifiedX = x + Integer.getInteger(abstractSheet.getMap(AbstractSheet.CONSTANT).get(minX));
+
+        unifiedY = y +  Integer.getInteger(abstractSheet.getMap(AbstractSheet.CONSTANT).get(minY));
+
 
         return new BaseDot(unifiedX, unifiedY);
     }
