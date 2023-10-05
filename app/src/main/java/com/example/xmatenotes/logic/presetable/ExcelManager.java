@@ -1,5 +1,6 @@
 package com.example.xmatenotes.logic.presetable;
 
+
 import android.content.Context;
 
 import com.example.xmatenotes.logic.model.handwriting.BaseDot;
@@ -675,10 +676,11 @@ public class ExcelManager extends ExcelHelper {
          */
         public Object value;
 
-        public CellCite parseCell(String cellString, LocalData localData){
+
+        private CellCite parseCell(String cellString, LocalData localData){
 
             //解析类型
-            if (cellString.contains("#")){
+            if (cellString.charAt(0) == '#'){
                 if(cellString.contains("final")){ //如果是常量类型
                     LogUtil.e("判断出是常量类型","");
                     this.type = CONSTANT_CITE;
@@ -759,10 +761,22 @@ public class ExcelManager extends ExcelHelper {
                     LogUtil.e(TAG,"不是正确的字段格式");
                 }
             }
+
             else{
                 this.type = VALUE;
                 this.key = cellString;
-                this.value = cellString;
+                if(cellString.contains(";")){
+                    String[] split = cellString.split(";");
+                    List<String> list = new ArrayList<>();
+                    for(String s : split){
+                        list.add(s);
+                    }
+                    this.value = list;
+                }
+                else{
+                    this.value = cellString;
+                }
+
             }
 
             //解析真实值
