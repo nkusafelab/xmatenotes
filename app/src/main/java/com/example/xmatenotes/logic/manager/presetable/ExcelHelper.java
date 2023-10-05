@@ -1,4 +1,4 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager.presetable;
 
 import android.content.Context;
 import android.util.Log;

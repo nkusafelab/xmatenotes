@@ -1,8 +1,6 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager.presetable;
 
 import android.content.Context;
-
-//import com.example.xmatenotes.logic.network.BitableManager;
 
 import com.example.xmatenotes.logic.model.handwriting.BaseDot;
 
@@ -358,8 +356,17 @@ public class ExcelManager extends ExcelHelper {
                         case CellCite.SHEET_CITE:
                             //跳转sheet
                             if(this.abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).containsKey(cellCite.key)){
+                                LogUtil.e(TAG,"链接表key"+cellCite.key);
+
                                 if(rowSearchStart != null && rowSearchEnd != null){
+
+                                    LogUtil.e(TAG,"调用切换之前"+curSheet.getSheetName());
                                     switchSheet((String) cellCite.value);
+
+                                    LogUtil.e(TAG,"链接表value"+cellCite.value);
+
+                                    LogUtil.e(TAG,curSheet.getSheetName());
+
                                     return getLocalDataInSearchSheet(curSheet, rowNameToIndex(rowSearchStart), rowNameToIndex(rowSearchEnd), localData);
                                 }
 
@@ -539,6 +546,7 @@ public class ExcelManager extends ExcelHelper {
     public LocalData getLocalDataInResponseSheet(XSSFSheet responseSheet, LocalData localData){
 
         LogUtil.e(TAG, "getLocalDataInResponseSheet(): 开始搜索sheet: "+responseSheet.getSheetName());
+
         SheetHeader sheetHeader = new SheetHeader().parseSheetHeaderRow(responseSheet);
 
         int minRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
@@ -549,11 +557,15 @@ public class ExcelManager extends ExcelHelper {
         int filterFirstCol = colNameToIndex(sheetHeader.get(SheetHeader.FILTER_FIRST_COLUMN));
         int filterLastCol = colNameToIndex(sheetHeader.get(SheetHeader.FILTER_LAST_COLUMN));
 
+
         XSSFRow headerRow = this.curSheet.getRow(headerIndex);
 
         //生成筛选匹配值列表
         List<String> filterList = new ArrayList<>();
         for(int colIndex = filterFirstCol; colIndex <= filterLastCol;colIndex++){
+
+            LogUtil.e(TAG,getCellString(headerRow.getCell(colIndex)));
+
             filterList.add((String) localData.getFieldValue(getCellString(headerRow.getCell(colIndex))));
         }
 
@@ -668,25 +680,33 @@ public class ExcelManager extends ExcelHelper {
             //解析类型
             if (cellString.contains("#")){
                 if(cellString.contains("final")){ //如果是常量类型
+                    LogUtil.e("判断出是常量类型","");
                     this.type = CONSTANT_CITE;
                     this.key = cellString.replace("#final ","");
+                    LogUtil.e(TAG,this.key);
+                    LogUtil.e(TAG,abstractSheet.getMap(AbstractSheet.CONSTANT).toString());
                     this.value = abstractSheet.getMap(AbstractSheet.CONSTANT).get(this.key);
 
                     LogUtil.e(TAG,this.value.toString());
+
                 }
                 else if (cellString.contains("data")){  //数据表类型的引用
                     this.type = DATA_SHEET_CITE;
 
-                    cellString.replace("#data ",""); //去除标识
+                    String newcellString = cellString.replace("#data ",""); //去除标识
 
-                    String[] parts = cellString.split("/");
+                    String[] parts = newcellString.split("/");
 
                     int num = parts.length -1;
 
                     if (num == 2){
                         String dataname = parts[0];
+
+                        LogUtil.e(TAG,"解析出的名字"+dataname);
                         String key1 = parts[1];
+                        LogUtil.e(TAG,"解析出的主键1"+key1);
                         String key2 = parts[2];
+                        LogUtil.e(TAG,"解析出的主键2"+key2);
                         this.key = key2;
                         this.value = dataSheetMap.get(dataname).getMap(key1).get(key2);
                     }
@@ -721,14 +741,18 @@ public class ExcelManager extends ExcelHelper {
                     LogUtil.e(TAG,"字段类型值为"+this.value.toString());
                 }
                 else if(cellString.contains("sheet")){ //sheet引用
+
                     this.type = SHEET_CITE;
                     this.key = cellString.replace("#sheet ","");
+                    LogUtil.e(TAG,this.key);
                     if(abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).containsKey(this.key)){
                         this.value = abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).get(this.key);
+                        LogUtil.e(TAG,"确认是搜索表的map"+this.value.toString());
                     }
                     else if(abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME).containsKey(this.key)){
                         this.value = abstractSheet.getMap(AbstractSheet.RESPONSE_SHEET_NAME).get(this.key);
                     }
+
 
                 }
                 else{
@@ -883,7 +907,6 @@ public class ExcelManager extends ExcelHelper {
             //实时搜索坐标
             int rowNum;
             int colNum;
-
             //下一个搜索起点
             int nextRowNum;
 
@@ -893,12 +916,6 @@ public class ExcelManager extends ExcelHelper {
 //            lastRowNum = cell.getRowIndex();
 //            nextRowNum = lastRowNum+1;
             CellRangeAddress cellRangeAddress = null;
-//            if(ExcelUtil.inMerger(this.abstractSheet, cell)){
-//                cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
-//                cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
-//                lastRowNum = cellRangeAddress.getLastRow();
-//                nextRowNum = lastRowNum+1;
-//            }
 
             while (!isEmptyCell(cell)){
                 lastRowNum = cell.getRowIndex();
@@ -919,7 +936,8 @@ public class ExcelManager extends ExcelHelper {
                     colNum = cell.getColumnIndex()+1;
 
                     //循环存储键值对，直到键为空或到达该字段最后一行，循环停止；若值为空，存储null
-                    while(!isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum)) && rowNum <= lastRowNum){
+                    while(rowNum <=lastRowNum && !isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum))){
+
                         if(!isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum+1))){
                             map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum+1)));
                             rowNum = rowNum +1;
@@ -929,7 +947,9 @@ public class ExcelManager extends ExcelHelper {
                             map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),null);
                             rowNum = rowNum +1;
                         }
+                        LogUtil.e(TAG,String.valueOf(rowNum));
                     }
+                    LogUtil.e(TAG,map.toString());
                 }
 
                 //确定下一字段搜索起点

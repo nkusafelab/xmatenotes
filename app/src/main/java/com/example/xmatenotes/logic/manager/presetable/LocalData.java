@@ -1,9 +1,6 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager.presetable;
 
 import android.graphics.Rect;
-
-import com.example.xmatenotes.logic.model.handwriting.BaseDot;
-import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 
 import java.util.ArrayList;
 import java.util.HashMap;

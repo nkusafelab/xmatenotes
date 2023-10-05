@@ -1,4 +1,4 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager.presetable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
