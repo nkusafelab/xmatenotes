@@ -1,6 +1,7 @@
 package com.example.xmatenotes.logic.manager;
 
 import com.example.xmatenotes.logic.model.Page.IPage;
+import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
@@ -95,6 +96,15 @@ public class Writer {
         LogUtil.e(TAG, "Writer解绑Card");
         writeTimer.stop();
         return this;
+    }
+
+    public IPage getBindedPage(){
+        if(this.page != null){
+            return this.page;
+        }
+
+        LogUtil.e(TAG, "未绑定Page!");
+        return null;
     }
 
 //    private Writer setCommandDetector(CommandDetector commandDetector){

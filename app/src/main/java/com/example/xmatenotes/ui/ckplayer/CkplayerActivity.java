@@ -30,8 +30,11 @@ import com.example.xmatenotes.R;
 import com.example.xmatenotes.logic.manager.ExcelReader;
 import com.example.xmatenotes.logic.manager.LocalRect;
 import com.example.xmatenotes.logic.manager.OldPageManager;
+import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.example.xmatenotes.logic.manager.VideoManager;
+import com.example.xmatenotes.logic.manager.Writer;
+import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.ui.BaseActivity;
@@ -119,6 +122,10 @@ public class CkplayerActivity extends BaseActivity {
 	private ExcelReader excelReader = null;//操作excel的对象
 	private VideoManager videoManager = null;
 	private OldPageManager oldPageManager = null;
+
+	private PageManager pageManager = PageManager.getInstance();
+	private Writer writer = Writer.getInstance();
+	private Page page;
 
 	/**
 	 * 当前MediaDot
@@ -387,6 +394,8 @@ public class CkplayerActivity extends BaseActivity {
 		lastMediaDot = curMediaDot;
 		curMediaDot = createMediaDot(dot);
 
+		this.writer.processEachDot();
+
 		//如果正在书写区答题，退出视频笔记
 //		if(dot.type == Dot.DotType.PEN_DOWN){
 //			int pN = pageManager.getPageNumberByPageID(dot.PageID);
@@ -396,26 +405,26 @@ public class CkplayerActivity extends BaseActivity {
 //			}
 //		}
 
-		int result = XmateNotesApplication.instruction.processEachDot(curMediaDot);
-		if(result == 0){//普通书写
-			if(skRunnable != null && skRunnable.isAlive()){
-				skRunnable.stop();
-				Log.e(TAG,"视频碎片计时器关闭");
-			}
-			callJavaScript("pause()");
-
-		}else if(result == 1){
-
-		}else if(result == 2){
-
-		}else if(result == 3){
-			if(skRunnable != null && skRunnable.isAlive()){
-				skRunnable.stop();
-				Log.e(TAG,"视频碎片计时器关闭");
-			}
-		}else if(result == -1){
-
-		}
+//		int result = XmateNotesApplication.instruction.processEachDot(curMediaDot);
+//		if(result == 0){//普通书写
+//			if(skRunnable != null && skRunnable.isAlive()){
+//				skRunnable.stop();
+//				Log.e(TAG,"视频碎片计时器关闭");
+//			}
+//			callJavaScript("pause()");
+//
+//		}else if(result == 1){
+//
+//		}else if(result == 2){
+//
+//		}else if(result == 3){
+//			if(skRunnable != null && skRunnable.isAlive()){
+//				skRunnable.stop();
+//				Log.e(TAG,"视频碎片计时器关闭");
+//			}
+//		}else if(result == -1){
+//
+//		}
 	}
 
     //接收到数据点后执行的主要逻辑
@@ -815,6 +824,8 @@ public class CkplayerActivity extends BaseActivity {
 		videoManager = VideoManager.getInstance();
 		penMacManager = PenMacManager.getInstance();//必须在加载数据之前
 		excelReader = ExcelReader.getInstance();
+
+		this.page = (Page)this.writer.getBindedPage();
 
 		float time = getIntent().getFloatExtra("time",-1);
 		int videoID = getIntent().getIntExtra("videoID",-1);

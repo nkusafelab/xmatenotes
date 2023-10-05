@@ -48,17 +48,14 @@ open class PageActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_page)
-        pageView = findViewById(R.id.pageView)
+        setContentView(getLayoutId())
 
         supportActionBar?.hide()
 
         val matrix = Matrix()
         matrix.postRotate(90F) // 顺时针旋转90度
 
-        //测试接口用
-        pageView.setPaintSize(40F)
-        pageView.setPaintTypeface(Typeface.MONOSPACE)
+        initUI()
 
     }
 
@@ -101,6 +98,17 @@ open class PageActivity : BaseActivity() {
             audioRecorder = false
             audioManager.stopRATimer()
         }
+    }
+
+    protected open fun getLayoutId() : Int{
+        return R.layout.activity_page
+    }
+
+    protected open fun initUI(){
+        pageView = findViewById(R.id.pageView)
+        //测试接口用
+        pageView.setPaintSize(40F)
+        pageView.setPaintTypeface(Typeface.MONOSPACE)
     }
 
     protected open fun initPage(){
