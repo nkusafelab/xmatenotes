@@ -231,4 +231,20 @@ public class Stroke implements Serializable, Cloneable {
         stroke.boundRect = gson.fromJson(gson.toJson(this.boundRect), SerializableRectF.class);
         return stroke;
     }
+
+    @Override
+    public String toString() {
+        return "Stroke{" +
+                "dots=" + dots +
+                ", prePeriod=" + prePeriod +
+                ", firsttime=" + firsttime +
+                ", duration=" + duration +
+                ", boundRect=" + boundRect +
+                ", isClosed=" + isClosed +
+                ", color=" + color +
+                ", width=" + width +
+                ", pageWidth=" + pageWidth +
+                ", pageHeight=" + pageHeight +
+                '}';
+    }
 }

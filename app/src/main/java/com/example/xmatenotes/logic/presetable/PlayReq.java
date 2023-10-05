@@ -1,4 +1,4 @@
-package com.example.xmatenotes.logic.manager.presetable;
+package com.example.xmatenotes.logic.presetable;
 
 public class PlayReq {
     private static final String TAG = "DataShowReq";

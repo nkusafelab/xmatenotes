@@ -383,4 +383,21 @@ public class HandWriting implements Serializable,Cloneable {
         }
     }
 
+    @Override
+    public String toString() {
+        return "HandWriting{" +
+                "strokes=" + strokes +
+                ", strokesNumber=" + strokesNumber +
+                ", prePeriod=" + prePeriod +
+                ", firsttime=" + firsttime +
+                ", duration=" + duration +
+                ", boundRect=" + boundRect +
+                ", isClosed=" + isClosed +
+                ", audioId=" + audioId +
+                ", videoId=" + videoId +
+                ", videoTime=" + videoTime +
+                ", color=" + color +
+                ", width=" + width +
+                '}';
+    }
 }

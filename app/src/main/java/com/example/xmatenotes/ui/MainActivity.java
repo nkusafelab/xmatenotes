@@ -1013,7 +1013,7 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
             case R.id.xuecheng_notes:
-                Intent xuechengIntent = new Intent(this, SmartpenActivity.class);
+                Intent xuechengIntent = new Intent(this, PageActivity.class);
                 Log.e(TAG,"xuecheng");
                 startActivity(xuechengIntent);
                 return true;

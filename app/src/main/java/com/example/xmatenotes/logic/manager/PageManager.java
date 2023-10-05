@@ -45,12 +45,12 @@ public class PageManager {
     /**
      * 记录PageID到有序数组的映射关系，值用来索引三维数组
      */
-    private static Map<Integer, Integer> pageIDToArray;
+    private static Map<Long, Integer> pageIDToArray;
 
     /**
      * 记录PageID到真实页码信息的映射关系，值用于版面响应控制
      */
-    private static Map<Integer, PageManager.SimplePageInf> pageIDToPageInf;
+    private static Map<Long, PageManager.SimplePageInf> pageIDToPageInf;
 
     /**
      * 存在于内存中的Page构成的线性表
@@ -60,7 +60,7 @@ public class PageManager {
     /**
      * 当前pageID
      */
-    public static int currentPageID;
+    public static long currentPageID;
 
     /**
      * 简单页码信息对象类，存储页号和对应页码图片资源ID的映射关系，以便在需要时将目标页码对应的相关资源呈现在界面上
@@ -97,19 +97,19 @@ public class PageManager {
         pageIDToPageInf = new HashMap<>();
 
         //预置的学程样例纸张Page
-        pageIDToPageInf.put(0, new PageManager.SimplePageInf(1, R.drawable.x1));
-        pageIDToPageInf.put(2, new PageManager.SimplePageInf(2, R.drawable.x2));
-        pageIDToPageInf.put(4, new PageManager.SimplePageInf(3, R.drawable.x3));
-        pageIDToPageInf.put(6, new PageManager.SimplePageInf(4, R.drawable.x4));
-        pageIDToPageInf.put(8, new PageManager.SimplePageInf(5, R.drawable.x5));
-        pageIDToPageInf.put(10, new PageManager.SimplePageInf(6, R.drawable.x6));
-        pageIDToPageInf.put(12, new PageManager.SimplePageInf(7, R.drawable.x7));
-        pageIDToPageInf.put(14, new PageManager.SimplePageInf(8, R.drawable.x8));
-        pageIDToPageInf.put(32, new PageManager.SimplePageInf(9, R.drawable.x9));
-        pageIDToPageInf.put(34, new PageManager.SimplePageInf(10, R.drawable.x10));
-        pageIDToPageInf.put(36, new PageManager.SimplePageInf(11, R.drawable.x11));
-        pageIDToPageInf.put(38, new PageManager.SimplePageInf(12, R.drawable.x12));
-        pageIDToPageInf.put(40, new PageManager.SimplePageInf(13, R.drawable.x13));
+        pageIDToPageInf.put(0L, new PageManager.SimplePageInf(1, R.drawable.x1));
+        pageIDToPageInf.put(2L, new PageManager.SimplePageInf(2, R.drawable.x2));
+        pageIDToPageInf.put(4L, new PageManager.SimplePageInf(3, R.drawable.x3));
+        pageIDToPageInf.put(6L, new PageManager.SimplePageInf(4, R.drawable.x4));
+        pageIDToPageInf.put(8L, new PageManager.SimplePageInf(5, R.drawable.x5));
+        pageIDToPageInf.put(10L, new PageManager.SimplePageInf(6, R.drawable.x6));
+        pageIDToPageInf.put(12L, new PageManager.SimplePageInf(7, R.drawable.x7));
+        pageIDToPageInf.put(14L, new PageManager.SimplePageInf(8, R.drawable.x8));
+        pageIDToPageInf.put(32L, new PageManager.SimplePageInf(9, R.drawable.x9));
+        pageIDToPageInf.put(34L, new PageManager.SimplePageInf(10, R.drawable.x10));
+        pageIDToPageInf.put(36L, new PageManager.SimplePageInf(11, R.drawable.x11));
+        pageIDToPageInf.put(38L, new PageManager.SimplePageInf(12, R.drawable.x12));
+        pageIDToPageInf.put(40L, new PageManager.SimplePageInf(13, R.drawable.x13));
 
         savePage(0);
         savePage(2);
@@ -133,7 +133,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果目标页已存储，则返回true
      */
-    public static boolean isSavePageByPageID(int pageID){
+    public static boolean isSavePageByPageID(long pageID){
         return pageIDToArray.containsKey(pageID);
     }
 
@@ -142,7 +142,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果目标页属于学程样例，则返回true
      */
-    public static boolean containsPageNumberByPageID(int pageID){
+    public static boolean containsPageNumberByPageID(long pageID){
         return pageIDToPageInf.containsKey(pageID);
     }
 
@@ -152,7 +152,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 返回目标页对应的Page对象
      */
-    public Page savePage(int pageID){
+    public Page savePage(long pageID){
         if(!isSavePageByPageID(pageID)){
             if (XueChengList.size() >= MAX_PAGE_NUMBER) {
                 Toast.makeText(XmateNotesApplication.context, "Page存储空间已满", Toast.LENGTH_SHORT).show();
@@ -175,7 +175,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果对应页对象已经存在，返回页码ID对应的页对象；否则返回null
      */
-    public static Page getPageByPageID(int pageID){
+    public static Page getPageByPageID(long pageID){
         if(isSavePageByPageID(pageID)){
             return XueChengList.get(pageIDToArray.get(pageID));
         }
@@ -187,7 +187,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果页码图片资源存在，返回资源ID；否则返回-1
      */
-    public static int getResIDByPageID(int pageID){
+    public static int getResIDByPageID(long pageID){
         if(containsPageNumberByPageID(pageID)){
             return pageIDToPageInf.get(pageID).getResId();
         }
@@ -311,10 +311,12 @@ public class PageManager {
         String picPath = getPicAbsolutePath(page);
 
         //存储图片
-        storager.saveBmpWithSuffix(picPath, bitmap);
-        LogUtil.e(TAG, "卡片图片存储完成");
+        if(bitmap != null){
+            storager.saveBmpWithSuffix(picPath, bitmap);
+            LogUtil.e(TAG, "卡片图片存储完成");
+        }
 
-        //序列化存储CardData对象
+        //序列化存储Page对象
         try {
             storager.serializeSaveObject(dataPath, page);
         } catch (IOException e) {
@@ -336,12 +338,15 @@ public class PageManager {
                     }
                 });
                 LogUtil.e(TAG, "上传卡片数据文件");
-                bitableManager.coverAttachmentCell(Page.pagesTableId, appTableRecord.getRecordId(), "卡片图片",new ArrayList<String>(){
-                    {
-                        add(picPath);
-                    }
-                });
-                LogUtil.e(TAG, "上传卡片图片");
+                if(bitmap != null){
+                    bitableManager.coverAttachmentCell(Page.pagesTableId, appTableRecord.getRecordId(), "卡片图片",new ArrayList<String>(){
+                        {
+                            add(picPath);
+                        }
+                    });
+                    LogUtil.e(TAG, "上传卡片图片");
+                }
+
                 bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "音频",getAudioAbsolutePathList(page));
                 LogUtil.e(TAG, "上传卡片音频文件");
             }

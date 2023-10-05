@@ -86,6 +86,7 @@ public class XmateNotesApplication extends Application {
         context = getApplicationContext();
         penMacManager = PenMacManager.getInstance();
         excelReader = ExcelReader.getInstance();
+        writer = Writer.getInstance().init();
 
         excelReader.openExcel("excel/A3学程样例·纸分区坐标.xlsx","一级局域索引表");
         excelReader.switchSheet("二级局域编码表");

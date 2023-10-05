@@ -18,7 +18,7 @@ public class XueCheng extends CompositePage {
     /**
      * 本页PageID属性
      */
-    private int pageId;
+    private long pageId;
 
     /**
      * 页号。初始值为-1
@@ -30,7 +30,7 @@ public class XueCheng extends CompositePage {
      */
     private Map<String, Page> subPages = new HashMap<>();
 
-    public XueCheng(int pageId, int pageNumber) {
+    public XueCheng(long pageId, int pageNumber) {
         this.pageId = pageId;
         this.pageNumber = pageNumber;
         this.code = getCodeByPageId(this.pageId)+"00";

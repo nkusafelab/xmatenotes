@@ -91,7 +91,7 @@ public class Writer {
      * 解绑版面对象
      * @return
      */
-    public Writer unBindCard(){
+    public Writer unBindPage(){
         this.page = null;
         LogUtil.e(TAG, "Writer解绑Card");
         writeTimer.stop();

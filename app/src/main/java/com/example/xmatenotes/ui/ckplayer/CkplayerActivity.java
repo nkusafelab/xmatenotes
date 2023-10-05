@@ -394,7 +394,7 @@ public class CkplayerActivity extends BaseActivity {
 		lastMediaDot = curMediaDot;
 		curMediaDot = createMediaDot(dot);
 
-		this.writer.processEachDot();
+		this.writer.processEachDot((MediaDot) ((Page)this.writer.getBindedPage()).getCoordinateCropper().cropOut(curMediaDot));
 
 		//如果正在书写区答题，退出视频笔记
 //		if(dot.type == Dot.DotType.PEN_DOWN){

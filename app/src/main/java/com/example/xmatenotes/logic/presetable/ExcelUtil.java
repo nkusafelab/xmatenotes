@@ -1,4 +1,4 @@
-package com.example.xmatenotes.logic.manager.presetable;
+package com.example.xmatenotes.logic.presetable;
 
 
 import org.apache.poi.ss.usermodel.Cell;

@@ -12,18 +12,14 @@ import android.os.Bundle
 import android.widget.Toast
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
-import com.example.xmatenotes.app.XmateNotesApplication.videoManager
-import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.manager.VideoManager
-import com.example.xmatenotes.logic.manager.Writer
 import com.example.xmatenotes.logic.model.Page.Page
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
-import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.view.PageView
 import com.example.xmatenotes.logic.presetable.LogUtil
@@ -31,40 +27,26 @@ import com.example.xmatenotes.logic.presetable.LogUtil
 /**
  * 支持屏幕NK-cola的活动
  */
-open class PageActivity : BaseActivity() {
+open class PageActivity : SmartpenActivity() {
 
     companion object {
         private const val TAG = "PageActivity"
     }
 
-    protected var pageManager = PageManager.getInstance()
-    protected val audioManager = AudioManager.getInstance()
-    private var bitableManager = BitableManager.getInstance()
-    protected lateinit var writer: Writer
     protected lateinit var pageView: PageView
-    protected lateinit var page: Page
+
     protected var bitmap: Bitmap? = null
-    protected var audioRecorder = false //录音开关
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(getLayoutId())
-
-        supportActionBar?.hide()
 
         val matrix = Matrix()
         matrix.postRotate(90F) // 顺时针旋转90度
-
-        initUI()
 
     }
 
     override fun onStart() {
         super.onStart()
-
-        this.writer = Writer.getInstance().init().setResponser(getPageResponsor())
-        initPage()
-
     }
 
     override fun onResume() {
@@ -94,48 +76,49 @@ open class PageActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (audioRecorder) {
-            audioRecorder = false
-            audioManager.stopRATimer()
-        }
+//        if (audioRecorder) {
+//            audioRecorder = false
+//            audioManager.stopRATimer()
+//        }
     }
 
-    protected open fun getLayoutId() : Int{
+    protected override fun getLayoutId() : Int{
         return R.layout.activity_page
     }
 
-    protected open fun initUI(){
+    protected override fun initUI(){
+        supportActionBar?.hide()
         pageView = findViewById(R.id.pageView)
         //测试接口用
         pageView.setPaintSize(40F)
         pageView.setPaintTypeface(Typeface.MONOSPACE)
     }
 
-    protected open fun initPage(){
+//    protected override fun initPage(){
+//
+//        bitmap = getViewBitmap()
+//        bitmap?.let {
+//
+//            //imageView.setPaintColor(Color.RED)
+//
+//            pageView.setImageBitmap(it)
+//
+//        }
+//        page = getViewPage()
+//        this.writer.bindPage(page)
+//        page.create()
+//        var pageAbsolutePath = pageManager.mkdirs(page)
+//    }
 
-        bitmap = getViewBitmap()
-        bitmap?.let {
-
-            //imageView.setPaintColor(Color.RED)
-
-            pageView.setImageBitmap(it)
-
-        }
-        page = getViewPage()
-        this.writer.bindPage(page)
-        page.create()
-        var pageAbsolutePath = pageManager.mkdirs(page)
-    }
-
-    fun getPageResponsor(): PageResponsor{
-        return PageResponsor()
+    override fun getResponsor(): Responser{
+        return PageResponser()
     }
 
     fun getViewBitmap(): Bitmap {
         return getViewBitmap(0)
     }
 
-    protected fun getViewBitmap(pageId: Int): Bitmap {
+    protected fun getViewBitmap(pageId: Long): Bitmap {
         var resId = PageManager.getResIDByPageID(pageId)
         LogUtil.e(TAG, "resources: $resources resId: $resId")
         return BitmapFactory.decodeResource(resources, resId).copy(Bitmap.Config.ARGB_8888, true)
@@ -149,6 +132,18 @@ open class PageActivity : BaseActivity() {
         return CoordinateConverter(left, top, viewWidth,
             viewHeight, page.realWidth, page.realHeight)
 //        return page.setRealDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
+    }
+
+    override fun switchPage(mediaDot: MediaDot): Boolean {
+        if(super.switchPage(mediaDot)){
+            bitmap = getViewBitmap(mediaDot.pageID)
+            pageView.setImageBitmap(bitmap)
+            pageView.post {
+                pageView.drawDots(page.dotList, page.coordinateCropper)
+            }
+            return true
+        }
+        return false
     }
 
     /**
@@ -179,36 +174,23 @@ open class PageActivity : BaseActivity() {
         processEachDot(createMediaDot(simpleDot))
     }
 
-    fun processEachDot(mediaDot: MediaDot) {
-        writer.let {
-            writer.processEachDot(page.coordinateCropper.cropOut(mediaDot) as MediaDot)
-        }
-    }
-
     protected fun createMediaDot(simpleDot: SimpleDot): MediaDot {
         val mediaDot = MediaDot(simpleDot)
-        mediaDot.pageID = this.page.code.toLong()
-        //如果正在录音，再次长压结束录音
-        if (audioRecorder) {
-            mediaDot.audioID = Integer.parseInt(page.lastAudioName)
-            mediaDot.color = MediaDot.DEEP_GREEN
-        }
-
+        mediaDot.pageID = this.currentPageId
         mediaDot.penMac = XmateNotesApplication.mBTMac
         LogUtil.e(TAG, "封装MediaDot: $mediaDot")
         return mediaDot
     }
 
-    inner class PageResponsor: Responser() {
+    open inner class PageResponser: Responser() {
         override fun onLongPress(command: Command?):Boolean {
             if(!super.onLongPress(command)){
                 return false
             }
-
             showToast("长压命令")
             pageManager.save(page, bitmap?.let { generatePageBmp(page, it) })
 
-            return false
+            return true
         }
 
         override fun onSingleClick(command: Command?):Boolean {
