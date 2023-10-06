@@ -474,7 +474,7 @@ public class ExcelManager extends ExcelHelper {
                     }
                     if(LocalData.LIMIT.equals(headerCellName)){
                         //检查权限
-                        if(!checkLimit((String)rowCellTrueValue, localData)){
+                        if(!checkLimit(rowCellTrueValue.toString(), localData)){
                             LogUtil.e(TAG, "getLocalDataInSearchSheet(): 不具有目标区域操作权限！");
                             return null;
                         }

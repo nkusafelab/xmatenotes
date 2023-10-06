@@ -94,7 +94,9 @@ public class Writer {
     public Writer unBindPage(){
         this.page = null;
         LogUtil.e(TAG, "Writer解绑Card");
-        writeTimer.stop();
+        if(writeTimer != null){
+            writeTimer.stop();
+        }
         return this;
     }
 
@@ -385,6 +387,11 @@ public class Writer {
      */
     public class ResponseWorker implements Comparable<ResponseWorker> {
         private int workerId;
+
+        /**
+         * 起始时间
+         */
+        private long startTime;
        private long delay;
 
         /**
@@ -394,6 +401,7 @@ public class Writer {
        private ResponseTask responseTask;
 
         public ResponseWorker(int workerId, long delay, ResponseTask responseTask) {
+            this.startTime = System.currentTimeMillis();
             this.workerId = workerId;
             this.delay = delay;
             this.responseTask = responseTask;
@@ -406,6 +414,10 @@ public class Writer {
 
         public void setWorkerId(int workerId) {
             this.workerId = workerId;
+        }
+
+        public long getStartTime() {
+            return startTime;
         }
 
         public void setDelay(long delay) {
@@ -438,7 +450,7 @@ public class Writer {
 
         @Override
         public int compareTo(ResponseWorker o) {
-            return (int) (this.delay - o.delay);
+            return (int) ((this.startTime + this.delay) - (o.startTime + o.delay));
         }
 
         @Override
@@ -446,19 +458,21 @@ public class Writer {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ResponseWorker that = (ResponseWorker) o;
-            return workerId == that.workerId && delay == that.delay && isAvailable == that.isAvailable && Objects.equals(responseTask, that.responseTask);
+            return workerId == that.workerId && startTime == that.startTime && delay == that.delay && isAvailable == that.isAvailable && Objects.equals(responseTask, that.responseTask);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(workerId, delay, isAvailable, responseTask);
+            return Objects.hash(workerId, startTime, delay, isAvailable, responseTask);
         }
 
         @Override
         public String toString() {
             return "ResponseWorker{" +
                     "workerId=" + workerId +
+                    ", startTime=" + startTime +
                     ", delay=" + delay +
+                    ", isAvailable=" + isAvailable +
                     ", responseTask=" + responseTask +
                     '}';
         }
@@ -502,8 +516,11 @@ public class Writer {
 
                 synchronized (TAG){
                     while (!this.priorityQueue.isEmpty()){
-                        if(delay >= this.priorityQueue.peek().getDelay()){
-                            ResponseWorker responseWorker = this.priorityQueue.poll();
+//                        if(delay >= this.priorityQueue.peek().getDelay()){
+                        ResponseWorker responseWorker = this.priorityQueue.peek();
+                        if((System.currentTimeMillis() - responseWorker.getStartTime()) >= responseWorker.getDelay()){
+//                            ResponseWorker responseWorker = this.priorityQueue.poll();
+                            this.priorityQueue.poll();
                             this.responseWorkerMap.remove(responseWorker.getWorkerId());
                             responseWorker.getResponseTask().execute();
                             responseWorker.setAvailable(false);

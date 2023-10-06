@@ -110,7 +110,7 @@ open class PageActivity : SmartpenActivity() {
 //        var pageAbsolutePath = pageManager.mkdirs(page)
 //    }
 
-    override fun getResponsor(): Responser{
+    override fun getResponser(): Responser{
         return PageResponser()
     }
 
@@ -171,7 +171,7 @@ open class PageActivity : SmartpenActivity() {
 
     fun processEachDot(simpleDot: SimpleDot) {
 
-        processEachDot(createMediaDot(simpleDot))
+        processEachDot(page.coordinateCropper.cropOut(createMediaDot(simpleDot)) as MediaDot)
     }
 
     protected fun createMediaDot(simpleDot: SimpleDot): MediaDot {
@@ -230,7 +230,7 @@ open class PageActivity : SmartpenActivity() {
 
             showToast("双击命令")
 
-            return false
+            return true
         }
 
         override fun onActionCommand(command: Command?):Boolean {

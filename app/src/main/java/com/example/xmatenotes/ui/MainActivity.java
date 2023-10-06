@@ -980,7 +980,7 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(serverIntent, REQUEST_SELECT_DEVICE);
                 return true;
             case R.id.action_ckplayer:
-                ckplayerIntent = new Intent(this, CkplayerActivity.class);Log.e(TAG,"action_ckplayer");
+                ckplayerIntent = new Intent(this, VideoNoteActivity.class);Log.e(TAG,"action_ckplayer");
                 ckplayerIntent.putExtra("time",0.0f);
 
                 Log.e(TAG, "ckplayer跳转至videoID: " + String.valueOf(1));
@@ -1013,7 +1013,7 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
             case R.id.xuecheng_notes:
-                Intent xuechengIntent = new Intent(this, PageActivity.class);
+                Intent xuechengIntent = new Intent(this, XueChengActivity.class);
                 Log.e(TAG,"xuecheng");
                 startActivity(xuechengIntent);
                 return true;

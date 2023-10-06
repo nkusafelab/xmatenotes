@@ -5,13 +5,19 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.core.app.ActivityOptionsCompat
 import com.example.xmatenotes.BluetoothLEService
 import com.example.xmatenotes.BluetoothLEService.LocalBinder
 import com.example.xmatenotes.BluetoothLEService.OnDataReceiveListener
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.AudioManager
+import com.example.xmatenotes.logic.manager.CoordinateConverter
+import com.example.xmatenotes.logic.manager.ExcelReader
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.manager.PenMacManager
 import com.example.xmatenotes.logic.manager.VideoManager
@@ -21,9 +27,13 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
+import com.example.xmatenotes.logic.presetable.ExcelManager
 import com.example.xmatenotes.logic.presetable.LogUtil
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
+import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
+import com.king.wechat.qrcode.WeChatQRCodeDetector
 import com.tqltech.tqlpencomm.bean.Dot
+import org.opencv.OpenCV
 
 /**
  * 支持点阵纸笔书写的活动
@@ -42,7 +52,12 @@ open class SmartpenActivity : BaseActivity() {
     protected val audioManager = AudioManager.getInstance()
     protected var bitableManager = BitableManager.getInstance()
     protected val penMacManager = PenMacManager.getInstance()
+    protected val excelManager = ExcelManager.getInstance()
+    protected val excelReader = ExcelReader.getInstance()
     protected lateinit var writer: Writer
+
+    //坐标转换器
+    protected var coordinateConverter: CoordinateConverter? = null
 
     /**
      * 当前Page
@@ -69,7 +84,7 @@ open class SmartpenActivity : BaseActivity() {
     override fun onStart() {
         super.onStart()
 
-        this.writer = Writer.getInstance().setResponser(getResponsor())
+        this.writer = Writer.getInstance().setResponser(getResponser())
         initPage()
     }
 
@@ -95,12 +110,17 @@ open class SmartpenActivity : BaseActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(mServiceConnection)
+    }
+
     protected open fun getLayoutId() : Int{
         return R.layout.activity_smartpen
     }
 
     protected open fun initUI(){
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     protected open fun initPage(){
@@ -109,14 +129,67 @@ open class SmartpenActivity : BaseActivity() {
         switchPage(mediaDot)
     }
 
-    protected open fun getResponsor(): Responser {
+    /**
+     * 初始化点阵输入坐标转换器
+     */
+    protected open fun initCoordinateConverter(){
+
+    }
+
+    protected open fun getResponser(): Responser {
         return SmartPenResponser()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+
+        menuInflater.inflate(R.menu.smartpenmenu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        val id = item.itemId
+        when (id) {
+            android.R.id.home -> finish()
+            R.id.video_Notes -> {
+                val videoNoteIntent = Intent(this@SmartpenActivity, VideoNoteActivity::class.java)
+                LogUtil.e(TAG, "action_ckplayer")
+                videoNoteIntent.putExtra("time", 0.0f)
+
+                LogUtil.e(TAG, "ckplayer跳转至videoID: " + 1.toString())
+                videoNoteIntent.putExtra("videoID", 1)
+                startActivity(videoNoteIntent)
+            }
+
+            R.id.photo_notes -> {
+                LogUtil.e(TAG, "QR_scan")
+                // 初始化OpenCV
+                OpenCV.initAsync(this)
+                // 初始化WeChatQRCodeDetector
+                WeChatQRCodeDetector.init(this)
+                startActivityForResult(WeChatQRCodeActivity::class.java)
+            }
+
+            else -> {}
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    protected fun startActivityForResult(clazz: Class<*>) {
+        val options = ActivityOptionsCompat.makeCustomAnimation(this, R.anim.alpha_in, R.anim.alpha_out)
+        val intent = Intent(this, clazz)
+        startActivityForResult(intent, WeChatQRCodeActivity.REQUEST_CODE_QRCODE, options.toBundle())
     }
 
     fun processEachDot(dot: Dot?){
         if(dot != null){
             LogUtil.e(TAG, dot.toString())
-            processEachDot(createMediaDot(dot))
+            var mediaDot = createMediaDot(dot)
+            if (this.coordinateConverter != null){
+                mediaDot = this.coordinateConverter!!.convertIn(mediaDot) as MediaDot
+            }
+            processEachDot(mediaDot)
         }
     }
 
@@ -124,6 +197,7 @@ open class SmartpenActivity : BaseActivity() {
         if (currentPageId != -1L){
             if(currentPageId != mediaDot.pageID){
                 switchPage(mediaDot)
+                LogUtil.e(TAG, "切换Page: $currentPageId")
             }
         }
         //如果正在录音，再次长压结束录音
@@ -132,11 +206,11 @@ open class SmartpenActivity : BaseActivity() {
             mediaDot.color = MediaDot.DEEP_GREEN
         }
         writer.let {
-            writer.processEachDot(page.coordinateCropper.cropOut(mediaDot) as MediaDot)
+            writer.processEachDot(mediaDot)
         }
     }
 
-    fun createMediaDot(dot: Dot?): MediaDot {
+    protected open fun createMediaDot(dot: Dot): MediaDot {
         val mediaDot = MediaDot(dot)
         mediaDot.timelong = System.currentTimeMillis() //原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
         mediaDot.penMac = XmateNotesApplication.mBTMac
@@ -199,7 +273,9 @@ open class SmartpenActivity : BaseActivity() {
                 page.getHandWritingByCoordinate(coordinate)?.let {
                     if(it.hasVideo()){
                         //跳转视频播放
-                        VideoManager.startVideoNoteActivity(this@SmartpenActivity, it.videoId, it.videoTime);
+                        if(baseActivity !is VideoNoteActivity){
+                            VideoManager.startVideoNoteActivity(this@SmartpenActivity, it.videoId, it.videoTime)
+                        }
                     } else {
                         //跳转笔迹动态复现
                     }
@@ -212,7 +288,7 @@ open class SmartpenActivity : BaseActivity() {
 
             showToast("双击命令")
 
-            return false
+            return true
         }
 
         override fun onActionCommand(command: Command?):Boolean {

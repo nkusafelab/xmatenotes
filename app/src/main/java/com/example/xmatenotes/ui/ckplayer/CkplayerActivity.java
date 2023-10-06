@@ -908,29 +908,24 @@ public class CkplayerActivity extends BaseActivity {
     
     @Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
-
 		super.onResume();
 		if (playOrFalsebuffer == 1) {
 			callJavaScript("play()");
 			playOrFalsebuffer = 0;
 		}
 
-		super.onStart();
 	}
     
     private int playOrFalsebuffer = 0;//根据需要暂时存储视频当前播放状态
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
-
 		super.onPause();
 		if (playOrFalse == 1) {
 			callJavaScript("pause()");
 			playOrFalsebuffer = 1;
 		}
-		super.onStop();
+
 	}
 
 	@Override

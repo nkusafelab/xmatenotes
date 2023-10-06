@@ -199,7 +199,7 @@ public class PageManager {
      * @param pageID 页码ID
      * @return 如果对应页号存在，返回页号；否则返回-1
      */
-    public static int getPageNumberByPageID(int pageID){
+    public static int getPageNumberByPageID(long pageID){
         if(containsPageNumberByPageID(pageID)){
             return pageIDToPageInf.get(pageID).getPageNumber();
         }
