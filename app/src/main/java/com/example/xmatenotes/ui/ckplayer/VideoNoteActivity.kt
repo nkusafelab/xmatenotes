@@ -282,7 +282,7 @@ abstract class VideoNoteActivity : PageActivity() {
         LogUtil.e(TAG, "javascript:$str")
     }
 
-    open inner class VideoNoteResponser : SmartPenResponser() {
+    open inner class VideoNoteResponser : PageResponser() {
 
         override fun onCalligraphy(command: Command?): Boolean {
             if(!super.onCalligraphy(command)){

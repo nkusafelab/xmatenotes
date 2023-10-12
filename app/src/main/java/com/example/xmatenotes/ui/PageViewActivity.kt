@@ -8,6 +8,7 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
@@ -31,7 +32,7 @@ import kotlin.concurrent.thread
 open class PageViewActivity : PageActivity() {
 
     companion object {
-        private const val TAG = "PageActivity"
+        private const val TAG = "PageViewActivity"
         private const val PICTRUE_PARSE_WIDTH = 2560
         private const val PICTRUE_PARSE_HEIGHT = 1600
     }
@@ -85,11 +86,11 @@ open class PageViewActivity : PageActivity() {
 //        }
     }
 
-    protected override fun getLayoutId() : Int{
+    override fun getLayoutId() : Int{
         return R.layout.activity_page
     }
 
-    protected override fun initUI(){
+    override fun initUI(){
 //        supportActionBar?.hide()
         pageView = findViewById(R.id.pageView)
         //测试接口用
@@ -114,7 +115,7 @@ open class PageViewActivity : PageActivity() {
 //    }
 
     override fun getResponser(): Responser{
-        return PageResponser()
+        return PageViewResponser()
     }
 
     fun getViewBitmap(): Bitmap {
@@ -144,16 +145,18 @@ open class PageViewActivity : PageActivity() {
     override fun switchPage(mediaDot: MediaDot): Boolean {
         if(super.switchPage(mediaDot)){
 //            pageView.resetPath()
-            thread {5
+            Thread {
                 //时间耗费较大
                 BitmapUtil.recycleBitmap(bitmap)
                 bitmap = getViewBitmap(mediaDot.pageID)
+                LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID)")
                 pageView.post {
 //                    pageView.setImageRes(resources, PageManager.getResIDByPageID(mediaDot.pageID))
                     pageView.setImageBitmap(bitmap)
+                    LogUtil.e(TAG, "switchPage: pageView.setImageBitmap(bitmap)")
                     pageView.drawDots(page.dotList, page.coordinateCropper)
                 }
-            }
+            }.start()
             return true
         }
         return false
@@ -213,7 +216,7 @@ open class PageViewActivity : PageActivity() {
 
     }
 
-    open inner class PageResponser: Responser() {
+    open inner class PageViewResponser: Responser() {
         override fun onLongPress(command: Command?):Boolean {
             if(!super.onLongPress(command)){
                 return false

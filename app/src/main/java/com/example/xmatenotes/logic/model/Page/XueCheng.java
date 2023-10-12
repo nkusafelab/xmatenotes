@@ -36,8 +36,8 @@ public class XueCheng extends CompositePage {
         this.pageNumber = pageNumber;
         this.code = getCodeByPageId(this.pageId)+"00";
 
-        this.setRealDimensions((float) (A3.PAPER_WIDTH-8-7.5), (float) (A3.PAPER_HEIGHT-8-7.5));
-//        this.setRealDimensions(A3.ABSCISSA_RANGE,A3.ORDINATE_RANGE);//采用真实尺寸太大，命令识别不准
+//        this.setRealDimensions((float) (A3.PAPER_WIDTH-8-7.5), (float) (A3.PAPER_HEIGHT-8-7.5));
+        this.setRealDimensions(A3.ABSCISSA_RANGE,A3.ORDINATE_RANGE);//采用真实尺寸太大，命令识别不准
 
         //各子版面无交叉重合部分
         this.subPages.put("01", new XueChengCard("01", pageId, pageNumber, 0F, 0F, this.realWidth, this.realHeight));
