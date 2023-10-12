@@ -33,7 +33,7 @@ import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.instruction.Command;
 import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.tqltech.tqlpencomm.bean.Dot;
@@ -82,7 +82,7 @@ public class CardshowActivity extends BaseActivity{
         setContentView(R.layout.activity_cardshow);
 
         //配置坐标转换器,maxX，maxY,maxrealX,maxrealY
-        this.coordinateConverter = new CoordinateConverter(512, 512, 7803,7803);
+        this.coordinateConverter = new CoordinateConverter(512, 512, 780,780);
 
         Intent gattServiceIntent = new Intent(this, BluetoothLEService.class);
         boolean bBind = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -128,7 +128,7 @@ public class CardshowActivity extends BaseActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        this.writer = Writer.getInstance().init().bindPage(null).setResponser(new Responser() {
+        this.writer = Writer.getInstance().bindPage(null).setResponser(new Responser() {
             @Override
             public boolean onLongPress(Command command) {
                 if(!super.onLongPress(command)){
@@ -157,7 +157,7 @@ public class CardshowActivity extends BaseActivity{
                         });
 
                         //普通书写基本延时响应
-                        writer.handWritingWorker = writer.addResponseWorker(
+                        writer.handWritingWorker = writer.addResponseWorker(Writer.HANDWRITING_WORKER_NAME,
                                 HandWriting.DELAY_PERIOD + 1000, new Writer.ResponseTask() {
                                     @Override
                                     public void execute() {
@@ -167,7 +167,7 @@ public class CardshowActivity extends BaseActivity{
                                 }
                         );
 
-                        writer.singleHandWritingWorker = writer.addResponseWorker(
+                        writer.singleHandWritingWorker = writer.addResponseWorker(Writer.SINGLEHANDWRITING_WORKER_NAME,
                                 SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD, new Writer.ResponseTask() {
                                     @Override
                                     public void execute() {

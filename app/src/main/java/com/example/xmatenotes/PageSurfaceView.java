@@ -697,7 +697,6 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             height = tmp;
         } else {
             rotate = 0;
-            ;
         }
 
         scale = (double) height / width;//高宽比

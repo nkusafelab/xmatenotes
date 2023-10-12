@@ -11,7 +11,7 @@ import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.SerializableRectF;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -176,6 +176,7 @@ public class Page implements IPage,Serializable {
     @Override
     public Page addSingleHandWriting(SingleHandWriting singleHandWriting) {
         this.dotList.add(singleHandWriting);
+        LogUtil.e(TAG, "addSingleHandWriting: dotList.add(singleHandWriting)");
         return this;
     }
 
@@ -183,7 +184,7 @@ public class Page implements IPage,Serializable {
         if(this.dotList.size() > 0){
             return this.dotList.get(this.dotList.size()-1);
         } else {
-            LogUtil.e(TAG, "dotList为空！");
+            LogUtil.e(TAG, "getLastSingleHandWriting(): dotList为空！");
             return null;
         }
     }
@@ -195,6 +196,14 @@ public class Page implements IPage,Serializable {
 
     public ArrayList<SingleHandWriting> getDotList() {
         return dotList;
+    }
+
+    public SimpleDot getLastDot(){
+        if (!dotList.isEmpty()){
+            return dotList.get(dotList.size()-1).getLastDot();
+        }
+        LogUtil.e(TAG, "getLastDot: dotList为空！");
+        return null;
     }
 
     public Page addAudioNameList(int index, ArrayList<String> audioNameList){
@@ -326,6 +335,10 @@ public class Page implements IPage,Serializable {
 
     public RectF getHandWritingsRectF(){
         return new RectF(this.left, this.top, this.right, this.bottom);
+    }
+
+    public RectF getPageBounds(){
+        return new RectF(this.realLeft, this.realTop, this.realLeft+this.realWidth, this.realTop+this.realHeight);
     }
 
     /**
@@ -496,7 +509,7 @@ public class Page implements IPage,Serializable {
      */
     public void updateRole(Role role){
         //角色
-        this.role = role.getRole();
+        this.role = role.getRoleName();
         //学生编号
         this.qrObject.setSt(role.getStudentNumber());
         //小组编号
@@ -520,6 +533,7 @@ public class Page implements IPage,Serializable {
         return pageStorageName;
     }
 
+    @Override
     public String getCode() {
         return code;
     }

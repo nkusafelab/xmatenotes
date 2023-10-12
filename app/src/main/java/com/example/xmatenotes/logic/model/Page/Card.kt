@@ -8,7 +8,7 @@ import com.example.xmatenotes.logic.model.Role
 import com.example.xmatenotes.logic.model.handwriting.SerializableRectF
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
-import com.example.xmatenotes.logic.presetable.LogUtil
+import com.example.xmatenotes.util.LogUtil
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
@@ -49,7 +49,7 @@ class Card() : IPage,Serializable {
     /**
      * 唯一标识符编码
      */
-    var code = ""
+//    var code = ""
 
     /**
      * 前置编码
@@ -155,6 +155,10 @@ class Card() : IPage,Serializable {
     override fun addSingleHandWriting(singleHandWriting: SingleHandWriting): Card{
         this.cardResource.dotList.add(singleHandWriting)
         return this
+    }
+
+    override fun getCode(): String {
+        return null.toString()
     }
 
 //    /**
@@ -328,7 +332,7 @@ class Card() : IPage,Serializable {
         }
 
         this.qrObject.time = System.currentTimeMillis().toString()
-        this.code = this.preCode.substring(0,4) + this.qrObject.time
+//        this.code = this.preCode.substring(0,4) + this.qrObject.time
         this.qrObject.pn = this.code
     }
 
@@ -436,7 +440,7 @@ class Card() : IPage,Serializable {
      */
     fun updateRole(role: Role){
         //角色
-        this.cardContext.role = role.role
+        this.cardContext.role = role.roleName
         //学生编号
         this.qrObject.st = role.studentNumber
         //小组编号

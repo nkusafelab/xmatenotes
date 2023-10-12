@@ -5,7 +5,7 @@ import android.graphics.Color;
 import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.google.gson.Gson;
 import com.tqltech.tqlpencomm.bean.Dot;
 
@@ -175,6 +175,14 @@ public class Stroke implements Serializable, Cloneable {
         if(dots.size() > 0){
             return dots.get(0);
         }
+        return null;
+    }
+
+    public SimpleDot getLastDot(){
+        if(!dots.isEmpty()){
+            return dots.get(dots.size()-1);
+        }
+        LogUtil.e(TAG, "getLastDot: dots为空！");
         return null;
     }
 

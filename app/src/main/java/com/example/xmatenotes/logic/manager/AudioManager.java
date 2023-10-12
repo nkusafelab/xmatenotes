@@ -14,7 +14,7 @@ import android.util.Log;
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.Page.OldXueCheng;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.File;

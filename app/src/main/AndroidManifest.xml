@@ -47,19 +47,29 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.XueChengVideoNoteActivity"
+            android:name=".ui.play.PlayShowActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.VideoNoteActivity"
+            android:name=".ui.CommandActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.XueChengActivity"
+            android:name=".ui.play.PlayActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.SmartpenActivity"
+            android:name=".ui.ckplayer.XueChengVideoNoteActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.ckplayer.VideoNoteActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.XueChengViewActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".ui.PageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.PageViewActivity"
             android:exported="false" />
         <activity
             android:name=".OpenCameraActivity"

@@ -10,27 +10,27 @@ data class Role(
     /**
      * 角色
      */
-    var role:String,
+    var roleName:String,
     /**
      * 学生编号
      */
-    var studentNumber :String ,
+    var studentNumber :String,
     /**
      * 小组编号
      */
-    var groupNumber:String ,
+    var groupNumber:String,
     /**
      * 小组组型
      */
-    var groupTip:String ,
+    var groupTip:String,
     /**
      * 学校编号
      */
-    var school:String ,
+    var school:String,
     /**
      * 班级
      */
-    var classNumber:String ,
+    var classNumber:String,
     /**
      * 年级
      */

@@ -1,17 +1,13 @@
-package com.example.xmatenotes.ui
+package com.example.xmatenotes.ui.ckplayer
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import com.example.xmatenotes.R
-import com.example.xmatenotes.app.XmateNotesApplication
-import com.example.xmatenotes.logic.manager.OldPageManager
+import com.example.xmatenotes.app.ax.A3
+import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
-import com.example.xmatenotes.logic.presetable.LogUtil
-import com.example.xmatenotes.ui.ckplayer.CkplayerActivity
+import com.example.xmatenotes.util.LogUtil
 
 class XueChengVideoNoteActivity : VideoNoteActivity() {
 
@@ -24,7 +20,17 @@ class XueChengVideoNoteActivity : VideoNoteActivity() {
     }
 
     override fun getResponser(): Responser {
-        return super.getResponser()
+        return XueChengVideoNoteResponser()
+    }
+
+    override fun initCoordinateConverter() {
+        //配置坐标转换器,maxX，maxY,maxrealX,maxrealY
+        this.coordinateConverter = CoordinateConverter(
+            A3.ABSCISSA_RANGE.toFloat(),
+            A3.ORDINATE_RANGE.toFloat(),
+            page.realWidth,
+            page.realHeight
+        )
     }
 
     open inner class XueChengVideoNoteResponser : VideoNoteResponser() {
@@ -34,8 +40,9 @@ class XueChengVideoNoteActivity : VideoNoteActivity() {
             }
 
             command?.handWriting?.firstDot?.let {coordinate->
-                val pN = PageManager.getPageNumberByPageID((coordinate as MediaDot).pageID)
-                val lR = excelReader.getLocalRectByXY(pN, coordinate.intX, coordinate.intY)
+                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot
+                val pN = PageManager.getPageNumberByPageID(mediaDot.pageID)
+                val lR = excelReader.getLocalRectByXY(pN, mediaDot.intX, mediaDot.intY)
                 if (lR != null) {
                     LogUtil.e(TAG, "局域编码: " + lR.localCode)
                     if ("资源卡" == lR.localName) {

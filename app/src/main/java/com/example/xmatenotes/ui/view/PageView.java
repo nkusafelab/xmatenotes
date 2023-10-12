@@ -1,6 +1,7 @@
 package com.example.xmatenotes.ui.view;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -23,10 +24,12 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
-import com.example.xmatenotes.ui.PageActivity;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.ui.PageViewActivity;
+import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.util.BitmapUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -42,7 +45,7 @@ public class PageView extends AppCompatImageView {
     private Paint mPaint;
     private Path mPath;
 
-    private PageActivity pageActivity = null;
+    private PageViewActivity pageViewActivity = null;
 
     //坐标转换器
     private CoordinateConverter coordinateConverter;
@@ -71,8 +74,8 @@ public class PageView extends AppCompatImageView {
         mBitmap = null;
         mMatrix = new Matrix();
 
-        if (getContext() instanceof PageActivity) {
-            this.pageActivity = (PageActivity) getContext();
+        if (getContext() instanceof PageViewActivity) {
+            this.pageViewActivity = (PageViewActivity) getContext();
         }
 
     }
@@ -101,11 +104,11 @@ public class PageView extends AppCompatImageView {
 
 //        RectF rectF = getIntrinsicRectF();
 
-        if (this.coordinateConverter == null && this.pageActivity != null) {
-            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
-            RectF rectF = getIntrinsicRectF();
-            setCoordinateConverter(this.pageActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
-        }
+//        if (this.coordinateConverter == null && this.pageActivity != null) {
+//            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
+//            RectF rectF = getIntrinsicRectF();
+//            setCoordinateConverter(this.pageActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
+//        }
 
 //        mPaint.setColor(Color.RED);
 //        canvas.drawRect(rectF, mPaint);
@@ -128,14 +131,14 @@ public class PageView extends AppCompatImageView {
     }
 
     public Path drawDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter converter, CoordinateConverter.CoordinateCropper cropper) {
-        LogUtil.e(TAG, "绘制笔迹");
+        LogUtil.e(TAG, "drawDots: 绘制笔迹");
         Path path = new Path();
-        LogUtil.e(TAG, "converter != null: "+(converter != null));
+        LogUtil.e(TAG, "drawDots: converter != null: "+(converter != null));
         if (converter != null) {
             for (SingleHandWriting singleHandWriting : singleHandWritingList) {
                 //旧笔迹不绘制
                 if (!singleHandWriting.isNew()) {
-                    LogUtil.e(TAG, "旧笔迹不绘制");
+                    LogUtil.e(TAG, "drawDots: 旧笔迹不绘制");
                     continue;
                 }
                 for (HandWriting handWriting : singleHandWriting.getHandWritings()) {
@@ -149,7 +152,7 @@ public class PageView extends AppCompatImageView {
                             outSimpleDot = converter.convertOut(outSimpleDot);
                             if (simpleDot instanceof MediaDot) {
                             }
-                            LogUtil.e(TAG, "绘制" + outSimpleDot);
+                            LogUtil.e(TAG, "drawDots: 绘制" + outSimpleDot);
                             if(outSimpleDot.type == Dot.DotType.PEN_DOWN){
                                 path.moveTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
                             }
@@ -172,20 +175,64 @@ public class PageView extends AppCompatImageView {
                     }
                 }
             }
-            return path;
         }
-        return null;
+        return path;
+    }
+
+    public void drawDot(MediaDot mediaDot, CoordinateConverter.CoordinateCropper cropper) {
+        drawDot(mediaDot, this.coordinateConverter, cropper);
+        postInvalidate();
+    }
+
+    public Path drawDot(MediaDot mediaDot, CoordinateConverter converter, CoordinateConverter.CoordinateCropper cropper) {
+        LogUtil.e(TAG, "drawDot: 绘制笔迹点");
+        LogUtil.e(TAG, "drawDot: converter != null: "+(converter != null));
+        if (converter != null && !this.mPath.isEmpty()) {
+            SimpleDot outSimpleDot = mediaDot;
+            if(cropper != null){
+                outSimpleDot = cropper.cropIn(mediaDot);
+            }
+            //将内部真实物理坐标转换为UI坐标
+            outSimpleDot = converter.convertOut(outSimpleDot);
+
+            LogUtil.e(TAG, "drawDot: 绘制" + outSimpleDot);
+            if(outSimpleDot.type == Dot.DotType.PEN_DOWN){
+                mPath.moveTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
+            }
+            if(outSimpleDot.type == Dot.DotType.PEN_MOVE){
+                mPath.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
+            }
+            if(outSimpleDot.type == Dot.DotType.PEN_UP){
+                mPath.lineTo(outSimpleDot.getFloatX(), outSimpleDot.getFloatY());
+            }
+        }
+        return mPath;
     }
 
     //处理位图的缩放和平移
     @Override
     public void setImageBitmap(Bitmap bm) {
         super.setImageBitmap(bm);
+        BitmapUtil.recycleBitmap(mBitmap);
         mBitmap = bm;
+        LogUtil.e(TAG, "setImageBitmap: mBitmap: "+mBitmap);
         mCanvas = new Canvas(mBitmap);
-        calculateMatrix();
-        invalidate();
+//        calculateMatrix();
+        RectF rectF = getIntrinsicRectF();
+        setCoordinateConverter(this.pageViewActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
+        postInvalidate();
     }
+
+    public void setImageRes(Resources res, int resId) {
+//        setImageStream(res.openRawResource(resId));
+        setImageBitmap(BitmapUtil.decodeSampledBitmapFromResource(res, resId, getWidth(), getHeight()));
+    }
+
+    public void setImageStream(InputStream in) {
+        LogUtil.e(TAG, "setImageStream(): getWidth(): " + getWidth() + " getHeight(): " + getHeight());
+        setImageBitmap(BitmapUtil.decodeSampledBitmapFromStream(in, getWidth(), getHeight()));
+    }
+
 
     public void setPaintSize(float size) {
         mPaint.setTextSize(size);
@@ -203,7 +250,7 @@ public class PageView extends AppCompatImageView {
      */
     public void setCoordinateConverter(CoordinateConverter coordinateConverter) {
         this.coordinateConverter = coordinateConverter;
-        LogUtil.e(TAG, "配置坐标转换器");
+        LogUtil.e(TAG, "配置坐标转换器: "+this.coordinateConverter.toString());
     }
 
     public CoordinateConverter getCoordinateConverter() {
@@ -264,11 +311,18 @@ public class PageView extends AppCompatImageView {
             inSimpleDot = this.coordinateConverter.convertIn(simpleDot);
         }
 
-        if (this.pageActivity != null) {
-            this.pageActivity.processEachDot(inSimpleDot);
+        if (this.pageViewActivity != null) {
+            this.pageViewActivity.processEachDot(inSimpleDot);
         }
 
         return true;
+    }
+
+    /**
+     * 重置路径
+     */
+    public void resetPath(){
+        this.mPath.reset();
     }
 
 }

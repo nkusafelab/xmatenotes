@@ -1,6 +1,8 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager;
 
 import android.graphics.Rect;
+
+import com.example.xmatenotes.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;

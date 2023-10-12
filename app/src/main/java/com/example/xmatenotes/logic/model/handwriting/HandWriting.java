@@ -2,14 +2,13 @@ package com.example.xmatenotes.logic.model.handwriting;
 
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Region;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.Serializable;
@@ -246,6 +245,14 @@ public class HandWriting implements Serializable,Cloneable {
         if(strokes.size() > 0){
             return strokes.get(0).getFirstDot();
         }
+        return null;
+    }
+
+    public SimpleDot getLastDot(){
+        if(!strokes.isEmpty()){
+            return strokes.get(strokes.size()-1).getLastDot();
+        }
+        LogUtil.e(TAG, "getLastDot: strokes为空！");
         return null;
     }
 

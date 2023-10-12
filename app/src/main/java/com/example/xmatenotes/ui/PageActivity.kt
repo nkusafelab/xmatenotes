@@ -1,194 +1,242 @@
 package com.example.xmatenotes.ui
 
-import android.content.pm.ActivityInfo
+import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.Typeface
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.core.app.ActivityOptionsCompat
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
-import com.example.xmatenotes.logic.manager.CoordinateConverter
+import com.example.xmatenotes.logic.manager.AudioManager
+import com.example.xmatenotes.logic.manager.ExcelReader
 import com.example.xmatenotes.logic.manager.PageManager
+import com.example.xmatenotes.logic.manager.PenMacManager
 import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.model.Page.Page
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
+import com.example.xmatenotes.logic.network.BitableManager
+import com.example.xmatenotes.logic.manager.ExcelManager
+import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
-import com.example.xmatenotes.ui.view.PageView
-import com.example.xmatenotes.logic.presetable.LogUtil
+import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
+import com.king.wechat.qrcode.WeChatQRCodeDetector
+import org.opencv.OpenCV
 
 /**
- * 支持屏幕NK-cola的活动
+ * 支持点阵纸笔版面书写和命令识别的活动
  */
-open class PageActivity : SmartpenActivity() {
+abstract class PageActivity : CommandActivity() {
 
     companion object {
-        private const val TAG = "PageActivity"
+        private const val TAG = "SmartpenActivity"
     }
 
-    protected lateinit var pageView: PageView
+//    private var mService: BluetoothLEService? = null //蓝牙服务
+//
+//    private var dotsListener: OnDataReceiveListener? = null
 
-    protected var bitmap: Bitmap? = null
+    protected var pageManager = PageManager.getInstance()
+    protected val audioManager = AudioManager.getInstance()
+    protected var bitableManager = BitableManager.getInstance()
+    protected val penMacManager = PenMacManager.getInstance()
+    protected val excelManager = ExcelManager.getInstance()
+    protected val excelReader = ExcelReader.getInstance()
+//    protected lateinit var writer: Writer
+
+//    //坐标转换器
+//    protected var coordinateConverter: CoordinateConverter? = null
+
+    /**
+     * 当前Page
+     */
+    protected lateinit var page: Page
+
+    /**
+     * 当前PageId
+     */
+    protected var currentPageId: Long = -1L
+
+    protected var audioRecorder = false //录音开关
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(getLayoutId())
 
-        val matrix = Matrix()
-        matrix.postRotate(90F) // 顺时针旋转90度
+//        val gattServiceIntent = Intent(this, BluetoothLEService::class.java)
+//        val bBind = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE)
 
+//        initUI()
     }
 
     override fun onStart() {
         super.onStart()
+
+//        this.writer = Writer.getInstance().setResponser(getResponser())
+        initPage()
+//        initCoordinateConverter()
     }
 
     override fun onResume() {
-        bitmap?.let {
-            if(it.width >= it.height){
-                //横屏
-                if(requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
-                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-//                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                }
-            } else {
-                //竖屏
-                if(requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
-                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-//                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                }
-            }
-        }
         super.onResume()
 
-        //绘制笔迹
-        pageView.post {
-            pageView.drawDots(page.dotList, page.coordinateCropper)
-        }
-
+//        if (BluetoothLEService.isPenConnected) {
+//            supportActionBar!!.setTitle(resources.getString(R.string.app_name) + "（蓝牙已连接）")
+//        } else {
+//            supportActionBar!!.setTitle(resources.getString(R.string.app_name) + "（蓝牙未连接）")
+//        }
+//        if (mService != null) {
+//            mService!!.setOnDataReceiveListener(dotsListener) //添加监听器
+//        }
+        LogUtil.e(TAG, "SmartpenActivity.onResume()")
     }
 
     override fun onPause() {
         super.onPause()
-//        if (audioRecorder) {
-//            audioRecorder = false
-//            audioManager.stopRATimer()
+        if (audioRecorder) {
+            audioRecorder = false
+            audioManager.stopRATimer()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+//        unbindService(mServiceConnection)
+    }
+
+    override fun getLayoutId() : Int{
+        return R.layout.activity_smartpen
+    }
+
+    override fun initUI(){
+        super.initUI()
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun initPage(){
+        var mediaDot = MediaDot()
+        mediaDot.pageID = PageManager.currentPageID
+        switchPage(mediaDot)
+    }
+
+    override fun getResponser(): Responser {
+        return SmartPenResponser()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+
+        menuInflater.inflate(R.menu.smartpenmenu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        val id = item.itemId
+        when (id) {
+            android.R.id.home -> finish()
+            R.id.video_Notes -> {
+                val videoNoteIntent = Intent(this@PageActivity, VideoNoteActivity::class.java)
+                LogUtil.e(TAG, "action_ckplayer")
+                videoNoteIntent.putExtra("time", 0.0f)
+
+                LogUtil.e(TAG, "ckplayer跳转至videoID: " + 1.toString())
+                videoNoteIntent.putExtra("videoID", 1)
+                startActivity(videoNoteIntent)
+            }
+
+            R.id.photo_notes -> {
+                LogUtil.e(TAG, "QR_scan")
+                // 初始化OpenCV
+                OpenCV.initAsync(this)
+                // 初始化WeChatQRCodeDetector
+                WeChatQRCodeDetector.init(this)
+                startActivityForResult(WeChatQRCodeActivity::class.java)
+            }
+
+            else -> {}
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    protected fun startActivityForResult(clazz: Class<*>) {
+        val options = ActivityOptionsCompat.makeCustomAnimation(this, R.anim.alpha_in, R.anim.alpha_out)
+        val intent = Intent(this, clazz)
+        startActivityForResult(intent, WeChatQRCodeActivity.REQUEST_CODE_QRCODE, options.toBundle())
+    }
+
+//    fun processEachDot(dot: Dot?){
+//        if(dot != null){
+//            var mediaDot = createMediaDot(dot)
+//            if (this.coordinateConverter != null){
+//                mediaDot = this.coordinateConverter!!.convertIn(mediaDot) as MediaDot
+//            }
+//            processEachDot(mediaDot)
 //        }
-    }
-
-    protected override fun getLayoutId() : Int{
-        return R.layout.activity_page
-    }
-
-    protected override fun initUI(){
-        supportActionBar?.hide()
-        pageView = findViewById(R.id.pageView)
-        //测试接口用
-        pageView.setPaintSize(40F)
-        pageView.setPaintTypeface(Typeface.MONOSPACE)
-    }
-
-//    protected override fun initPage(){
-//
-//        bitmap = getViewBitmap()
-//        bitmap?.let {
-//
-//            //imageView.setPaintColor(Color.RED)
-//
-//            pageView.setImageBitmap(it)
-//
-//        }
-//        page = getViewPage()
-//        this.writer.bindPage(page)
-//        page.create()
-//        var pageAbsolutePath = pageManager.mkdirs(page)
 //    }
 
-    override fun getResponser(): Responser{
-        return PageResponser()
+    override fun processEachDot(mediaDot: MediaDot) {
+        if (currentPageId != -1L){
+            if(currentPageId != mediaDot.pageID){
+                    switchPage(mediaDot)
+                    LogUtil.e(TAG, "processEachDot: 切换PageId: $currentPageId")
+            }
+        }
+        //如果正在录音，再次长压结束录音
+        if (audioRecorder) {
+            mediaDot.audioID = Integer.parseInt(page.lastAudioName)
+            mediaDot.color = MediaDot.DEEP_GREEN
+        }
+        writer.let {
+            //mediaDot 已经是真实物理坐标
+            writer.processEachDot(page.coordinateCropper.cropOut(mediaDot) as MediaDot)
+        }
     }
 
-    fun getViewBitmap(): Bitmap {
-        return getViewBitmap(0)
-    }
+//    protected open fun createMediaDot(dot: Dot): MediaDot {
+//        val mediaDot = MediaDot(dot)
+//        mediaDot.timelong = System.currentTimeMillis() //原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
+//        mediaDot.penMac = XmateNotesApplication.mBTMac
+//        return mediaDot
+//    }
 
-    protected fun getViewBitmap(pageId: Long): Bitmap {
-        var resId = PageManager.getResIDByPageID(pageId)
-        LogUtil.e(TAG, "resources: $resources resId: $resId")
-        return BitmapFactory.decodeResource(resources, resId).copy(Bitmap.Config.ARGB_8888, true)
-    }
+    protected open fun switchPage(mediaDot: MediaDot) : Boolean {
+        var pageBuffer = PageManager.getPageByPageID(mediaDot.pageID)
+        if (pageBuffer != null){
+            currentPageId = mediaDot.pageID
+            pageManager.update(mediaDot)
+            page = pageBuffer
+            this.writer.unBindPage()
+            this.writer.bindPage(page)
 
-    fun getViewPage(): Page {
-        return PageManager.getPageByPageID(0);
-    }
-
-    fun getCoordinateConverter(left: Float, top: Float, viewWidth: Float, viewHeight: Float): CoordinateConverter {
-        return CoordinateConverter(left, top, viewWidth,
-            viewHeight, page.realWidth, page.realHeight)
-//        return page.setRealDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
-    }
-
-    override fun switchPage(mediaDot: MediaDot): Boolean {
-        if(super.switchPage(mediaDot)){
-            bitmap = getViewBitmap(mediaDot.pageID)
-            pageView.setImageBitmap(bitmap)
-            pageView.post {
-                pageView.drawDots(page.dotList, page.coordinateCropper)
+            if(!pageManager.pagePathexists(page)){
+                page.create()
+                pageManager.mkdirs(page)
             }
             return true
+        } else {
+            LogUtil.e(TAG, "switchPage(): 尚未存储该页")
+            return false
         }
-        return false
     }
 
-    /**
-     * 生成带有笔迹的卡片图片
-     */
-    fun generatePageBmp(page: Page, mBitmap: Bitmap): Bitmap{
-        val bitmap: Bitmap = mBitmap.copy(Bitmap.Config.ARGB_8888, true)
-        val canvas = Canvas(bitmap)
-        var paint = Paint()
-        paint.color = Color.BLACK
-        paint.strokeWidth = 2f
-        paint.style = Paint.Style.STROKE
-        val coordinateConverter = CoordinateConverter(
-            bitmap.width.toFloat(),
-            bitmap.height.toFloat(),
-            page.realWidth,
-            page.realHeight
-        )
-        var path = pageView.drawDots(page.dotList, coordinateConverter, page.coordinateCropper)
-        canvas.drawPath(path, paint)
-        return bitmap
+    protected open fun commit(point: SimpleDot, page: Page, bmp: Bitmap){
+
     }
 
-
-
-    fun processEachDot(simpleDot: SimpleDot) {
-
-        processEachDot(page.coordinateCropper.cropOut(createMediaDot(simpleDot)) as MediaDot)
-    }
-
-    protected fun createMediaDot(simpleDot: SimpleDot): MediaDot {
-        val mediaDot = MediaDot(simpleDot)
-        mediaDot.pageID = this.currentPageId
-        mediaDot.penMac = XmateNotesApplication.mBTMac
-        LogUtil.e(TAG, "封装MediaDot: $mediaDot")
-        return mediaDot
-    }
-
-    open inner class PageResponser: Responser() {
+    open inner class SmartPenResponser: Responser() {
         override fun onLongPress(command: Command?):Boolean {
             if(!super.onLongPress(command)){
                 return false
             }
+
             showToast("长压命令")
-            pageManager.save(page, bitmap?.let { generatePageBmp(page, it) })
+            pageManager.save(page, null)
 
             return true
         }
@@ -217,7 +265,9 @@ open class PageActivity : SmartpenActivity() {
                 page.getHandWritingByCoordinate(coordinate)?.let {
                     if(it.hasVideo()){
                         //跳转视频播放
-                        VideoManager.startVideoNoteActivity(this@PageActivity, it.videoId, it.videoTime);
+                        if(baseActivity !is VideoNoteActivity){
+                            VideoManager.startVideoNoteActivity(this@PageActivity, it.videoId, it.videoTime)
+                        }
                     } else {
                         //跳转笔迹动态复现
                     }
@@ -244,9 +294,6 @@ open class PageActivity : SmartpenActivity() {
 
                 }
             }
-
-            //绘制笔迹
-            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
 
             return super.onCalligraphy(command)
         }
@@ -279,9 +326,6 @@ open class PageActivity : SmartpenActivity() {
                 return false
             }
 
-            //绘制笔迹
-            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
-
             return false
         }
 
@@ -300,4 +344,5 @@ open class PageActivity : SmartpenActivity() {
             return super.onBanDui(command)
         }
     }
+
 }

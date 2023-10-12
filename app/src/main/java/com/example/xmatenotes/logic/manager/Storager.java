@@ -5,7 +5,7 @@ import android.graphics.Rect;
 import android.util.Log;
 
 import com.example.xmatenotes.logic.model.Page.Card;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 import java.io.File;
 import java.io.FileInputStream;

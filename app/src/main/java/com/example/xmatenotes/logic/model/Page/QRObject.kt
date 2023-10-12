@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.model.Page
 
 import android.graphics.Bitmap
 import android.graphics.RectF
-import com.example.xmatenotes.logic.presetable.LogUtil
+import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.util.QRCodeUtil
 import com.google.gson.Gson
 import java.io.Serializable
@@ -111,6 +111,7 @@ data class QRObject(
 ) : Serializable {
 
     companion object {
+        private const val serialVersionUID: Long = 8149896890841871570L
         private const val TAG = "QRObject"
     }
 

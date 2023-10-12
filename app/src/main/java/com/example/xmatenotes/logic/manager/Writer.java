@@ -1,7 +1,6 @@
 package com.example.xmatenotes.logic.manager;
 
 import com.example.xmatenotes.logic.model.Page.IPage;
-import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
@@ -12,7 +11,7 @@ import com.example.xmatenotes.logic.model.instruction.DoubleClick;
 import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.logic.model.instruction.SingleClick;
 import com.example.xmatenotes.logic.model.instruction.SymbolicCommand;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.util.HashMap;
@@ -43,14 +42,19 @@ public class Writer {
     private SingleHandWriting singleHandWritingBuffer = null;
     //普通书写延时任务ID
     public ResponseWorker handWritingWorker = null;
+    public static final String HANDWRITING_WORKER_NAME = "普通书写延时响应任务";
     //单次笔迹延时任务ID
     public ResponseWorker singleHandWritingWorker = null;
 
+    public static final String SINGLEHANDWRITING_WORKER_NAME = "单次笔迹延时响应任务";
+
     //双击间隔计时器
     public ResponseWorker doubleClickPeriodWorker = null;
+    public static final String DOUBLECLICK_PERIOD_WORKER_NAME = "双击间隔计时任务";
 
     //非动作命令延时识别计时器
     public ResponseWorker symbolicDelayWorker = null;
+    public static final String SYMBOLIC_DELAY_WORKER_NAME = "非动作命令延时识别计时任务";
     private long period = Long.MAX_VALUE;
     private MediaDot lastDot;
 
@@ -80,10 +84,15 @@ public class Writer {
      */
     public Writer bindPage(IPage page){
         this.page = page;
-        LogUtil.e(TAG, "Writer绑定Card");
+        if(this.page != null){
+            LogUtil.e(TAG, "bindPage: Writer绑定Page: "+this.page.getCode());
+        } else {
+            LogUtil.e(TAG, "bindPage: Writer绑定Page: "+this.page);
+        }
+
         writeTimer = new WriteTimer();
         new Thread(writeTimer).start();
-        LogUtil.e(TAG, "延时计时器启动");
+        LogUtil.e(TAG, "bindPage: 延时计时器启动");
         return this;
     }
 
@@ -92,8 +101,12 @@ public class Writer {
      * @return
      */
     public Writer unBindPage(){
+        if(this.page != null){
+            LogUtil.e(TAG, "unBindPage: Writer解绑Page: "+this.page.getCode());
+        } else {
+            LogUtil.e(TAG, "unBindPage: Writer解绑Page: "+this.page);
+        }
         this.page = null;
-        LogUtil.e(TAG, "Writer解绑Card");
         if(writeTimer != null){
             writeTimer.stop();
         }
@@ -105,7 +118,7 @@ public class Writer {
             return this.page;
         }
 
-        LogUtil.e(TAG, "未绑定Page!");
+        LogUtil.e(TAG, "getBindedPage: 未绑定Page!");
         return null;
     }
 
@@ -116,7 +129,7 @@ public class Writer {
 
     public Writer setResponser(Responser responser){
         this.responser = responser;
-        LogUtil.e(TAG, "配置响应器");
+        LogUtil.e(TAG, "setResponser: 配置响应器");
         return this;
     }
 
@@ -150,25 +163,25 @@ public class Writer {
         //如果有，移除普通书写延时响应任务
         if(containsResponseWorker(this.handWritingWorker)){
             deleteResponseWorker(this.handWritingWorker);
-            LogUtil.e(TAG, "移除普通书写延时响应任务");
+            LogUtil.e(TAG, "processEachDot: 移除普通书写延时响应任务");
         }
 
         //如果有，移除单次笔迹延时响应任务
         if(containsResponseWorker(this.singleHandWritingWorker)){
             deleteResponseWorker(this.singleHandWritingWorker);
-            LogUtil.e(TAG, "移除单次笔迹延时响应任务");
+            LogUtil.e(TAG, "processEachDot: 移除单次笔迹延时响应任务");
         }
 
         //如果有，移除非动作命令延时识别计时任务
         if(containsResponseWorker(this.symbolicDelayWorker)){
             deleteResponseWorker(this.symbolicDelayWorker);
-            LogUtil.e(TAG, "移除单次笔迹延时响应任务");
+            LogUtil.e(TAG, "processEachDot: 移除单次笔迹延时响应任务");
         }
 
         //如果有，移除双击间隔计时任务
         if(containsResponseWorker(this.doubleClickPeriodWorker)){
             deleteResponseWorker(this.doubleClickPeriodWorker);
-            LogUtil.e(TAG, "移除双击间隔计时任务");
+            LogUtil.e(TAG, "processEachDot: 移除双击间隔计时任务");
         }
 
 //        pageManager.update(mediaDot);
@@ -178,10 +191,10 @@ public class Writer {
         if(singleHandWritingBuffer == null){
             singleHandWritingBuffer = new SingleHandWriting();
 
-            //设置进card
+            //设置进Page
             if(this.page != null){
                 this.page.addSingleHandWriting(singleHandWritingBuffer);
-                LogUtil.e(TAG, "新的单次笔迹开始");
+                LogUtil.e(TAG, "processEachDot: 新的单次笔迹开始: page.addSingleHandWriting(singleHandWritingBuffer)");
             }
         }
 
@@ -194,9 +207,9 @@ public class Writer {
             }
             if(singleHandWritingBuffer != null){
                 singleHandWritingBuffer.addHandWriting(handWritingBuffer);
-                LogUtil.e(TAG,"添加新handWriting");
+                LogUtil.e(TAG,"processEachDot: 添加新handWriting: singleHandWritingBuffer.addHandWriting(handWritingBuffer)");
             }
-            LogUtil.e(TAG, "新的普通书写开始");
+            LogUtil.e(TAG, "processEachDot: 新的普通书写开始");
         }
 
         if(handWritingBuffer.isEmpty() && lastDot != null){
@@ -204,7 +217,7 @@ public class Writer {
         }
 
         handWritingBuffer.addDot(mediaDot);
-        LogUtil.e(TAG, "存入书写缓存："+mediaDot.toString());
+        LogUtil.e(TAG, "processEachDot: 存入书写缓存：handWritingBuffer.addDot(mediaDot): "+mediaDot.toString());
         lastDot = mediaDot;
 
         if(commandDetector != null){
@@ -215,9 +228,9 @@ public class Writer {
             Command com = commandDetector.recognize(handWritingBuffer);
             if(com instanceof SingleClick && com.getHandWriting().isClosed()){
                 //双击间隔计时器
-                LogUtil.e(TAG, "开启双击间隔计时器");
+                LogUtil.e(TAG, "processEachDot: 开启双击间隔计时器");
                 this.updateStartTime();
-                this.doubleClickPeriodWorker = addResponseWorker(DoubleClick.DOUBLE_CLICK_PERIOD, new ResponseTask() {
+                this.doubleClickPeriodWorker = addResponseWorker(DOUBLECLICK_PERIOD_WORKER_NAME, DoubleClick.DOUBLE_CLICK_PERIOD, new ResponseTask() {
                     @Override
                     public void execute() {
                         response(com);
@@ -227,7 +240,7 @@ public class Writer {
                 this.updateStartTime();
                 response(com);
 
-                this.symbolicDelayWorker = addResponseWorker(SymbolicCommand.SYMBOLIC_DELAY, new ResponseTask() {
+                this.symbolicDelayWorker = addResponseWorker(SYMBOLIC_DELAY_WORKER_NAME, SymbolicCommand.SYMBOLIC_DELAY, new ResponseTask() {
                     @Override
                     public void execute() {
                         commandDetector.setSymbolicCommandAvailable(true);
@@ -239,12 +252,12 @@ public class Writer {
                 LogUtil.e(TAG,"processEachDot: 开启非动作命令延时识别计时器");
 
                 //普通书写基本延时响应
-                this.handWritingWorker = addResponseWorker(
+                this.handWritingWorker = addResponseWorker(HANDWRITING_WORKER_NAME,
                         HandWriting.DELAY_PERIOD, new ResponseTask() {
                             @Override
                             public void execute() {
                                 closeHandWriting();
-                                LogUtil.e(TAG, "close handWriting");
+                                LogUtil.e(TAG, "processEachDot: close handWriting");
                                 Command command = com.clone();
                                 command.setName("DelayHandWriting");
                                 response(command);
@@ -253,12 +266,12 @@ public class Writer {
                 );
                 LogUtil.e(TAG,"processEachDot: 开启普通书写延时响应任务");
 
-                this.singleHandWritingWorker = addResponseWorker(
+                this.singleHandWritingWorker = addResponseWorker(SINGLEHANDWRITING_WORKER_NAME,
                         SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD, new ResponseTask() {
                             @Override
                             public void execute() {
                                 closeSingleHandWriting();
-                                LogUtil.e(TAG, "close singleHandWriting");
+                                LogUtil.e(TAG, "processEachDot: close singleHandWriting");
                                 Command command = com.clone();
                                 command.setName("DelaySingleHandWriting");
                                 response(command);
@@ -275,24 +288,24 @@ public class Writer {
     }
 
     public void response(Command command){
-        LogUtil.e(TAG, "识别结束");
+        LogUtil.e(TAG, "response: 识别结束");
         if(command != null){
             if(command instanceof SymbolicCommand){
                 //如果有，移除普通书写延时响应任务
                 if(containsResponseWorker(handWritingWorker)){
                     deleteResponseWorker(handWritingWorker);
-                    LogUtil.e(TAG, "移除普通书写延时响应任务");
+                    LogUtil.e(TAG, "response: 移除普通书写延时响应任务");
                 }
 
                 //如果有，移除单次笔迹延时响应任务
                 if(containsResponseWorker(singleHandWritingWorker)){
                     deleteResponseWorker(singleHandWritingWorker);
-                    LogUtil.e(TAG, "移除单次笔迹延时响应任务");
+                    LogUtil.e(TAG, "response: 移除单次笔迹延时响应任务");
                 }
             }
 
             command.addObserver(responser);
-            LogUtil.e(TAG, "开始响应");
+            LogUtil.e(TAG, "response: 开始响应");
             command.response();
         }
     }
@@ -306,13 +319,13 @@ public class Writer {
         if (lastDot != null) {
             if (mediaDot.type == Dot.DotType.PEN_MOVE) {
                 if (lastDot.type == Dot.DotType.PEN_UP) {
-                    LogUtil.e(TAG, "异常点：PEN_UP后直接出现PEN_MOVE");
+                    LogUtil.e(TAG, "rectifyDot: 异常点：PEN_UP后直接出现PEN_MOVE");
                     mediaDot.type = Dot.DotType.PEN_DOWN;//可能存在PEN_UP后直接PEN_MOVE的情况
                 }
             }
             if (mediaDot.type == Dot.DotType.PEN_UP) {
                 if (lastDot.type == Dot.DotType.PEN_UP) {
-                    LogUtil.e(TAG, "异常点：PEN_UP后接着出现PEN_UP");
+                    LogUtil.e(TAG, "rectifyDot: 异常点：PEN_UP后接着出现PEN_UP");
                     return false;
                 }
             }
@@ -322,14 +335,13 @@ public class Writer {
 
     /**
      * 添加延时任务
+     * @param name 标识名称，可为null
      * @param delay 延时时间
      * @param responseTask 延时任务
      * @return 任务，在需要的时候用来移除指定任务
      */
-    public ResponseWorker addResponseWorker(long delay, ResponseTask responseTask){
-        synchronized (TAG){
-            return this.writeTimer.addResponseWorker(delay, responseTask);
-        }
+    public ResponseWorker addResponseWorker(String name, long delay, ResponseTask responseTask){
+        return this.writeTimer.addResponseWorker(name, delay, responseTask);
     }
 
     /**
@@ -338,9 +350,7 @@ public class Writer {
      * @return
      */
     public ResponseWorker deleteResponseWorker(ResponseWorker worker){
-        synchronized (TAG){
-            return this.writeTimer.deleteResponseWorker(worker);
-        }
+        return this.writeTimer.deleteResponseWorker(worker);
     }
 
     /**
@@ -358,7 +368,7 @@ public class Writer {
     public void closeHandWriting(){
         if(handWritingBuffer != null){
             handWritingBuffer = null;
-            LogUtil.e(TAG, "一次普通书写结束");
+            LogUtil.e(TAG, "closeHandWriting: 一次普通书写结束,handWritingBuffer = null");
         }
     }
 
@@ -369,7 +379,7 @@ public class Writer {
         if(singleHandWritingBuffer != null){
             singleHandWritingBuffer.close();
             singleHandWritingBuffer = null;
-            LogUtil.e(TAG, "单次笔迹结束");
+            LogUtil.e(TAG, "closeSingleHandWriting: 单次笔迹结束,singleHandWritingBuffer = null");
         }
     }
 
@@ -388,6 +398,8 @@ public class Writer {
     public class ResponseWorker implements Comparable<ResponseWorker> {
         private int workerId;
 
+        private String name;
+
         /**
          * 起始时间
          */
@@ -400,9 +412,10 @@ public class Writer {
         private boolean isAvailable;
        private ResponseTask responseTask;
 
-        public ResponseWorker(int workerId, long delay, ResponseTask responseTask) {
+        public ResponseWorker(int workerId, String name, long delay, ResponseTask responseTask) {
             this.startTime = System.currentTimeMillis();
             this.workerId = workerId;
+            this.name = name;
             this.delay = delay;
             this.responseTask = responseTask;
             this.isAvailable = true;
@@ -414,6 +427,14 @@ public class Writer {
 
         public void setWorkerId(int workerId) {
             this.workerId = workerId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public long getStartTime() {
@@ -458,18 +479,19 @@ public class Writer {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ResponseWorker that = (ResponseWorker) o;
-            return workerId == that.workerId && startTime == that.startTime && delay == that.delay && isAvailable == that.isAvailable && Objects.equals(responseTask, that.responseTask);
+            return workerId == that.workerId && startTime == that.startTime && delay == that.delay && isAvailable == that.isAvailable && Objects.equals(name, that.name) && Objects.equals(responseTask, that.responseTask);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(workerId, startTime, delay, isAvailable, responseTask);
+            return Objects.hash(workerId, name, startTime, delay, isAvailable, responseTask);
         }
 
         @Override
         public String toString() {
             return "ResponseWorker{" +
                     "workerId=" + workerId +
+                    ", name='" + name + '\'' +
                     ", startTime=" + startTime +
                     ", delay=" + delay +
                     ", isAvailable=" + isAvailable +
@@ -490,6 +512,8 @@ public class Writer {
      * 先设置startTime，再添加延时任务
      */
     public class WriteTimer implements Runnable {
+
+        private static final String TAG = "WriteTimer";
 
         //控制线程是否终止运行
         private boolean isStart = true;
@@ -524,7 +548,7 @@ public class Writer {
                             this.responseWorkerMap.remove(responseWorker.getWorkerId());
                             responseWorker.getResponseTask().execute();
                             responseWorker.setAvailable(false);
-                            LogUtil.e(TAG, "执行了延时任务："+responseWorker);
+                            LogUtil.e(TAG, "run: 执行了延时任务："+responseWorker);
                         }else {
                             break;
                         }
@@ -541,13 +565,15 @@ public class Writer {
          * @param responseTask 延时任务
          * @return 任务id，可以用来在需要的时候删除指定的任务
          */
-        public ResponseWorker addResponseWorker(long delay, ResponseTask responseTask){
-            int workId = this.priorityQueue.size()+1;
-            ResponseWorker responseWorker = new ResponseWorker(workId, delay, responseTask);
-            this.priorityQueue.offer(responseWorker);
-            this.responseWorkerMap.put(workId, responseWorker);
-            LogUtil.e(TAG, "添加延时任务："+ responseWorker);
-            return responseWorker;
+        public ResponseWorker addResponseWorker(String name, long delay, ResponseTask responseTask){
+            synchronized (TAG){
+                int workId = this.priorityQueue.size()+1;
+                ResponseWorker responseWorker = new ResponseWorker(workId, name, delay, responseTask);
+                this.priorityQueue.offer(responseWorker);
+                this.responseWorkerMap.put(workId, responseWorker);
+                LogUtil.e(TAG, "addResponseWorker: 添加延时任务："+ responseWorker);
+                return responseWorker;
+            }
         }
 
         /**
@@ -556,14 +582,16 @@ public class Writer {
          * @return 目标任务
          */
         public ResponseWorker deleteResponseWorker(ResponseWorker worker){
-            if(worker != null && containsResponseWorker(worker)){
-                ResponseWorker responseWorker = this.responseWorkerMap.remove(worker.getWorkerId());
-                this.priorityQueue.remove(responseWorker);
-                LogUtil.e(TAG, "移除指定延时任务："+responseWorker.toString());
-                responseWorker.setAvailable(false);
-                return responseWorker;
+            synchronized (TAG){
+                if(worker != null && containsResponseWorker(worker)){
+                    ResponseWorker responseWorker = this.responseWorkerMap.remove(worker.getWorkerId());
+                    this.priorityQueue.remove(responseWorker);
+                    LogUtil.e(TAG, "deleteResponseWorker: 移除指定延时任务："+responseWorker);
+                    responseWorker.setAvailable(false);
+                    return responseWorker;
+                }
+                return null;
             }
-            return null;
         }
 
         /**
@@ -582,7 +610,7 @@ public class Writer {
          */
         public void setStartTime(long startTime) {
             this.startTime = startTime;
-            LogUtil.e(TAG, "变更延时计时器起始时间为："+startTime);
+            LogUtil.e(TAG, "setStartTime: 变更延时计时器起始时间为："+startTime);
         }
 
         public long getDelay() {
@@ -602,7 +630,7 @@ public class Writer {
          */
         public void stop(){
             isStart = false;
-            LogUtil.e(TAG, "延时计时器关闭");
+            LogUtil.e(TAG, "stop: 延时计时器关闭");
         }
     }
 

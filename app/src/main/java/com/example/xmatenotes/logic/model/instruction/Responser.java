@@ -3,7 +3,7 @@ package com.example.xmatenotes.logic.model.instruction;
 import android.graphics.Color;
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -62,10 +62,11 @@ public abstract class Responser implements Observer, CommandResponse {
             return false;
         }
 
+        LogUtil.e(TAG, "onActionCommand");
         //动作命令不画出来
         HandWriting handWriting = command.getHandWriting().clone();
-        LogUtil.e(TAG, "onActionCommand");
         command.getHandWriting().clear();//确保动作命令所在的HandWriting是完全独立的，否则可能会误删前面的笔迹
+        LogUtil.e(TAG, "onActionCommand: handWritingBuffer清空: command.getHandWriting().clear()");
         command.setHandWriting(handWriting);
         return true;
     }

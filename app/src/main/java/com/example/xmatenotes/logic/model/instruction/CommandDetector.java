@@ -3,7 +3,7 @@ package com.example.xmatenotes.logic.model.instruction;
 import com.example.xmatenotes.logic.manager.OldPageManager;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 public class CommandDetector {
     private static final String TAG = "CommandDetector";

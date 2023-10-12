@@ -4,7 +4,7 @@ import static com.example.xmatenotes.logic.model.instruction.SingleClick.SINGLE_
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * <p><strong>长压</strong></p>
@@ -39,6 +39,7 @@ public class LongPress extends ActionCommand {
     @Override
     protected boolean recognize(HandWriting handWriting) {
         LogUtil.e(TAG,getTag()+"开始识别");
+        LogUtil.e(TAG, "recognize: handWriting.getStrokesNumber(): "+handWriting.getStrokesNumber());
         if(handWriting.getStrokesNumber() == STROKES_NUMBER){
             return recognize(handWriting.getFirstStroke());
         }
@@ -46,9 +47,11 @@ public class LongPress extends ActionCommand {
     }
 
     public static boolean recognize(Stroke stroke){
+        LogUtil.e(TAG, "recognize(): stroke.getDuration(): "+stroke.getDuration());
         if(stroke.getDuration() > LONG_PRESS_tLIMIT){
             double width = stroke.getBoundRectF().width();
             double height = stroke.getBoundRectF().height();
+            LogUtil.e(TAG, "recognize(): width: "+width+" height: "+height);
             if(width < SINGLE_CLICK_dLIMIT && height < SINGLE_CLICK_dLIMIT){
                 return true;
             }

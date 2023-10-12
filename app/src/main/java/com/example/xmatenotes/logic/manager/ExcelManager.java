@@ -1,9 +1,12 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager;
 
 
 import android.content.Context;
 
 import com.example.xmatenotes.logic.model.handwriting.BaseDot;
+import com.example.xmatenotes.logic.network.BitableManager;
+import com.example.xmatenotes.util.LogUtil;
+import com.example.xmatenotes.util.ExcelUtil;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -25,7 +28,7 @@ public class ExcelManager extends ExcelHelper {
     private static final String SEARCH_START = "Search1";
 
     private static final ExcelManager excelManager = new ExcelManager();
-//    private static final BitableManager bitableManager = BitableManager.getInstance();
+    private static final BitableManager bitableManager = BitableManager.getInstance();
 
     /**
      * 摘要信息表数据
@@ -77,11 +80,11 @@ public class ExcelManager extends ExcelHelper {
         LogUtil.e(TAG, "init(): 解析数据表完毕: "+dataSheetMap);
 
         //初始化BitableManager
-//        Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
-//        if(bitableMap != null){
-//            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("APPtoken"));
-//            LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
-//        }
+        Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
+        if(bitableMap != null){
+            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("APPtoken"));
+            LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
+        }
 
         return this;
     }
@@ -530,10 +533,11 @@ public class ExcelManager extends ExcelHelper {
      */
     private boolean checkLimit(String rowCellTrueValue, LocalData localData) {
 
-        if(rowCellTrueValue.contains(localData.getRole())){
+        if(localData.getRole() == null){
             return true;
-        }
-        else{
+        } else if(rowCellTrueValue.contains(localData.getRole())){
+            return true;
+        } else{
             return false;
         }
     }
@@ -1016,5 +1020,71 @@ public class ExcelManager extends ExcelHelper {
                     '}';
         }
     }
+
+    public class DataSheet {
+        private static final String TAG = "DataSheet";
+
+        private String name;
+
+        /**
+         * 主键所在字段
+         */
+        private String primaryField;
+
+        private Map<String, Map<String, String>> data = new HashMap<>();
+
+        public DataSheet(String name) {
+            this.name = name;
+        }
+
+        /**
+         *
+         * @param primaryKey 主键
+         * @param map 一条数据记录
+         * @return
+         */
+        public DataSheet addMap(String primaryKey, Map<String, String> map){
+            this.data.put(primaryKey, map);
+            return this;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPrimaryField() {
+            return primaryField;
+        }
+
+        public void setPrimaryField(String primaryField) {
+            this.primaryField = primaryField;
+        }
+
+        /**
+         * 通过主键获取目标数据记录
+         * @param primaryKey
+         * @return
+         */
+        public Map<String, String> getMap(String primaryKey){
+            if(this.data.containsKey(primaryKey)){
+                return this.data.get(primaryKey);
+            }
+            LogUtil.e(TAG, "getMap(): 未找到目标主键！");
+            return null;
+        }
+
+        public Map<String, Map<String, String>> getData() {
+            return data;
+        }
+
+        @Override
+        public String toString() {
+            return "DataSheet{" +
+                    "name='" + name + '\'' +
+                    ", data=" + data +
+                    '}';
+        }
+    }
+
 
 }

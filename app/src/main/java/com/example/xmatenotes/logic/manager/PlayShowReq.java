@@ -1,6 +1,6 @@
-package com.example.xmatenotes.logic.presetable;
+package com.example.xmatenotes.logic.manager;
 
-public class PlayReq {
+public class PlayShowReq {
     private static final String TAG = "DataShowReq";
 
     private String roleName;

@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.manager.Storager;
 import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
 
 import java.io.File;

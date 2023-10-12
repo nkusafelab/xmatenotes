@@ -1,9 +1,7 @@
 package com.example.xmatenotes.logic.model.handwriting;
 
-import android.graphics.RectF;
-import android.graphics.Region;
-
 import com.example.xmatenotes.app.XmateNotesApplication;
+import com.example.xmatenotes.util.LogUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -124,6 +122,21 @@ public class SingleHandWriting implements Serializable {
     public SimpleDot getFirstDot(){
         if(handWritings.size() > 0){
             return handWritings.get(0).getFirstDot();
+        }
+        return null;
+    }
+
+    public SimpleDot getLastDot(){
+        if(!handWritings.isEmpty()){
+            return handWritings.get(handWritings.size()-1).getLastDot();
+        }
+        LogUtil.e(TAG, "getLastDot: handWritings为空！");
+        return null;
+    }
+
+    public HandWriting getLastHandWriting(){
+        if(!handWritings.isEmpty()){
+            return handWritings.get(handWritings.size()-1);
         }
         return null;
     }

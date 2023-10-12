@@ -1,4 +1,4 @@
-package com.example.xmatenotes.ui
+package com.example.xmatenotes.ui.ckplayer
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -19,21 +19,21 @@ import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.PenMacManager
 import com.example.xmatenotes.logic.manager.VideoManager
-import com.example.xmatenotes.logic.manager.Writer.ResponseTask
 import com.example.xmatenotes.logic.manager.Writer.ResponseWorker
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
-import com.example.xmatenotes.logic.presetable.LogUtil
+import com.example.xmatenotes.util.LogUtil
+import com.example.xmatenotes.ui.PageActivity
 import com.tqltech.tqlpencomm.bean.Dot
 import java.text.ParseException
 
-open class VideoNoteActivity : SmartpenActivity() {
+abstract class VideoNoteActivity : PageActivity() {
 
     companion object {
         private const val TAG = "VideoNoteActivity"
         private const val SEEK_TIME_DELAY_PERIOD: Long = 120000 //定义视频碎片复现时间长度为2min
-
+        private const val VIDEO_FRAGMENT_WORKER = "视频碎片计时任务"
     }
 
     protected val videoManager = VideoManager.getInstance()
@@ -105,7 +105,7 @@ open class VideoNoteActivity : SmartpenActivity() {
     }
 
     override fun initPage() {
-
+        super.initPage()
     }
 
     fun initWebView(){
@@ -140,7 +140,7 @@ open class VideoNoteActivity : SmartpenActivity() {
                 return true
             }
         }
-        webView!!.loadUrl("http://120.46.205.254/") //在 WebView中加载本地html文件
+        webView!!.loadUrl("http://62.234.184.102/") //在 WebView中加载本地html文件
 
         //对象映射：第一个参数为实例化的自定义内部类对象 第二个参数为提供给JS端调用使用的对象名
         webView!!.addJavascriptInterface(JsOperation(this@VideoNoteActivity), "VideoNoteActivity")
@@ -206,23 +206,23 @@ open class VideoNoteActivity : SmartpenActivity() {
         LogUtil.e(TAG, "seekTime: videoId: $v1")
         setCkTextView("[视频编号： " + v1.videoID + " ][视频名称： " + v1.videoName + " ][笔记人数：" + v1.matesNumber + " ][笔记页数： " + v1.pageNumber + " ]")
         callJS("seekTime(" + seekTime + "," + (videoId - 1) + ")")
-        showToast("双击命令：视频碎片复现跳转至第" + videoId + "个视频的第" + seekTime + "秒")
+        showToast("seekTime: 双击命令：视频碎片复现跳转至第" + videoId + "个视频的第" + seekTime + "秒")
 
         if (this.writer.containsResponseWorker(this.videoFragmentWorker)){
             this.writer.deleteResponseWorker(this.videoFragmentWorker)
         }
 
         //启动视频碎片计时器
-        this.videoFragmentWorker = this.writer.addResponseWorker(SEEK_TIME_DELAY_PERIOD, object : ResponseTask {
-            override fun execute() {
-                if (playOrFalse == 1) {
-                    callJS("pause()")
-                    Log.e(TAG, "videoFragmentWorker finish")
-                }
-                showToast("视频碎片复现完毕")
+        this.videoFragmentWorker = this.writer.addResponseWorker(
+            VIDEO_FRAGMENT_WORKER, SEEK_TIME_DELAY_PERIOD
+        ) {
+            if (playOrFalse == 1) {
+                callJS("pause()")
+                Log.e(TAG, "seekTime: videoFragmentWorker finish")
             }
-        })
-        LogUtil.e(TAG, "视频碎片计时器打开")
+            showToast("视频碎片复现完毕")
+        }
+        LogUtil.e(TAG, "seekTime: 视频碎片计时器打开")
     }
 
     private fun setCkTextView(text: String?) {

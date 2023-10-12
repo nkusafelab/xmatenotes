@@ -2,7 +2,7 @@ package com.example.xmatenotes.logic.manager;
 
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * 坐标转换器

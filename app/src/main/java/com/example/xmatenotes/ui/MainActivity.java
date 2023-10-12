@@ -33,8 +33,11 @@ import com.example.xmatenotes.StatusActivity;
 import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.manager.CoordinateConverter;
 import com.example.xmatenotes.logic.manager.PageManager;
+import com.example.xmatenotes.logic.manager.RoleManager;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.Page.OldXueCheng;
+import com.example.xmatenotes.logic.model.Page.Page;
+import com.example.xmatenotes.logic.model.Role;
 import com.example.xmatenotes.logic.model.handwriting.Dots;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.app.XmateNotesApplication;
@@ -51,8 +54,10 @@ import com.example.xmatenotes.logic.model.instruction.Command;
 //import com.example.xmatenotes.ui.TestActivity;
 import com.example.xmatenotes.logic.model.instruction.Responser;
 import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
+import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity;
+import com.example.xmatenotes.ui.play.PlayActivity;
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.google.common.collect.ArrayListMultimap;
 import com.king.wechat.qrcode.WeChatQRCodeDetector;
 import com.tqltech.tqlpencomm.bean.Dot;
@@ -557,7 +562,7 @@ public class MainActivity extends BaseActivity {
         }
         Log.e(TAG,"MainActivity.onResume()");
 
-        this.writer = Writer.getInstance().init().bindPage(null).setResponser(new Responser() {
+        this.writer = Writer.getInstance().init().bindPage(new Page()).setResponser(new Responser() {
 
             @Override
             public boolean onDoubleClick(Command command) {
@@ -753,7 +758,7 @@ public class MainActivity extends BaseActivity {
                     if(command.getHandWriting().isClosed()){
 
                         //普通书写基本延时响应
-                        writer.handWritingWorker = writer.addResponseWorker(
+                        writer.handWritingWorker = writer.addResponseWorker(Writer.HANDWRITING_WORKER_NAME,
                                 HandWriting.DELAY_PERIOD + 1000, new Writer.ResponseTask() {
                                     @Override
                                     public void execute() {
@@ -817,7 +822,7 @@ public class MainActivity extends BaseActivity {
                                 }
                         );
 
-                        writer.singleHandWritingWorker = writer.addResponseWorker(
+                        writer.singleHandWritingWorker = writer.addResponseWorker(Writer.SINGLEHANDWRITING_WORKER_NAME,
                                 SingleHandWriting.SINGLE_HANDWRITING_DELAY_PERIOD, new Writer.ResponseTask() {
                                     @Override
                                     public void execute() {
@@ -1013,14 +1018,14 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
             case R.id.xuecheng_notes:
-                Intent xuechengIntent = new Intent(this, XueChengActivity.class);
+                Intent xuechengIntent = new Intent(this, XueChengViewActivity.class);
                 Log.e(TAG,"xuecheng");
                 startActivity(xuechengIntent);
                 return true;
-            case R.id.a0_page0:
-                Intent a0PageIntent = new Intent(this, CardshowActivity.class);
-                Log.e(TAG,"a0_page0");
-                startActivity(a0PageIntent);
+            case R.id.play:
+                Intent playIntent = new Intent(this, PlayActivity.class);
+                Log.e(TAG,"play");
+                startActivity(playIntent);
                 return true;
 //            case R.id.line_chart:
 //                Intent lcIntent = new Intent(this, TestActivity.class);
@@ -1469,6 +1474,13 @@ public class MainActivity extends BaseActivity {
                         if(flag){
                             final Intent intent = new Intent(BluetoothLEService.ACTION_GATT_CONNECTED);
                             sendBroadcast(intent);
+                            Role role  = RoleManager.getRole(deviceAddress);
+                            if(role != null){
+                                XmateNotesApplication.role = role;
+                                LogUtil.e(TAG, "onActivityResult: 连接蓝牙mac，更新角色身份信息");
+                            } else {
+                                LogUtil.e(TAG, "onActivityResult: 未有与当前蓝牙mac绑定的角色身份信息");
+                            }
 //                            getSupportActionBar().setTitle("@string/app_name"+"（蓝牙已连接）");
                         }
                         penAddress = deviceAddress;

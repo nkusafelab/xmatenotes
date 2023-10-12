@@ -11,7 +11,7 @@ import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.Page.XueCheng;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.network.BitableManager;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
 
 import java.io.File;
@@ -60,7 +60,7 @@ public class PageManager {
     /**
      * 当前pageID
      */
-    public static long currentPageID;
+    public static long currentPageID = 0L;
 
     /**
      * 简单页码信息对象类，存储页号和对应页码图片资源ID的映射关系，以便在需要时将目标页码对应的相关资源呈现在界面上
@@ -226,6 +226,10 @@ public class PageManager {
     public void update(MediaDot mediaDot){
         savePage((int) mediaDot.pageID);
         currentPageID = (int) mediaDot.pageID;
+    }
+
+    public static long getCurrentPageID() {
+        return currentPageID;
     }
 
     private String getPageAbsolutePath(Page page){

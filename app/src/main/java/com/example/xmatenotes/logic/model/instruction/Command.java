@@ -3,7 +3,7 @@ package com.example.xmatenotes.logic.model.instruction;
 import androidx.annotation.NonNull;
 
 import com.example.xmatenotes.logic.model.handwriting.HandWriting;
-import com.example.xmatenotes.logic.presetable.LogUtil;
+import com.example.xmatenotes.util.LogUtil;
 
 import java.util.Observable;
 

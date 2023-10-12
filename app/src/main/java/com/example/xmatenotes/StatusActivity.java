@@ -166,8 +166,8 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
                 grade1.setText("");
             }
             else{
-                tv_name.setText(RoleManager.getRole().getRole());
-                nowRole = RoleManager.getRole().getRole();
+                tv_name.setText(RoleManager.getRole().getRoleName());
+                nowRole = RoleManager.getRole().getRoleName();
                 student1_name.setText(RoleManager.getRole().getStudentNumber());
                 nowStudent_number = RoleManager.getRole().getStudentNumber();
                 group1_number.setText(RoleManager.getRole().getGroupNumber());
@@ -196,8 +196,8 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
                 grade1.setText("");
             }
             else{
-                nowRole = RoleManager.getRole(XmateNotesApplication.mBTMac).getRole();
-                tv_name.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getRole());
+                nowRole = RoleManager.getRole(XmateNotesApplication.mBTMac).getRoleName();
+                tv_name.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getRoleName());
                 nowStudent_number = RoleManager.getRole(XmateNotesApplication.mBTMac).getStudentNumber();
                 student1_name.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getStudentNumber());//
                 nowGroup_number = RoleManager.getRole(XmateNotesApplication.mBTMac).getGroupNumber();

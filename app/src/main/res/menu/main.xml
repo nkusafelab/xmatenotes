@@ -14,7 +14,7 @@
         android:id="@+id/xuecheng_notes"
         android:title="@string/xuecheng_notes"/>
     <item
-        android:id="@+id/a0_page0"
+        android:id="@+id/play"
         android:title="@string/page_a0"/>
     <item
         android:id="@+id/dot_info_intent"
