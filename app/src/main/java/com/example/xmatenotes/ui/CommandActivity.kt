@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.MenuItem
 import android.widget.Toast
 import com.example.xmatenotes.BluetoothLEService
 import com.example.xmatenotes.R
@@ -96,6 +97,16 @@ abstract class CommandActivity : BaseActivity() {
      * 初始化点阵输入坐标转换器
      */
     protected abstract fun initCoordinateConverter()
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        when (id) {
+            android.R.id.home -> finish()
+
+            else -> {}
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
     protected open fun getResponser(): Responser {
         return CommandResponser()

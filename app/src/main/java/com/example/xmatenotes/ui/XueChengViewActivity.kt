@@ -9,13 +9,16 @@ import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.app.ax.A3
 import com.example.xmatenotes.logic.manager.CoordinateConverter
+import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.model.Page.Page
 import com.example.xmatenotes.logic.model.Page.XueCheng
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
+import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
 import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.ui.ckplayer.XueChengVideoNoteActivity
+import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
 import com.king.wechat.qrcode.WeChatQRCodeDetector
 import org.opencv.OpenCV
@@ -26,7 +29,7 @@ import org.opencv.OpenCV
 class XueChengViewActivity : PageViewActivity() {
 
     companion object {
-        private const val TAG = "XueChengActivity"
+        private const val TAG = "XueChengViewActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,6 +136,23 @@ class XueChengViewActivity : PageViewActivity() {
         override fun onDoubleClick(command: Command?): Boolean {
             if(!super.onDoubleClick(command)){
                 return false
+            }
+
+            command?.handWriting?.firstDot?.let {coordinate->
+                page.getHandWritingByCoordinate(coordinate)?.let {
+                    if(it.hasVideo()){
+                        //跳转视频播放
+                        if(baseActivity !is VideoNoteActivity){
+                            VideoManager.startVideoNoteActivity(this@XueChengViewActivity, it.videoId, it.videoTime)
+                        }
+                    } else {
+                        //跳转笔迹动态复现
+                    }
+                }
+                page.getAudioNameByCoordinate(coordinate)?.let { audioName ->
+                    LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
+                    audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
+                }
             }
 
             showToast("双击命令")

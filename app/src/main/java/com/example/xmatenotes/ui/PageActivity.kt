@@ -34,7 +34,7 @@ import org.opencv.OpenCV
 abstract class PageActivity : CommandActivity() {
 
     companion object {
-        private const val TAG = "SmartpenActivity"
+        private const val TAG = "PageActivity"
     }
 
 //    private var mService: BluetoothLEService? = null //蓝牙服务
@@ -125,7 +125,7 @@ abstract class PageActivity : CommandActivity() {
     }
 
     override fun getResponser(): Responser {
-        return SmartPenResponser()
+        return PageResponser()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -229,7 +229,7 @@ abstract class PageActivity : CommandActivity() {
 
     }
 
-    open inner class SmartPenResponser: Responser() {
+    open inner class PageResponser: Responser() {
         override fun onLongPress(command: Command?):Boolean {
             if(!super.onLongPress(command)){
                 return false
