@@ -10,9 +10,9 @@ class PlayViewModel : ViewModel() {
 
     val playList = ArrayList<Play>()
 
-    fun operateBitable(bitableReq: PlayBitableNetwork.BitableReq){
-        PlayBitableNetwork.operateBitable(bitableReq)
-    }
+//    fun operateBitable(bitableReq: PlayBitableNetwork.BitableReq){
+//        PlayBitableNetwork.operateBitable(bitableReq)
+//    }
 
     fun addPlay(play: Play){
         this.playList.add(play)

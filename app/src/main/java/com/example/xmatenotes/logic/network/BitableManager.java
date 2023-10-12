@@ -403,6 +403,30 @@ public class BitableManager {
     /**
      * 更新记录
      * @param tableId
+     * @param fields
+     * @param filter
+     * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)和onError(String errorMsg)
+     */
+    public void updateAppTableRecord(String tableId, Map<String, Object> fields, String filter, BitableResp callBack){
+        searchAppTableRecords(tableId, null, filter, new BitableResp() {
+            @Override
+            public void onFinish(AppTableRecord[] appTableRecords) {
+                super.onFinish(appTableRecords);
+                for(AppTableRecord appTableRecord : appTableRecords){
+                    updateAppTableRecord(tableId, appTableRecord.getRecordId(), fields, callBack);
+                }
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+                super.onError(errorMsg);
+            }
+        });
+    }
+
+    /**
+     * 更新记录
+     * @param tableId
      * @param recordId
      * @param fields
      * @param callBack 回调接口，至少实现onFinish(AppTableRecord appTableRecord)和onError(String errorMsg)

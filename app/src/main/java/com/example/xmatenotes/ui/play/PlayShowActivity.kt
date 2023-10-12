@@ -35,17 +35,18 @@ class PlayShowActivity : BaseActivity() {
 //        setContentView(R.layout.activity_weather)
         setContentView(binding.root)
         if (viewModel.enumData.isEmpty()) {
+            viewModel.playTitle = intent.getStringExtra("playTitle") ?: ""
 //            viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
         if (viewModel.playTitle.isEmpty()) {
+            viewModel.enumData = intent.getStringExtra("enumData") ?: ""
 //            viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
         if (viewModel.play == null) {
 //            viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
 
-
-
+        refreshPlay()
 
         binding.navBtn.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
@@ -69,10 +70,11 @@ class PlayShowActivity : BaseActivity() {
     }
 
     fun refreshPlay(){
-        viewModel.play?.let { showPlayInfo(it) }
+//        viewModel.play?.let { showPlayInfo(it) }
+        showPlayInfo(null)
     }
 
-    private fun showPlayInfo(play: Play) {
+    private fun showPlayInfo(play: Play?) {
         binding.playTitle.text = viewModel.playTitle
         binding.enumData.text = viewModel.enumData
 //        val realtime = weather.realtime

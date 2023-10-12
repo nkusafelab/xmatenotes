@@ -610,6 +610,8 @@ public class ExcelManager extends ExcelHelper {
                         default:
                     }
                     if(colIndex <= filterLastCol){
+                        //角色需要考虑contains而不是equals
+
                         if(!((String)rowCellTrueValue).equals(filterList.get(colIndex - filterFirstCol))){
                             break;
                         }
@@ -617,6 +619,7 @@ public class ExcelManager extends ExcelHelper {
                         String key = getCellString(headerRow.getCell(colIndex));
                         Object value = rowCellTrueValue;
                         map.put(key, value);
+                        localData.addField(key, value);
                         LogUtil.e(TAG, "getLocalDataInResponseSheet(): 存入键值对: "+key+" : "+value+" 行index： "+rowIndex);
                     }
                 }
@@ -625,6 +628,7 @@ public class ExcelManager extends ExcelHelper {
             if(colIndex > maxColIndex){
                 mapList.add(map);
                 map = new HashMap<>();
+                break;
             }
 
         }
