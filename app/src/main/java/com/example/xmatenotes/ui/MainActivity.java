@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +33,8 @@ import com.example.xmatenotes.SelectDeviceActivity;
 import com.example.xmatenotes.StatusActivity;
 import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.manager.CoordinateConverter;
+import com.example.xmatenotes.logic.manager.ExcelManager;
+import com.example.xmatenotes.logic.manager.LocalData;
 import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.RoleManager;
 import com.example.xmatenotes.logic.manager.Writer;
@@ -437,6 +440,13 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        LocalData localData = new LocalData(1,1,1,"","");
+//        localData.addField("学生显示名", "组长: 岳志鑫-21");
+//        List<String> list = new ArrayList<>();
+//        list.add("第03-04周");
+//        list.add("第06周");
+//        localData.addField("打点时间",list);
+//        ExcelManager.getInstance().new CellCite().parseCell("筛选条件", "#field 学生显示名;#field 打点时间", localData);
 
         //配置坐标转换器,maxX，maxY,maxrealX,maxrealY
         this.coordinateConverter = new CoordinateConverter(A3.ABSCISSA_RANGE, A3.ORDINATE_RANGE, A3.PAPER_WIDTH * 10, A3.PAPER_HEIGHT * 10);

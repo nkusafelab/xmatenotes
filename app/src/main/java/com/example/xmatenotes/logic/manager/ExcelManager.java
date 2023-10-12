@@ -685,7 +685,7 @@ public class ExcelManager extends ExcelHelper {
         public Object value;
 
 
-        private CellCite parseCell(String headerCellName, String cellString, LocalData localData){
+        public CellCite parseCell(String headerCellName, String cellString, LocalData localData){
 
             //解析类型
             if (cellString.charAt(0) == '#'){
@@ -743,7 +743,124 @@ public class ExcelManager extends ExcelHelper {
                         LogUtil.e(TAG,"数据表引用错误");
                     }
                 }
-                else if(cellString.contains("field")){  //字段类型的引用
+                else if(headerCellName.equals("筛选条件")){   //对于筛选条件的处理，直接在此拼接成可处理的字符串
+                    this.type = FIELD_CITE;
+                    if (cellString.contains(";")){  //如果是多个筛选条件，则进行AND拼接
+
+                        String[] split = cellString.split(";");
+
+                        LogUtil.e(TAG,"判断出是多个筛选条件进行写入");
+
+                        String now1 = split[0].replace("#field ","");
+
+                        String now2 = split[1].replace("#field ","");
+
+                        Object obj1 = localData.getFieldValue(now1);
+
+                        Object obj2 = localData.getFieldValue(now2);
+
+                        String result1 = "";
+
+                        String result2 = "";
+
+                        if(obj1 instanceof String){
+                            String real = obj1.toString();
+
+                            result1 = "CurrentValue.[" + now1 + "]=\"" + real + "\"";
+
+                            LogUtil.e(TAG,"拼接出的筛选条件的值为" + result1);
+                        }
+                        else if(obj1 != null){
+
+                            int tag = 1;
+                            for (String s : (List<String>) obj1) {
+                                if(tag == 1){
+                                    result1  = "OR(CurrentValue.[" + now1 +"]=\"" + s + "\")";
+                                    tag = tag +1;
+                                }
+                                else{
+                                    result1 = result1.substring(0,result1.length()-1);
+
+                                    result1 = result1 + "，CurrentValue.[" + now1 + "]=\"" + s + "\")";
+                                }
+                            }
+                        }
+                        if(obj2 instanceof String){
+                            String real = obj2.toString();
+                            String result = "CurrentValue.[" + now1 + "]=\"" + real + "\"";
+                            result2 = result;
+                            LogUtil.e(TAG,"拼接出的筛选条件的值为" + result2);
+                        }
+                        else if(obj2 != null){
+
+                            int tag = 1;
+                            for (String s : (List<String>) obj2) {
+                                if(tag == 1){
+                                    result2  = "OR(CurrentValue.[" + now2 +"]=\"" + s + "\")";
+                                    tag = tag +1;
+                                }
+                                else{
+                                    result2 = result2.substring(0,result2.length()-1);
+
+                                    result2 = result2 + "，CurrentValue.[" + now2 + "]=\"" + s + "\")";
+                                }
+                            }
+                        }
+
+                        String result = "";
+
+                        result = "AND(" + result1 + "，" + result2 + ")";
+
+                        LogUtil.e(TAG,"nihao"+result);
+
+                        this.key = now2;
+
+                        this.value = result;
+                    }
+                    else{
+                        String now = cellString.replace("#field ","");//这样说明是只有一个筛选条件，可能进行or拼接或者不拼接
+
+                        this.key = now;
+
+                        Object obj = localData.getFieldValue(now);
+                        if(obj instanceof String ){
+                            LogUtil.e(TAG,"判断出是长压的单值区域");
+                            String real = obj.toString();
+
+                            String result = "CurrentValue.[" + now + "]=\"" + real + "\"";
+                            this.value = result;
+                            LogUtil.e(TAG,"拼接出的筛选条件的值为" + result);
+                        }
+                        else if(obj != null){  //不是字符串类型就按照列表来处理
+
+                            LogUtil.e(TAG,"判断出是长压的多值区域");
+
+                            int tag = 1;
+                            String result = "";
+                            for (String s : (List<String>) obj) {
+                                if(tag == 1){
+
+                                    result  = "OR(CurrentValue.[" + now +"]=\"" + s + "\")";
+                                    tag = tag +1;
+                                }
+                                else{
+                                    result = result.substring(0,result.length()-1);
+
+                                    result = result + "，CurrentValue.[" + now + "]=\"" + s + "\")";
+                                }
+                            }
+
+                            this.value = result;
+
+
+
+                        }
+                    }
+
+                }
+                //对于处了筛选条件字段下的这些引用，还是直接取值。
+
+                else if(cellString.contains("field") && !cellString.contains(";") && !headerCellName.equals("筛选条件")){  //字段类型的引用
                     this.type = FIELD_CITE;
                     this.key = cellString.replace("#field ","");
                     this.value = localData.getFieldValue(this.key);
