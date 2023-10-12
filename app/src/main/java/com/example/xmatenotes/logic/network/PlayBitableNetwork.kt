@@ -40,6 +40,15 @@ object PlayBitableNetwork {
      * 飞书请求类
      */
     class BitableReq {
+
+        companion object {
+            private const val TAG = "BitableReq"
+            private const val TABLE_ID = "目标tableId"
+            private const val FILTER = "筛选条件"
+            private const val OBJECT_FIELD = "目标字段"
+            private const val DATA = "写入数据"
+            private const val TYPE = "操作类型"
+        }
         /**
          * 目标tableId
          */
@@ -86,6 +95,19 @@ object PlayBitableNetwork {
                 return null
             }
 
+        /**
+         * 从LocalData中解析出BitableReq
+         */
+        fun parseLocalData(localData: LocalData): BitableReq{
+            this.tableId = localData.getFieldValue(TABLE_ID).toString()
+            this.type = localData.getFieldValue(TYPE).toString()
+            this.filter = localData.getFieldValue(FILTER).toString()
+            this.data = localData.getFieldValue(DATA).toString()
+            this.targetFieldList = localData.getFieldValue(OBJECT_FIELD) as List<String>
+
+            return this
+        }
+
         fun setTableId(tableId: String?): BitableReq {
             this.tableId = tableId
             return this
@@ -111,9 +133,9 @@ object PlayBitableNetwork {
             return this
         }
 
-        companion object {
-            private const val TAG = "BitableReq"
-        }
+
+
+
     }
 
 }
