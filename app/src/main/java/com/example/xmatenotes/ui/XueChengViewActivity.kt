@@ -163,7 +163,7 @@ class XueChengViewActivity : PageViewActivity() {
             //绘制笔迹
 //            pageView.post { pageView.drawDot(page.lastDot as MediaDot, page.coordinateCropper) }
             //绘制笔迹
-            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
+            updatePageViewDots()
 
             return super.onCalligraphy(command)
         }
@@ -197,7 +197,7 @@ class XueChengViewActivity : PageViewActivity() {
             }
 
             //绘制笔迹
-            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
+            updatePageViewDots()
 
             return false
         }

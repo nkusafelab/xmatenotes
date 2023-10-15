@@ -26,20 +26,21 @@ import com.tqltech.tqlpencomm.PenCommAgent;
  */
 public class XmateNotesApplication extends Application {
 
-    private final static String TAG = "XApp";
+    private final static String TAG = "XmateNotesApplication";
+
+    public static final String appSharedPreferences = "appSharedPreferences";
+    private static final String DEFAULT_MAC = "00:00:00:00:00:00";
 
     //全局默认无效值
     public static final float DEFAULT_FLOAT = -1f;
     public static final int DEFAULT_INT = -1;
     public static final long DEFAULT_LONG = -1;
 
-    public static final String peopleSharedPreferences = "people";
-
     public static String mPenName = "SmartPen";
     public static String mFirmWare = "B736_OID1-V10000";
     public static String mMCUFirmWare = "MCUF_R01";
     public static String mCustomerID = "0000";
-    public static String mBTMac = "00:00:00:00:00:00";
+    public static String mBTMac = DEFAULT_MAC;
     public static int mBattery = 100;
     public static boolean mCharging = false;
     public static int mUsedMem = 0;
@@ -165,6 +166,10 @@ public class XmateNotesApplication extends Application {
         /*debuggable variable will remain false*/
         }
         return debuggable;
+    }
+
+    public static boolean isMacEffective(){
+        return mBTMac != DEFAULT_MAC;
     }
 }
 

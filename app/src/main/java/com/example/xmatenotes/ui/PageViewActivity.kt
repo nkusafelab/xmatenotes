@@ -2,6 +2,7 @@ package com.example.xmatenotes.ui
 
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
@@ -9,6 +10,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import android.widget.Toast
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
@@ -39,7 +41,7 @@ open class PageViewActivity : PageActivity() {
 
     protected lateinit var pageView: PageView
 
-    protected var bitmap: Bitmap? = null
+    public lateinit var bitmap: Bitmap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,11 +72,13 @@ open class PageViewActivity : PageActivity() {
             }
         }
         super.onResume()
-
-        //绘制笔迹
+//        pageView.setImageResource(R.drawable.x2)
         pageView.post {
-            pageView.drawDots(page.dotList, page.coordinateCropper)
+            pageView.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.x2))
+            LogUtil.e(TAG, "onResume: "+pageView.drawable)
         }
+        //绘制笔迹
+        updatePageViewDots()
 
     }
 
@@ -87,15 +91,18 @@ open class PageViewActivity : PageActivity() {
     }
 
     override fun getLayoutId() : Int{
-        return R.layout.activity_page
+        return R.layout.activity_pageview
     }
 
     override fun initUI(){
+        super.initUI()
 //        supportActionBar?.hide()
         pageView = findViewById(R.id.pageView)
         //测试接口用
-        pageView.setPaintSize(40F)
-        pageView.setPaintTypeface(Typeface.MONOSPACE)
+//        pageView.setPaintSize(40F)
+//        pageView.setPaintTypeface(Typeface.MONOSPACE)
+        Log.e(TAG, "initUI: ")
+//        pageView.setImageResource(R.drawable.x2)
     }
 
 //    protected override fun initPage(){
@@ -144,18 +151,22 @@ open class PageViewActivity : PageActivity() {
 
     override fun switchPage(mediaDot: MediaDot): Boolean {
         if(super.switchPage(mediaDot)){
+            LogUtil.e(TAG, "switchPage: 切换pageId: "+mediaDot.pageID)
 //            pageView.resetPath()
+            bitmap = getViewBitmap(mediaDot.pageID)
+            LogUtil.e(TAG, "switchPage: "+bitmap+" = getViewBitmap( "+mediaDot.pageID+" )")
+            Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
+            pageView.setImageBitmap(bitmap)
             Thread {
                 //时间耗费较大
-                BitmapUtil.recycleBitmap(bitmap)
-                bitmap = getViewBitmap(mediaDot.pageID)
-                LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID)")
-                pageView.post {
-//                    pageView.setImageRes(resources, PageManager.getResIDByPageID(mediaDot.pageID))
-                    pageView.setImageBitmap(bitmap)
-                    LogUtil.e(TAG, "switchPage: pageView.setImageBitmap(bitmap)")
-                    pageView.drawDots(page.dotList, page.coordinateCropper)
-                }
+//                BitmapUtil.recycleBitmap(bitmap)
+//                bitmap = getViewBitmap(mediaDot.pageID)
+//                LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID): "+mediaDot.pageID)
+//                Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
+//                runOnUiThread {
+//                    pageView.setImageBitmap(bitmap)
+//                }
+                updatePageViewDots()
             }.start()
             return true
         }
@@ -179,12 +190,10 @@ open class PageViewActivity : PageActivity() {
             page.realWidth,
             page.realHeight
         )
-        var path = pageView.drawDots(page.dotList, coordinateConverter, page.coordinateCropper)
-        canvas.drawPath(path, paint)
+//        var path = pageView.drawDots(page.dotList, coordinateConverter, page.coordinateCropper)
+//        canvas.drawPath(path, paint)
         return bitmap
     }
-
-
 
     fun processEachDot(simpleDot: SimpleDot) {
 
@@ -192,11 +201,11 @@ open class PageViewActivity : PageActivity() {
     }
 
     override fun processEachDot(mediaDot: MediaDot) {
-        if (currentPageId != -1L){
-            if(currentPageId != mediaDot.pageID){
-                this.pageView.resetPath()
-            }
-        }
+//        if (currentPageId != -1L){
+//            if(currentPageId != mediaDot.pageID){
+//                this.pageView.resetPath()
+//            }
+//        }
         super.processEachDot(mediaDot)
     }
 
@@ -214,6 +223,13 @@ open class PageViewActivity : PageActivity() {
 
     override fun initCoordinateConverter() {
 
+    }
+
+    protected open fun updatePageViewDots(){
+        //绘制笔迹
+//        pageView.post {
+//            pageView.drawDots(page.dotList, page.coordinateCropper)
+//        }
     }
 
     open inner class PageViewResponser: Responser() {
@@ -280,7 +296,7 @@ open class PageViewActivity : PageActivity() {
             }
 
             //绘制笔迹
-            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
+            updatePageViewDots()
 
             return super.onCalligraphy(command)
         }
@@ -314,7 +330,7 @@ open class PageViewActivity : PageActivity() {
             }
 
             //绘制笔迹
-            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
+            updatePageViewDots()
 
             return false
         }

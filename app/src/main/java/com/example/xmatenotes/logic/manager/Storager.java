@@ -1,9 +1,12 @@
 package com.example.xmatenotes.logic.manager;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.Log;
 
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.Page.Card;
 import com.example.xmatenotes.util.LogUtil;
 
@@ -14,6 +17,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class Storager {
 
@@ -142,4 +149,53 @@ public class Storager {
         }
         return true;
     }
+
+    public String getStringBySharedPreferences(String key){
+        SharedPreferences prefs = XmateNotesApplication.context.getSharedPreferences(XmateNotesApplication.appSharedPreferences, Context.MODE_PRIVATE);
+        String value = prefs.getString(key, "");
+        if(!value.isEmpty()){
+            return value;
+        } else {
+            LogUtil.e(TAG, "getStringBySharedPreferences: 未存储目标键值对！");
+            return null;
+        }
+    }
+
+    public void saveStringBySharedPreferences(String key, String value){
+        SharedPreferences.Editor editor = XmateNotesApplication.context.getSharedPreferences(XmateNotesApplication.appSharedPreferences, Context.MODE_PRIVATE).edit();
+        editor.putString(key, value);
+        editor.apply();
+        LogUtil.e(TAG, "saveStringBySharedPreferences: 存入键值对: "+key+":"+value);
+    }
+
+    public void saveBySharedPreferences(String key, Object value){
+        saveBySharedPreferences(new HashMap<String, Object>(){
+            {
+                put(key, value);
+            }
+        });
+    }
+
+    public void saveBySharedPreferences(Map<String, Object> map){
+        SharedPreferences.Editor editor = XmateNotesApplication.context.getSharedPreferences(XmateNotesApplication.appSharedPreferences, Context.MODE_PRIVATE).edit();
+        Set<Map.Entry<String, Object>> set = map.entrySet();
+        Iterator<Map.Entry<String, Object>> it = set.iterator();
+        while (it.hasNext()){
+            Map.Entry<String, Object> node = it.next();
+            if(node.getValue() instanceof String){
+                editor.putString(node.getKey(), (String) node.getValue());
+            } else if(node.getValue() instanceof Boolean){
+                editor.putBoolean(node.getKey(), (Boolean) node.getValue());
+            } else if(node.getValue() instanceof Float){
+                editor.putFloat(node.getKey(), (Float) node.getValue());
+            } else if(node.getValue() instanceof Integer){
+                editor.putInt(node.getKey(), (Integer) node.getValue());
+            } else if(node.getValue() instanceof Long){
+                editor.putLong(node.getKey(), (Long) node.getValue());
+            }
+        }
+        editor.apply();
+    }
+
+
 }

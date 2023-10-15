@@ -1,8 +1,9 @@
 package com.example.xmatenotes.ui.play
 
 import android.os.Bundle
+import android.util.Log
 import com.example.xmatenotes.R
-import com.example.xmatenotes.app.XmateNotesApplication
+import com.example.xmatenotes.logic.dao.RoleDao
 import com.example.xmatenotes.logic.manager.ExcelManager
 import com.example.xmatenotes.logic.manager.LocalData
 import com.example.xmatenotes.logic.manager.PenMacManager
@@ -13,6 +14,7 @@ import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.logic.network.PlayBitableNetwork
 import com.example.xmatenotes.ui.CommandActivity
+import com.example.xmatenotes.util.LogUtil
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord
 
 /**
@@ -43,6 +45,56 @@ open class PlayActivity : CommandActivity() {
         return R.layout.activity_play
     }
 
+    fun response(command: Command?){
+        command?.handWriting?.firstDot?.let { coordinate ->
+            if (coordinate is MediaDot) {
+                Log.e(TAG, "response: coordinate: $coordinate")
+                var mediaDot = coordinate as MediaDot
+                var localData: LocalData? = null
+                if(RoleDao.getRole() != null){
+                    Log.e(TAG, "response: RoleDao.getRole()!!.roleName: "+RoleDao.getRole()!!.roleName)
+                    localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+                        mediaDot.pageID.toInt(), command.name, RoleDao.getRole()!!.roleName)
+                } else {
+                    Log.e(TAG, "response: roleName: null")
+                    localData = excelManager.getLocalData(
+                        mediaDot.intX, mediaDot.intY,
+                        mediaDot.pageID.toInt(), command.name, null
+                    )
+                }
+                localData?.let { localData ->
+                    Log.e(TAG, "response: localData: $localData")
+                    var btR = PlayBitableNetwork.parseLocalData(localData)
+                    btR?.let {
+                        Log.e(TAG, "response: BitableReq: $btR")
+                        PlayBitableNetwork.operateBitable(btR, object :
+                            BitableManager.BitableResp() {
+                            override fun onFinish(appTableRecord: AppTableRecord?) {
+                                super.onFinish(appTableRecord)
+                                Log.e(TAG, "onFinish: 写入数据")
+                            }
+
+                            override fun onFinish(appTableRecords: Array<out AppTableRecord>?) {
+                                super.onFinish(appTableRecords)
+                                Log.e(TAG, "onFinish: 生成活动")
+                                //生成活动
+                                runOnUiThread {
+                                    var play = Play.create(appTableRecords, localData, it)
+                                    fragment.addPlay(play)
+                                }
+
+                            }
+
+                            override fun onError(errorMsg: String?) {
+                                super.onError(errorMsg)
+                            }
+                        })
+                    }
+                }
+            }
+        }
+    }
+
     override fun getResponser(): Responser {
         return PlayResponser()
     }
@@ -53,43 +105,55 @@ open class PlayActivity : CommandActivity() {
                 return false
             }
 
+            LogUtil.e(TAG, "onLongPress: ")
             //查表
-            command?.handWriting?.firstDot?.let {coordinate->
-                if (coordinate is MediaDot){
-                    var mediaDot = coordinate as MediaDot
-                    var localData: LocalData? = null
-                    if(XmateNotesApplication.role != null){
-                        localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
-                            mediaDot.pageID.toInt(), command.name, XmateNotesApplication.role.roleName)
-                    } else {
-                        localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
-                            mediaDot.pageID.toInt(), command.name, null)
-                    }
-                    localData?.let {localData ->
-                        var btR = PlayBitableNetwork.parseLocalData(localData)
-                        btR?.let {
-                            PlayBitableNetwork.operateBitable(btR, object :
-                                BitableManager.BitableResp() {
-                                override fun onFinish(appTableRecord: AppTableRecord?) {
-                                    super.onFinish(appTableRecord)
-                                }
-
-                                override fun onFinish(appTableRecords: Array<out AppTableRecord>?) {
-                                    super.onFinish(appTableRecords)
-                                     //生成活动
-                                    var play = Play.create(appTableRecords, localData, it)
-                                    fragment.addPlay(play)
-                                }
-
-                                override fun onError(errorMsg: String?) {
-                                    super.onError(errorMsg)
-                                }
-                            })
-                        }
-                    }
-                }
-
-            }
+            response(command)
+//            command?.handWriting?.firstDot?.let {coordinate->
+//                Log.e(TAG, "onLongPress: A")
+//                if (coordinate is MediaDot){
+//                    Log.e(TAG, "onLongPress: B")
+//                    var mediaDot = coordinate as MediaDot
+//                    var localData: LocalData? = null
+//                    if(RoleDao.getRole() != null){
+//                        Log.e(TAG, "onLongPress: C")
+//                        localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+//                            mediaDot.pageID.toInt(), command.name, RoleDao.getRole()!!.roleName)
+//                    } else {
+//                        Log.e(TAG, "onLongPress: D")
+//                        localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+//                            mediaDot.pageID.toInt(), command.name, null)
+//                    }
+//                    localData?.let {localData ->
+//                        Log.e(TAG, "onLongPress: E")
+//                        var btR = PlayBitableNetwork.parseLocalData(localData)
+//                        btR?.let {
+//                            Log.e(TAG, "onLongPress: F")
+//                            PlayBitableNetwork.operateBitable(btR, object :
+//                                BitableManager.BitableResp() {
+//                                override fun onFinish(appTableRecord: AppTableRecord?) {
+//                                    super.onFinish(appTableRecord)
+//                                }
+//
+//                                override fun onFinish(appTableRecords: Array<out AppTableRecord>?) {
+//                                    super.onFinish(appTableRecords)
+//                                    Log.e(TAG, "onLongPress: G")
+//                                     //生成活动
+//                                    runOnUiThread {
+//                                        var play = Play.create(appTableRecords, localData, it)
+//                                        fragment.addPlay(play)
+//                                    }
+//
+//                                }
+//
+//                                override fun onError(errorMsg: String?) {
+//                                    super.onError(errorMsg)
+//                                }
+//                            })
+//                        }
+//                    }
+//                }
+//
+//            }
             //请求飞书
 
             //生成活动
@@ -101,22 +165,27 @@ open class PlayActivity : CommandActivity() {
         }
 
         override fun onDui(command: Command?): Boolean {
+            response(command)
             return super.onDui(command)
         }
 
         override fun onBanDui(command: Command?): Boolean {
+            response(command)
             return super.onBanDui(command)
         }
 
         override fun onBanBanDui(command: Command?): Boolean {
+            response(command)
             return super.onBanBanDui(command)
         }
 
         override fun onBanBanBanDui(command: Command?): Boolean {
+            response(command)
             return super.onBanBanBanDui(command)
         }
 
         override fun onCha(command: Command?): Boolean {
+            response(command)
             return super.onCha(command)
         }
     }

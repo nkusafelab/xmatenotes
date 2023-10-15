@@ -3,6 +3,7 @@ package com.example.xmatenotes.ui
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -10,6 +11,7 @@ import androidx.core.app.ActivityOptionsCompat
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.logic.manager.AudioManager
+import com.example.xmatenotes.logic.manager.ExcelManager
 import com.example.xmatenotes.logic.manager.ExcelReader
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.manager.PenMacManager
@@ -20,11 +22,10 @@ import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
-import com.example.xmatenotes.logic.manager.ExcelManager
-import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
+import com.example.xmatenotes.util.LogUtil
 import com.king.wechat.qrcode.WeChatQRCodeDetector
 import org.opencv.OpenCV
 
@@ -35,13 +36,15 @@ abstract class PageActivity : CommandActivity() {
 
     companion object {
         private const val TAG = "PageActivity"
+        const val PAGES_TABLEID = "tblXcJERkVDkcPki"
+        const val APPToken = "bascn3zrUMtRbKme8rlcyRKfDSc"
     }
 
 //    private var mService: BluetoothLEService? = null //蓝牙服务
 //
 //    private var dotsListener: OnDataReceiveListener? = null
 
-    protected var pageManager = PageManager.getInstance()
+    protected var pageManager: PageManager = PageManager.getInstance()
     protected val audioManager = AudioManager.getInstance()
     protected var bitableManager = BitableManager.getInstance()
     protected val penMacManager = PenMacManager.getInstance()
@@ -78,7 +81,7 @@ abstract class PageActivity : CommandActivity() {
         super.onStart()
 
 //        this.writer = Writer.getInstance().setResponser(getResponser())
-        initPage()
+//        initPage()
 //        initCoordinateConverter()
     }
 
@@ -113,12 +116,13 @@ abstract class PageActivity : CommandActivity() {
         return R.layout.activity_smartpen
     }
 
-    override fun initUI(){
-        super.initUI()
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    }
+//    override fun initUI(){
+//        super.initUI()
+////        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//    }
 
     override fun initPage(){
+        bitableManager.initial(null, null, APPToken).initialTable(PAGES_TABLEID)
         var mediaDot = MediaDot()
         mediaDot.pageID = PageManager.currentPageID
         switchPage(mediaDot)
@@ -150,11 +154,13 @@ abstract class PageActivity : CommandActivity() {
             }
 
             R.id.photo_notes -> {
-                LogUtil.e(TAG, "QR_scan")
+                //                QRIntent = new Intent(this, WeChatQRCodeActivity.class);
+//                QRIntent = new Intent(this,ScanActivity.class);
+                Log.e(TAG, "QR_scan")
                 // 初始化OpenCV
-                OpenCV.initAsync(this)
+                OpenCV.initAsync(XmateNotesApplication.context)
                 // 初始化WeChatQRCodeDetector
-                WeChatQRCodeDetector.init(this)
+                WeChatQRCodeDetector.init(XmateNotesApplication.context)
                 startActivityForResult(WeChatQRCodeActivity::class.java)
             }
 
@@ -218,6 +224,7 @@ abstract class PageActivity : CommandActivity() {
                 page.create()
                 pageManager.mkdirs(page)
             }
+            LogUtil.e(TAG, "switchPage: 切换pageId: $currentPageId")
             return true
         } else {
             LogUtil.e(TAG, "switchPage(): 尚未存储该页")

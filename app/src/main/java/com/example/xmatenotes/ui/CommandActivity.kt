@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import com.example.xmatenotes.BluetoothLEService
@@ -138,6 +139,7 @@ abstract class CommandActivity : BaseActivity() {
     }
 
     open inner class CommandResponser: Responser() {
+
         override fun onActionCommand(command: Command?): Boolean {
             return super.onActionCommand(command)
         }
@@ -162,6 +164,8 @@ abstract class CommandActivity : BaseActivity() {
             if(!super.onLongPress(command)){
                 return false
             }
+
+            LogUtil.e(TAG, "onLongPress: ")
             showToast("长压命令")
             return true
         }

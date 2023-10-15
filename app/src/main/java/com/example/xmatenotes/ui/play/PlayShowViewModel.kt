@@ -18,6 +18,9 @@ class PlayShowViewModel : ViewModel() {
         @JvmStatic
         fun getEnumText(play: Play): String{
 
+//            return "你好"
+//            return play.recordData.toString()
+
             val appTableRecords: Array<out AppTableRecord>? = play.recordData
             var MessageFromTA = "\n"
             var A: String

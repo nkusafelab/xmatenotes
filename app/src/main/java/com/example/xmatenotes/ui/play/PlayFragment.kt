@@ -3,6 +3,7 @@ package com.example.xmatenotes.ui.play
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +13,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.xmatenotes.databinding.FragmentPlayBinding
 import com.example.xmatenotes.logic.model.Play
+import com.example.xmatenotes.util.LogUtil
 
 class PlayFragment : Fragment() {
+
+    companion object {
+        private const val TAG = "PlayFragment"
+    }
 
     val viewModel by lazy { ViewModelProvider(this).get(PlayViewModel::class.java) }
 
@@ -44,6 +50,7 @@ class PlayFragment : Fragment() {
         binding.recyclerView.layoutManager = layoutManager
         adapter = PlayAdapter(this, viewModel.playList)
         binding.recyclerView.adapter = adapter
+        binding.recyclerView.visibility = View.VISIBLE
         binding.searchPlayEdit.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
@@ -83,13 +90,16 @@ class PlayFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (viewModel.isPlayListSaved()) {
-            val playList = viewModel.getPlayList()
-            for (play in playList){
-                if((System.currentTimeMillis() - play.initialTime) < play.lifeDuration){
-                    viewModel.addPlay(play)
-                }
-            }
+//        if (viewModel.isPlayListSaved()) {
+        if(viewModel.playList.isNotEmpty()){
+//            val playList = viewModel.getPlayList()
+            val playList = viewModel.playList
+//            viewModel.clearPlayList()
+//            for (play in playList){
+//                if((System.currentTimeMillis() - play.initialTime) < play.lifeDuration){
+//                    viewModel.addPlay(play)
+//                }
+//            }
 
         }
         adapter.notifyDataSetChanged()
@@ -97,14 +107,16 @@ class PlayFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        viewModel.savePlayList()
+//        viewModel.savePlayList()
     }
 
     /**
      * 添加新活动
      */
     fun addPlay(play: Play){
+        LogUtil.e(TAG, "addPlay: 添加新活动")
         viewModel.addPlay(play)
+        Log.e(TAG, "addPlay: viewModel.playList: "+viewModel.playList)
         adapter.notifyDataSetChanged()
     }
 }

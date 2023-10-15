@@ -244,7 +244,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         }
         LogUtil.e(TAG, "初始化cardData完成")
 
-        bitableManager.initial(CLASS_TABLEID)
+        bitableManager.initial(null, null, APPToken).initialTable(CLASS_TABLEID)
 
         showPointsRunnable = CircleRunnable(object  : CircleCallBack {
             override fun stopableCallBack() {
@@ -1807,6 +1807,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         const val REQUEST_CODE_PICK_PHOTO = 0x12
         const val REQUEST_CODE_TAKE_PHOTO = 0x13
         const val CLASS_TABLEID = "tblpAZmppl1siFd7"
+        const val APPToken = "bascn3zrUMtRbKme8rlcyRKfDSc"
         const val PERIOD_OF_DRAWING = 100
     }
 

@@ -201,7 +201,7 @@ public class SelectDeviceActivity extends BaseActivity {
                 XmateNotesApplication.mBTMac = device.getAddress();
                 penMacManager.putMac(XmateNotesApplication.mBTMac);
 //                Toast.makeText(SelectDeviceActivity.this, "选中了device.getAddress(): "+device.getAddress(),Toast.LENGTH_SHORT).show();
-                b.putString(BluetoothDevice.EXTRA_DEVICE, mLeDeviceListAdapter.getDevice(position).getAddress());
+                b.putString(BluetoothDevice.EXTRA_DEVICE, device.getAddress());
 
                 Intent result = new Intent();
                 result.putExtras(b);

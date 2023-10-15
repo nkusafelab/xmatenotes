@@ -42,5 +42,9 @@ data class Role(
     Serializable {
 //    @PrimaryKey(autoGenerate = true)
 //    var id : Long =   0//在上述的所有的元素之后又加入了一个macaddress作为主键
+    companion object {
+
+    private const val serialVersionUID: Long = 9022698440141756879L
+}
 
 }

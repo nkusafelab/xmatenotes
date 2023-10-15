@@ -13,7 +13,7 @@ data class Play(val title: String, val initialTime: Long, val role: String, val 
 
     companion object {
         private const val serialVersionUID: Long = 2017967446111988058L
-        private const val LIFE_DURATION = 7*24*60*60*10L
+        private const val LIFE_DURATION = 7*24*60*60*1000L
 
         @JvmStatic
         fun create(appTableRecords: Array<out AppTableRecord>?, localData: LocalData, bitableReq: PlayBitableNetwork.BitableReq): Play{
@@ -56,4 +56,10 @@ data class Play(val title: String, val initialTime: Long, val role: String, val 
         result = 31 * result + playShowReq.hashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "Play(title='$title', initialTime=$initialTime, role='$role', lifeDuration=$lifeDuration, remainingTime=$remainingTime, recordData=${recordData?.contentToString()}, playShowReq=$playShowReq)"
+    }
+
+
 }

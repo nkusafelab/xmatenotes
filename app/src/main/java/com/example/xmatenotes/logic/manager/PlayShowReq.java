@@ -30,4 +30,14 @@ public class PlayShowReq {
         this.targetFieldList = targetFieldList;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "PlayShowReq{" +
+                "roleName='" + roleName + '\'' +
+                ", targetData='" + targetData + '\'' +
+                ", showDimension='" + showDimension + '\'' +
+                ", targetFieldList=" + targetFieldList +
+                '}';
+    }
 }

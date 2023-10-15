@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
+import com.example.xmatenotes.logic.dao.RoleDao;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -153,7 +154,7 @@ public class PenMacManager {
      * @return
      */
     public String getNameByMac(String mac){
-        SharedPreferences pref = XmateNotesApplication.context.getSharedPreferences(XmateNotesApplication.peopleSharedPreferences, MODE_PRIVATE);
+        SharedPreferences pref = XmateNotesApplication.context.getSharedPreferences(RoleDao.peopleSharedPreferences, MODE_PRIVATE);
         return pref.getString(mac, null);
     }
 

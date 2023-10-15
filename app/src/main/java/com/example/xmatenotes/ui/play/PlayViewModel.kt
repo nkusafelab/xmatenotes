@@ -18,6 +18,10 @@ class PlayViewModel : ViewModel() {
         this.playList.add(play)
     }
 
+    fun clearPlayList(){
+        this.playList.clear()
+    }
+
     fun savePlayList() = Repository.savePlayList(playList)
 
     fun getPlayList() = Repository.getPlayList()

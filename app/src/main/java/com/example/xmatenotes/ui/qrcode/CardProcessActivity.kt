@@ -52,6 +52,11 @@ import kotlin.math.pow
 
 class CardProcessActivity : AppCompatActivity() {
 
+    companion object {
+        const val TAG = "CardProcessActivity"
+        private const val PAGRS_TABLEID = "tblXcJERkVDkcPki"
+    }
+
     private var storager = Storager.getInstance()
     private var cardManager = CardManager.getInstance()
     private val audioManager = AudioManager.getInstance()
@@ -763,11 +768,6 @@ class CardProcessActivity : AppCompatActivity() {
         // 根据角度对点进行排序
         val sortedIndices = angles.indices.sortedBy { angles[it] }
         return sortedIndices.map { quadrilateral.toList()[it] }
-    }
-
-
-    companion object {
-        const val TAG = "CardProcessActivity"
     }
 
     private fun isLineInRegion(line: Line, imageWidth: Int, imageHeight: Int): Boolean {

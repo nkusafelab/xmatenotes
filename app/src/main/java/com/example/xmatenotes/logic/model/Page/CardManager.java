@@ -109,7 +109,7 @@ public class CardManager {
             LogUtil.e(TAG,"Could not rename directory " + newFile.getName());
         }
 
-        bitableManager.initial(Card.cardsTableId);
+        bitableManager.initialTable(Card.cardsTableId);
 
         String dataPath = getDataAbsolutePath(card);
         String picPath = getPicAbsolutePath(card);
@@ -167,7 +167,7 @@ public class CardManager {
         }
 
         //配置BitTableManager
-        bitableManager.initial(Card.cardsTableId);
+        bitableManager.initialTable(Card.cardsTableId);
 
         //查飞书多维表格
         bitableManager.searchAppTableRecords(Card.cardsTableId, null, "CurrentValue.[Code] = " + code, new BitableManager.BitableResp() {

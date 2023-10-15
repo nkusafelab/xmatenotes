@@ -2,6 +2,7 @@ package com.example.xmatenotes.logic.manager;
 
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.xmatenotes.logic.model.handwriting.BaseDot;
 import com.example.xmatenotes.logic.network.BitableManager;
@@ -82,7 +83,7 @@ public class ExcelManager extends ExcelHelper {
         //初始化BitableManager
         Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
         if(bitableMap != null){
-            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("APPtoken"));
+            bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("Apptoken"));
             LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
         }
 
@@ -159,6 +160,7 @@ public class ExcelManager extends ExcelHelper {
      */
     public LocalData getLocalData(int x, int y, int pageId, String command, String roleName){
         LocalData localData = new LocalData(x, y, pageId, command, roleName);
+        LogUtil.e(TAG, "getLocalData: localData: "+localData);
 
         //搜索起始sheet
         switchSheet(this.abstractSheet.getMap(AbstractSheet.SEARCH_SHEET_NAME).get(SEARCH_START));
@@ -224,10 +226,13 @@ public class ExcelManager extends ExcelHelper {
             XSSFRow row = this.curSheet.getRow(rowIndex);
             XSSFCell rowCell;
             while (colIndex <= maxColIndex){
-
+                Log.e(TAG, "getLocalDataInSearchSheet: row: "+row.getRowNum()+" col: "+colIndex);
+                LogUtil.e(TAG, "getLocalDataInSearchSheet: colIndex:"+colIndex+" <= maxColIndex:"+maxColIndex+": "+(colIndex <= maxColIndex));
                 rowCell = row.getCell(colIndex);
+                LogUtil.e(TAG, "getLocalDataInSearchSheet: rowCell: "+rowCell);
                 CellRangeAddress cellRangeAddress = null;
-                if(ExcelUtil.inMerger(this.curSheet, rowCell)){
+                if(rowCell != null && ExcelUtil.inMerger(this.curSheet, rowCell)){
+                    LogUtil.e(TAG, "getLocalDataInSearchSheet: 合并单元格");
                     cellRangeAddress = ExcelUtil.getMergedCellAddress(this.curSheet,rowCell);
                     rowCell = this.curSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
                     if(!isCompareCoordinates && this.abstractSheet.getMap(AbstractSheet.AREA_CODE_IDENTIFICATION).containsKey(getCellString(headerRow.getCell(rowCell.getColumnIndex())))){
@@ -237,6 +242,7 @@ public class ExcelManager extends ExcelHelper {
                         XSSFRow firstRow = this.curSheet.getRow(firstRowNum);
                         XSSFRow lastRow = this.curSheet.getRow(lastRowNum);
                         while (quickColIndex <= maxColIndex){
+                            LogUtil.e(TAG, "getLocalDataInSearchSheet: quickColIndex: "+quickColIndex);
                             String headerCellName = getCellString(headerRow.getCell(quickColIndex));
                             if(LocalData.MIN_PAGEID.equals(headerCellName)){
                                 int pageId = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(firstRow.getCell(quickColIndex)), localData).value));
@@ -244,6 +250,7 @@ public class ExcelManager extends ExcelHelper {
                                 int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(firstRow.getCell(quickColIndex+2)), localData).value));
                                 BaseDot minDot = parseDot(pageId, x, y);
                                 BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                                Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+minDot+"): "+(localDot.compareTo(minDot)));
                                 if(localDot.compareTo(minDot) > 0){
                                     quickColIndex += 3;
                                     continue;
@@ -261,6 +268,7 @@ public class ExcelManager extends ExcelHelper {
 //                                int y = getCellInt(lastRow.getCell(quickColIndex+2));
                                 BaseDot minDot = parseDot(pageId, x, y);
                                 BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                                Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+minDot+"): "+(localDot.compareTo(minDot)));
                                 if(localDot.compareTo(minDot) < 0){
                                     realMaxRowIndex = cellRangeAddress.getLastRow();
                                     localData.addField(getCellString(headerRow.getCell(colIndex)), getCellString(rowCell));
@@ -277,6 +285,7 @@ public class ExcelManager extends ExcelHelper {
 
                                 BaseDot minDot = new BaseDot(x, y);
                                 BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                                Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+minDot+"): "+(localDot.compareTo(minDot)));
                                 if(localDot.compareTo(minDot) > 0){
                                     quickColIndex += 2;
                                     continue;
@@ -291,6 +300,7 @@ public class ExcelManager extends ExcelHelper {
 
                                 BaseDot maxDot = new BaseDot(x, y);
                                 BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                                Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+maxDot+"): "+(localDot.compareTo(maxDot)));
                                 if (localDot.compareTo(maxDot) < 0) {
                                     realMaxRowIndex = cellRangeAddress.getLastRow();
                                     localData.addField(getCellString(headerRow.getCell(colIndex)), getCellString(rowCell));
@@ -388,6 +398,7 @@ public class ExcelManager extends ExcelHelper {
                         int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(row.getCell(rowCell.getColumnIndex()+2)), localData).value));
                         BaseDot minDot = parseDot(pageId, x, y);
                         BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                        Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+minDot+"): "+(localDot.compareTo(minDot)));
                         if(localDot.compareTo(minDot) > 0){
                             localData.setLeft(x);
                             localData.setTop(y);
@@ -404,6 +415,7 @@ public class ExcelManager extends ExcelHelper {
                         int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(row.getCell(rowCell.getColumnIndex()+2)), localData).value));
                         BaseDot maxDot = parseDot(pageId, x, y);
                         BaseDot localDot = parseDot(localData.getPageId(), localData.getX(), localData.getY());
+                        Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+maxDot+"): "+(localDot.compareTo(maxDot)));
                         if(localDot.compareTo(maxDot) < 0){
                             localData.setRight(x);
                             localData.setBottom(y);
@@ -426,6 +438,7 @@ public class ExcelManager extends ExcelHelper {
                         int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value));
                         BaseDot minDot = new BaseDot(x, y);
                         BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                        Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+minDot+"): "+(localDot.compareTo(minDot)));
                         if(localDot.compareTo(minDot) > 0){
                             localData.setLeft(x);
                             localData.setTop(y);
@@ -448,6 +461,7 @@ public class ExcelManager extends ExcelHelper {
                         int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(row.getCell(rowCell.getColumnIndex()+1)), localData).value));
                         BaseDot maxDot = new BaseDot(x, y);
                         BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
+                        Log.e(TAG, "getLocalDataInSearchSheet: "+localDot+".compareTo("+maxDot+"): "+(localDot.compareTo(maxDot)));
                         if(localDot.compareTo(maxDot) < 0){
                             localData.setRight(x);
                             localData.setBottom(y);
@@ -612,7 +626,8 @@ public class ExcelManager extends ExcelHelper {
                     if(colIndex <= filterLastCol){
                         //角色需要考虑contains而不是equals
 
-                        if(!((String)rowCellTrueValue).equals(filterList.get(colIndex - filterFirstCol))){
+                        LogUtil.e(TAG, "getLocalDataInResponseSheet: "+rowCellTrueValue+" == "+filterList.get(colIndex - filterFirstCol));
+                        if(!rowCellTrueValue.equals(filterList.get(colIndex - filterFirstCol))){
                             break;
                         }
                     } else {
@@ -718,7 +733,9 @@ public class ExcelManager extends ExcelHelper {
                         String key2 = parts[2];
                         LogUtil.e(TAG,"解析出的主键2"+key2);
                         this.key = key2;
+                        Log.e(TAG, "parseCell: dataSheetMap.get(dataname): "+dataSheetMap.get(dataname));
                         this.value = dataSheetMap.get(dataname).getMap(key1).get(key2);
+                        Log.e(TAG, "parseCell: this.value: "+this.value);
                     }
                     else if(num ==3){
                         String dataname = parts[0];
@@ -787,7 +804,7 @@ public class ExcelManager extends ExcelHelper {
                         }
                         if(obj2 instanceof String){
                             String real = obj2.toString();
-                            String result = "CurrentValue.[" + now1 + "]=\"" + real + "\"";
+                            String result = "CurrentValue.[" + now2 + "]=\"" + real + "\"";
                             result2 = result;
                             LogUtil.e(TAG,"拼接出的筛选条件的值为" + result2);
                         }

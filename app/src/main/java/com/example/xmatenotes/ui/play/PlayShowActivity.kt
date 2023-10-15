@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -20,6 +21,11 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class PlayShowActivity : BaseActivity() {
+
+    companion object {
+        private const val TAG = "PlayShowActivity"
+    }
+
     val viewModel by lazy { ViewModelProvider(this).get(PlayShowViewModel::class.java) }
 
     private lateinit var binding: ActivityPlayShowBinding
@@ -34,11 +40,11 @@ class PlayShowActivity : BaseActivity() {
         binding = ActivityPlayShowBinding.inflate(layoutInflater)
 //        setContentView(R.layout.activity_weather)
         setContentView(binding.root)
-        if (viewModel.enumData.isEmpty()) {
+        if (viewModel.playTitle.isEmpty()) {
             viewModel.playTitle = intent.getStringExtra("playTitle") ?: ""
 //            viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
-        if (viewModel.playTitle.isEmpty()) {
+        if (viewModel.enumData.isEmpty()) {
             viewModel.enumData = intent.getStringExtra("enumData") ?: ""
 //            viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
@@ -75,6 +81,7 @@ class PlayShowActivity : BaseActivity() {
     }
 
     private fun showPlayInfo(play: Play?) {
+        Log.e(TAG, "showPlayInfo: viewModel.playTitle: "+viewModel.playTitle+" viewModel.enumData: "+viewModel.enumData)
         binding.playTitle.text = viewModel.playTitle
         binding.enumData.text = viewModel.enumData
 //        val realtime = weather.realtime

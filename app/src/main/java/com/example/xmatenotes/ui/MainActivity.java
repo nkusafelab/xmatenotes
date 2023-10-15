@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,11 +31,10 @@ import com.example.xmatenotes.ReplayActivity;
 import com.example.xmatenotes.SelectDeviceActivity;
 import com.example.xmatenotes.StatusActivity;
 import com.example.xmatenotes.app.ax.A3;
+import com.example.xmatenotes.logic.dao.RoleDao;
 import com.example.xmatenotes.logic.manager.CoordinateConverter;
-import com.example.xmatenotes.logic.manager.ExcelManager;
-import com.example.xmatenotes.logic.manager.LocalData;
 import com.example.xmatenotes.logic.manager.PageManager;
-import com.example.xmatenotes.logic.manager.RoleManager;
+import com.example.xmatenotes.logic.manager.RoleAManager;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.Page.OldXueCheng;
 import com.example.xmatenotes.logic.model.Page.Page;
@@ -572,7 +570,7 @@ public class MainActivity extends BaseActivity {
         }
         Log.e(TAG,"MainActivity.onResume()");
 
-        this.writer = Writer.getInstance().init().bindPage(new Page()).setResponser(new Responser() {
+        this.writer = Writer.getInstance().init().setResponser(new Responser() {
 
             @Override
             public boolean onDoubleClick(Command command) {
@@ -1022,13 +1020,13 @@ public class MainActivity extends BaseActivity {
 //                QRIntent = new Intent(this,ScanActivity.class);
                 Log.e(TAG,"QR_scan");
                 // 初始化OpenCV
-                OpenCV.initAsync(this);
+                OpenCV.initAsync(XmateNotesApplication.context);
                 // 初始化WeChatQRCodeDetector
-                WeChatQRCodeDetector.init(this);
+                WeChatQRCodeDetector.init(XmateNotesApplication.context);
                 startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
             case R.id.xuecheng_notes:
-                Intent xuechengIntent = new Intent(this, XueChengViewActivity.class);
+                Intent xuechengIntent = new Intent(this, PageViewActivity.class);
                 Log.e(TAG,"xuecheng");
                 startActivity(xuechengIntent);
                 return true;
@@ -1479,18 +1477,21 @@ public class MainActivity extends BaseActivity {
                 //When the DeviceListActivity return, with the selected device address
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
+                    LogUtil.e(TAG, "onActivityResult: deviceAddress: "+deviceAddress);
+                    LogUtil.e(TAG, "onActivityResult: XmateNotesApplication.mBTMac: "+XmateNotesApplication.mBTMac);
                     try {
                         boolean flag = mService.connect(deviceAddress);
                         if(flag){
                             final Intent intent = new Intent(BluetoothLEService.ACTION_GATT_CONNECTED);
                             sendBroadcast(intent);
-                            Role role  = RoleManager.getRole(deviceAddress);
-                            if(role != null){
-                                XmateNotesApplication.role = role;
-                                LogUtil.e(TAG, "onActivityResult: 连接蓝牙mac，更新角色身份信息");
-                            } else {
-                                LogUtil.e(TAG, "onActivityResult: 未有与当前蓝牙mac绑定的角色身份信息");
-                            }
+                            RoleDao.INSTANCE.getRole();
+//                            Role role  = RoleDao.INSTANCE.getRole();
+//                            if(role != null){
+//                                XmateNotesApplication.role = role;
+//                                LogUtil.e(TAG, "onActivityResult: 连接蓝牙mac，更新角色身份信息");
+//                            } else {
+//                                LogUtil.e(TAG, "onActivityResult: 未有与当前蓝牙mac绑定的角色身份信息");
+//                            }
 //                            getSupportActionBar().setTitle("@string/app_name"+"（蓝牙已连接）");
                         }
                         penAddress = deviceAddress;

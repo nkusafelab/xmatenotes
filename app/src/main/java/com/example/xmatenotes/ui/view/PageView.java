@@ -8,11 +8,15 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +31,7 @@ import com.example.xmatenotes.logic.model.handwriting.Stroke;
 import com.example.xmatenotes.ui.PageViewActivity;
 import com.example.xmatenotes.util.LogUtil;
 import com.example.xmatenotes.util.BitmapUtil;
+import com.google.android.datatransport.cct.internal.LogEvent;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.InputStream;
@@ -77,6 +82,22 @@ public class PageView extends AppCompatImageView {
         if (getContext() instanceof PageViewActivity) {
             this.pageViewActivity = (PageViewActivity) getContext();
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    LogUtil.e(TAG, "init: mBitmap: "+mBitmap);
+                    LogUtil.e(TAG, "init: getDrawable(): "+getDrawable());
+                    LogUtil.e(TAG, "init: pageViewActivity.bitmap:  "+pageViewActivity.bitmap);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }).start();
+
 
     }
 
@@ -102,6 +123,14 @@ public class PageView extends AppCompatImageView {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+//        canvas.drawRect(new Rect(10, 10, 300, 300), mPaint);
+        Log.e(TAG, "onDraw: mBitmap: "+mBitmap);
+        Log.e(TAG, "onDraw: pageViewActivity.bitmap: "+pageViewActivity.bitmap);
+        Log.e(TAG, "onDraw: getDrawable(): "+getDrawable());
+        if (mBitmap != null) {
+            canvas.drawBitmap(mBitmap, mMatrix, mPaint);
+        }
+//        canvas.drawBitmap(pageViewActivity.bitmap, mMatrix, mPaint);
 //        RectF rectF = getIntrinsicRectF();
 
 //        if (this.coordinateConverter == null && this.pageActivity != null) {
@@ -212,15 +241,34 @@ public class PageView extends AppCompatImageView {
     //处理位图的缩放和平移
     @Override
     public void setImageBitmap(Bitmap bm) {
-        super.setImageBitmap(bm);
-        BitmapUtil.recycleBitmap(mBitmap);
+//        setImageDrawable(new BitmapDrawable(pageViewActivity.getResources(), bm));
+        super.setImageBitmap(pageViewActivity.bitmap);
+//        BitmapUtil.recycleBitmap(mBitmap);
+//        mBitmap = bm;
+//        mBitmap = Bitmap.createBitmap(100,100, Bitmap.Config.ARGB_8888);
         mBitmap = bm;
         LogUtil.e(TAG, "setImageBitmap: mBitmap: "+mBitmap);
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true){
+//                    LogUtil.e(TAG, "run: mBitmap: "+mBitmap);
+//                }
+//            }
+//        }).start();
         mCanvas = new Canvas(mBitmap);
-//        calculateMatrix();
+        calculateMatrix();
         RectF rectF = getIntrinsicRectF();
         setCoordinateConverter(this.pageViewActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
+        LogUtil.e(TAG, "setImageBitmap: mBitmap 1: "+mBitmap);
         postInvalidate();
+        LogUtil.e(TAG, "setImageBitmap: mBitmap 2: "+mBitmap);
+        Log.e(TAG, "setImageBitmap: getDrawable(): "+getDrawable());
+    }
+
+    @Override
+    public void setImageDrawable(@Nullable Drawable drawable) {
+        super.setImageDrawable(drawable);
     }
 
     public void setImageRes(Resources res, int resId) {

@@ -225,7 +225,7 @@ public class PageManager {
      */
     public void update(MediaDot mediaDot){
         savePage((int) mediaDot.pageID);
-        currentPageID = (int) mediaDot.pageID;
+        currentPageID = mediaDot.pageID;
     }
 
     public static long getCurrentPageID() {
@@ -309,7 +309,7 @@ public class PageManager {
             LogUtil.e(TAG,"Could not rename directory " + newFile.getName());
         }
 
-        bitableManager.initial(Page.pagesTableId);
+        bitableManager.initialTable(Page.pagesTableId);
 
         String dataPath = getDataAbsolutePath(page);
         String picPath = getPicAbsolutePath(page);
@@ -372,7 +372,7 @@ public class PageManager {
         }
 
         //配置BitTableManager
-        bitableManager.initial(Page.pagesTableId);
+        bitableManager.initialTable(Page.pagesTableId);
 
         //查飞书多维表格
         bitableManager.searchAppTableRecords(Page.pagesTableId, null, "CurrentValue.[Code] = " + code, new BitableManager.BitableResp() {

@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.xmatenotes.R
 import com.example.xmatenotes.logic.model.Play
+import com.example.xmatenotes.util.DateUtil
 
 class PlayAdapter(private val fragment: Fragment, private val playList: List<Play>) : RecyclerView.Adapter<PlayAdapter.ViewHolder>() {
 
@@ -35,8 +36,7 @@ class PlayAdapter(private val fragment: Fragment, private val playList: List<Pla
 //                activity.viewModel.placeName = place.name
                 activity.refreshPlay()
             } else {
-                var bundle = Bundle()
-                bundle
+
                 val intent = Intent(parent.context, PlayShowActivity::class.java).apply {
 //                    putExtra("location_lng", place.location.lng)
 //                    putExtra("location_lat", place.location.lat)
@@ -55,9 +55,9 @@ class PlayAdapter(private val fragment: Fragment, private val playList: List<Pla
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val play = playList[position]
         holder.title.text = play.title
-        holder.author.text = play.role
-        holder.initialTime.text = play.initialTime.toString()
-        holder.remainingTime.text = play.remainingTime.toString()
+        holder.author.text = "创建角色: "+play.role
+        holder.initialTime.text = "创建时间: "+DateUtil.formatTimelong(play.initialTime, "yyyy年MM月dd日-hh时mm分ss秒")
+        holder.remainingTime.text = "剩余时间: "+DateUtil.formatTimelong(play.remainingTime, "dd天hh时mm分ss秒")
 
 //        holder.placeName.text = place.name
 //        holder.placeAddress.text = place.address

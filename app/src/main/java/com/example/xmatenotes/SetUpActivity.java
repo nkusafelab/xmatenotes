@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
+import com.example.xmatenotes.logic.dao.RoleDao;
 
 public class SetUpActivity extends AppCompatActivity {
 
@@ -30,7 +31,7 @@ public class SetUpActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         editText = (EditText) findViewById(R.id.editTextTextPersonName);
-        button = (Button) findViewById(R.id.button2);
+        button = (Button) findViewById(R.id.save);
 
         if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
             Toast.makeText(SetUpActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
@@ -45,12 +46,12 @@ public class SetUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
-                    case R.id.button2:
+                    case R.id.save:
                         if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
                             Toast.makeText(SetUpActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
                         } else {
                             String s = String.valueOf(editText.getText());
-                            SharedPreferences.Editor editor = getSharedPreferences(XmateNotesApplication.peopleSharedPreferences, MODE_PRIVATE).edit();
+                            SharedPreferences.Editor editor = getSharedPreferences(RoleDao.peopleSharedPreferences, MODE_PRIVATE).edit();
                             editor.putString(XmateNotesApplication.mBTMac, s);
                             editor.apply();
                             Toast.makeText(SetUpActivity.this, "已保存", Toast.LENGTH_SHORT).show();

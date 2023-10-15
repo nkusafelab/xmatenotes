@@ -24,9 +24,12 @@ import androidx.appcompat.app.ActionBar;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
 //import com.example.xmatenotes.logic.manager.AppDataBase;
-import com.example.xmatenotes.logic.manager.RoleManager;
+import com.example.xmatenotes.logic.dao.RoleDao;
+import com.example.xmatenotes.logic.manager.RoleAManager;
 //import com.example.xmatenotes.logic.dao.RoleDao;
+import com.example.xmatenotes.logic.model.Role;
 import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.PenCommAgent;
 import com.tqltech.tqlpencomm.bean.PenStatus;
 
@@ -86,15 +89,7 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
 
     private Button button;
 
-
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.status);
-//        RoleDao roleDao = AppDataBase.getDatabase(XmateNotesApplication.context).roleDao();
-
+    private void initUI(){
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle("当前状态");
@@ -148,97 +143,150 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
 
         penStatus = penCommAgent.getPenStatus();
 
-        button = (Button) findViewById(R.id.button2);
+        button = (Button) findViewById(R.id.save);
+    }
 
+    private void clear(){
+        tv_name.setText("");
+        student1_name.setText("");
+        group1_number.setText("");
+        group1_tip.setText("");
+        school1.setText("");
+        class1_number.setText("");
+        grade1.setText("");
+    }
+
+    private void fillRoleUI(Role role){
+        if(role != null){
+            tv_name.setText(role.getRoleName());
+            student1_name.setText(role.getStudentNumber());
+            group1_number.setText(role.getGroupNumber());
+            group1_tip.setText(role.getGroupTip());
+            school1.setText(role.getSchool());
+            class1_number.setText(role.getClassNumber());
+            grade1.setText(role.getGrade());
+        }
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.status);
+//        RoleDao roleDao = AppDataBase.getDatabase(XmateNotesApplication.context).roleDao();
+        initUI();
+        clear();
         //加载各种布局
-
-        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
+        if(!XmateNotesApplication.isMacEffective()){
             Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
-
             tv_address.setText("");
-            if(RoleManager.getRole()==null){
-                tv_name.setText("");
-                student1_name.setText("");
-                group1_number.setText("");
-                group1_tip.setText("");
-                school1.setText("");
-                class1_number.setText("");
-                grade1.setText("");
-            }
-            else{
-                tv_name.setText(RoleManager.getRole().getRoleName());
-                nowRole = RoleManager.getRole().getRoleName();
-                student1_name.setText(RoleManager.getRole().getStudentNumber());
-                nowStudent_number = RoleManager.getRole().getStudentNumber();
-                group1_number.setText(RoleManager.getRole().getGroupNumber());
-                nowGroup_number = RoleManager.getRole().getGroupNumber();
-                group1_tip.setText(RoleManager.getRole().getGroupTip());
-                nowGroup_tip = RoleManager.getRole().getGroupTip();
-                school1.setText(RoleManager.getRole().getSchool());
-                nowSchool = RoleManager.getRole().getSchool();
-                class1_number.setText(RoleManager.getRole().getClassNumber());
-                nowClass = RoleManager.getRole().getClassNumber();
-                grade1.setText(RoleManager.getRole().getGrade());
-                nowGrade = RoleManager.getRole().getGrade();
-            }
+
+        } else {
+            tv_address.setText(XmateNotesApplication.mBTMac.toUpperCase());
+            fillRoleUI(RoleDao.INSTANCE.getRole());
         }
-        else{
 
-            tv_address.setText(penStatus.mPenMac);
+//        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
+//            Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
+//
+//            tv_address.setText("");
+//            if(RoleAManager.getRole()==null){
+//                tv_name.setText("");
+//                student1_name.setText("");
+//                group1_number.setText("");
+//                group1_tip.setText("");
+//                school1.setText("");
+//                class1_number.setText("");
+//                grade1.setText("");
+//            }
+//            else{
+//                tv_name.setText(RoleAManager.getRole().getRoleName());
+//                nowRole = RoleAManager.getRole().getRoleName();
+//                student1_name.setText(RoleAManager.getRole().getStudentNumber());
+//                nowStudent_number = RoleAManager.getRole().getStudentNumber();
+//                group1_number.setText(RoleAManager.getRole().getGroupNumber());
+//                nowGroup_number = RoleAManager.getRole().getGroupNumber();
+//                group1_tip.setText(RoleAManager.getRole().getGroupTip());
+//                nowGroup_tip = RoleAManager.getRole().getGroupTip();
+//                school1.setText(RoleAManager.getRole().getSchool());
+//                nowSchool = RoleAManager.getRole().getSchool();
+//                class1_number.setText(RoleAManager.getRole().getClassNumber());
+//                nowClass = RoleAManager.getRole().getClassNumber();
+//                grade1.setText(RoleAManager.getRole().getGrade());
+//                nowGrade = RoleAManager.getRole().getGrade();
+//            }
+//        }
+//        else{
+//
+//            tv_address.setText(XmateNotesApplication.mBTMac);
+//
+//            if(RoleAManager.getRole(XmateNotesApplication.mBTMac)==null){
+//                tv_name.setText("");
+//                student1_name.setText("");
+//                group1_number.setText("");
+//                group1_tip.setText("");
+//                school1.setText("");
+//                class1_number.setText("");
+//                grade1.setText("");
+//            }
+//            else{
+//                nowRole = RoleAManager.getRole(XmateNotesApplication.mBTMac).getRoleName();
+//                tv_name.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getRoleName());
+//                nowStudent_number = RoleAManager.getRole(XmateNotesApplication.mBTMac).getStudentNumber();
+//                student1_name.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getStudentNumber());//
+//                nowGroup_number = RoleAManager.getRole(XmateNotesApplication.mBTMac).getGroupNumber();
+//                group1_number.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getGroupNumber());
+//                nowGroup_tip = RoleAManager.getRole(XmateNotesApplication.mBTMac).getGroupTip();
+//                group1_tip.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getGroupTip());
+//                nowSchool = RoleAManager.getRole(XmateNotesApplication.mBTMac).getSchool();
+//                school1.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getSchool());
+//                nowClass = RoleAManager.getRole(XmateNotesApplication.mBTMac).getClassNumber();
+//                class1_number.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getClassNumber());
+//                nowGrade = RoleAManager.getRole(XmateNotesApplication.mBTMac).getGrade();
+//                grade1.setText(RoleAManager.getRole(XmateNotesApplication.mBTMac).getGrade());
+//            }
+//
+//        }
 
-            if(RoleManager.getRole(XmateNotesApplication.mBTMac)==null){
-                tv_name.setText("");
-                student1_name.setText("");
-                group1_number.setText("");
-                group1_tip.setText("");
-                school1.setText("");
-                class1_number.setText("");
-                grade1.setText("");
-            }
-            else{
-                nowRole = RoleManager.getRole(XmateNotesApplication.mBTMac).getRoleName();
-                tv_name.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getRoleName());
-                nowStudent_number = RoleManager.getRole(XmateNotesApplication.mBTMac).getStudentNumber();
-                student1_name.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getStudentNumber());//
-                nowGroup_number = RoleManager.getRole(XmateNotesApplication.mBTMac).getGroupNumber();
-                group1_number.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getGroupNumber());
-                nowGroup_tip = RoleManager.getRole(XmateNotesApplication.mBTMac).getGroupTip();
-                group1_tip.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getGroupTip());
-                nowSchool = RoleManager.getRole(XmateNotesApplication.mBTMac).getSchool();
-                school1.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getSchool());
-                nowClass = RoleManager.getRole(XmateNotesApplication.mBTMac).getClassNumber();
-                class1_number.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getClassNumber());
-                nowGrade = RoleManager.getRole(XmateNotesApplication.mBTMac).getGrade();
-                grade1.setText(RoleManager.getRole(XmateNotesApplication.mBTMac).getGrade());
-            }
-
-        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
-                    case R.id.button2:
-                        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
-                            if(nowRole == null || nowStudent_number == null || nowGroup_number ==null || nowGroup_tip == null || nowSchool == null || nowClass == null || nowGrade == null || XmateNotesApplication.mBTMac == null){
-                                Toast.makeText(StatusActivity.this, "绑定未完成", Toast.LENGTH_SHORT).show();
-                            }
-                            else{
-                                Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
-                                XmateNotesApplication.role = RoleManager.createRole(nowRole,nowStudent_number,nowGroup_number,nowGroup_tip,nowSchool,nowClass,nowGrade,XmateNotesApplication.mBTMac);
-                            }
-
+                    case R.id.save:
+                        if(tv_address.getText().length() == 0 || tv_name.getText().length() == 0 || student1_name.getText().length() == 0 || group1_number.getText().length() == 0 || group1_tip.getText().length() == 0 || school1.getText().length() == 0 || class1_number.getText().length() == 0 || grade1.getText().length() == 0 ){
+                            Toast.makeText(StatusActivity.this, "信息未填写完整", Toast.LENGTH_SHORT).show();
                         } else {
-                            if(nowRole == null || nowStudent_number == null || nowGroup_number ==null || nowGroup_tip == null || nowSchool == null || nowClass == null || nowGrade == null || XmateNotesApplication.mBTMac == null){
-                                Toast.makeText(StatusActivity.this, "绑定未完成", Toast.LENGTH_SHORT).show();
-                            }
-                            else{
-                                XmateNotesApplication.role = RoleManager.createRole(nowRole,nowStudent_number,nowGroup_number,nowGroup_tip,nowSchool,nowClass,nowGrade,XmateNotesApplication.mBTMac);
-                                RoleManager.saveRole(XmateNotesApplication.role);
+                            if(XmateNotesApplication.isMacEffective()){
+                                RoleDao.INSTANCE.saveRole(tv_name.getText().toString(), student1_name.getText().toString(), group1_number.getText().toString(), group1_tip.getText().toString(), school1.getText().toString(), class1_number.getText().toString(), grade1.getText().toString(), tv_address.getText().toString());
                                 Toast.makeText(StatusActivity.this, "已保存", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
                             }
-
                         }
+
+//                        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
+//                            if(nowRole == null || nowStudent_number == null || nowGroup_number ==null || nowGroup_tip == null || nowSchool == null || nowClass == null || nowGrade == null || XmateNotesApplication.mBTMac == null){
+//                                Toast.makeText(StatusActivity.this, "绑定未完成", Toast.LENGTH_SHORT).show();
+//                            }
+//                            else{
+//                                Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
+//                                XmateNotesApplication.role = RoleAManager.createRole(nowRole,nowStudent_number,nowGroup_number,nowGroup_tip,nowSchool,nowClass,nowGrade,XmateNotesApplication.mBTMac);
+//
+//                            }
+//
+//                        } else {
+//                            if(nowRole == null || nowStudent_number == null || nowGroup_number ==null || nowGroup_tip == null || nowSchool == null || nowClass == null || nowGrade == null || XmateNotesApplication.mBTMac == null){
+//                                Toast.makeText(StatusActivity.this, "绑定未完成", Toast.LENGTH_SHORT).show();
+//                            }
+//                            else{
+//                                XmateNotesApplication.role = RoleAManager.createRole(nowRole,nowStudent_number,nowGroup_number,nowGroup_tip,nowSchool,nowClass,nowGrade,XmateNotesApplication.mBTMac);
+//                                RoleAManager.saveRole(XmateNotesApplication.role);
+//                                LogUtil.e(TAG, "onClick: RoleManager.getRole(XmateNotesApplication.mBTMac): "+ RoleAManager.getRole(XmateNotesApplication.mBTMac));
+//                                Toast.makeText(StatusActivity.this, "已保存", Toast.LENGTH_SHORT).show();
+//                            }
+//
+//                        }
                         break;
                     default:
                 }

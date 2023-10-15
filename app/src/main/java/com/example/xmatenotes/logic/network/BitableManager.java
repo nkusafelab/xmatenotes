@@ -113,17 +113,23 @@ public class BitableManager {
     /**
      * 初始化
      */
-    public void initial(String appId, String appSecret, String appToken){
-       this.appId = appId;
-       this.appSecret = appSecret;
+    public BitableManager initial(String appId, String appSecret, String appToken){
+        if(appSecret != null){
+            this.appSecret = appSecret;
+        } else if(appId != null){
+            this.appId = appId;
+        }
+
        this.appToken = appToken;
+        LogUtil.e(TAG, "initial: appId: "+appId+" appSecret: "+appSecret+" appToken: "+appToken);
+       this.client = getClient();
+       return this;
     }
 
     /**
      * 初始化
      */
-    public void initial(String tableId){
-        client = getClient();
+    public BitableManager initialTable(String tableId){
         if(!tableId.equals(curTableId)){
             curTableId = tableId;
             getAppTableFields(curTableId, new BitableResp() {
@@ -135,7 +141,7 @@ public class BitableManager {
                 }
             });
         }
-
+        return this;
     }
 
     /**
