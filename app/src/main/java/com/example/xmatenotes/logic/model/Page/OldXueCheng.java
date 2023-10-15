@@ -300,10 +300,10 @@ public class OldXueCheng implements Serializable {
 //        dotMedia.audioID = audioIDS[x][y];
 //        dotMedia.penMac = PenMacManager.getPenMacByID(penIDS[x][y]);
         dotMedia.videoTime = hw.getTime();
-        dotMedia.videoID = hw.getVideoID();
+        dotMedia.videoId = hw.getVideoID();
         dotMedia.audioID = hw.getAudioID();
         dotMedia.penMac = hw.getPenMac();
-        dotMedia.pageID = pageID;
+        dotMedia.pageId = pageID;
         dotMedia.strokesID = hw.getLocalHWsMapID();//携带指向所在的单次笔迹的索引，并不是原有含义
         return dotMedia;
     }

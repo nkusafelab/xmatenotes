@@ -374,7 +374,7 @@ public class AudioManager {
                 mD.setY(-2);
                 mD.timelong = System.currentTimeMillis();
                 mD.type = Dot.DotType.PEN_UP;
-                mD.pageID = OldPageManager.currentPageID;
+                mD.pageId = OldPageManager.currentPageID;
                 mD.audioID = recordAudioNumber;
                 mD.penMac = XmateNotesApplication.mBTMac;
                 oldPageManager.writeDot(mD);

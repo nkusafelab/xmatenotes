@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.MenuItem
@@ -17,18 +18,19 @@ import android.widget.TextView
 import com.example.xmatenotes.DotInfoActivity
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
+import com.example.xmatenotes.logic.dao.RoleDao
 import com.example.xmatenotes.logic.manager.PenMacManager
 import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.manager.Writer.ResponseWorker
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
-import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.ui.PageActivity
+import com.example.xmatenotes.util.LogUtil
 import com.tqltech.tqlpencomm.bean.Dot
 import java.text.ParseException
 
-abstract class VideoNoteActivity : PageActivity() {
+open class VideoNoteActivity : PageActivity() {
 
     companion object {
         private const val TAG = "VideoNoteActivity"
@@ -54,9 +56,10 @@ abstract class VideoNoteActivity : PageActivity() {
 
         initWebView()
 
-        val time = intent.getFloatExtra("time", -1f)
-        val videoID = intent.getIntExtra("videoID", -1)
-        val videoName = intent.getStringExtra("videoName")
+        val time = intent.getFloatExtra("videoTime", -1f)
+        val videoID = intent.getIntExtra("videoId", -1)
+        var videoName = intent.getStringExtra("videoName")
+        videoName = videoManager.getVideoNameByID(videoID)
         videoManager.addVideo(videoID, videoName)
 
 //		currentID = 1;//第一个视频ID是1，不是0
@@ -104,6 +107,10 @@ abstract class VideoNoteActivity : PageActivity() {
         ckTextView = findViewById<View>(R.id.cktextview) as TextView
     }
 
+    override fun initCoordinateConverter() {
+
+    }
+
     override fun initPage() {
         super.initPage()
     }
@@ -143,7 +150,7 @@ abstract class VideoNoteActivity : PageActivity() {
         webView!!.loadUrl("http://62.234.184.102/") //在 WebView中加载本地html文件
 
         //对象映射：第一个参数为实例化的自定义内部类对象 第二个参数为提供给JS端调用使用的对象名
-        webView!!.addJavascriptInterface(JsOperation(this@VideoNoteActivity), "VideoNoteActivity")
+        webView!!.addJavascriptInterface(JsOperation(this@VideoNoteActivity), "CkplayerActivity")
     }
 
     override fun getResponser(): Responser {
@@ -152,8 +159,7 @@ abstract class VideoNoteActivity : PageActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             android.R.id.home -> finish()
             R.id.action_clear -> {
                 //				pageManager.clear();Log.e(TAG,"清除数据");
@@ -193,7 +199,7 @@ abstract class VideoNoteActivity : PageActivity() {
         }
 
         mediaDot.videoTime = timeR
-        mediaDot.videoID = currentId
+        mediaDot.videoId = currentId
         mediaDot.color = MediaDot.DEEP_ORANGE
 
         return mediaDot
@@ -250,7 +256,7 @@ abstract class VideoNoteActivity : PageActivity() {
     }
 
     @SuppressLint("HandlerLeak")
-    var handler: Handler = object : Handler() {
+    var handler: Handler = object : Handler(Looper.getMainLooper()) {
         @SuppressLint("NewApi", "SetTextI18n")
         override fun handleMessage(msg: Message) {
             when (msg.what) {
@@ -301,14 +307,17 @@ abstract class VideoNoteActivity : PageActivity() {
                 return false
             }
 
+
             command?.handWriting?.firstDot?.let {coordinate->
-                page.getHandWritingByCoordinate(coordinate)?.let {
-                    if(it.hasVideo() && (coordinate as MediaDot).penMac.equals(XmateNotesApplication.mBTMac)){
-                        //跳转视频
-                        seekTime(coordinate.videoTime, coordinate.videoID)
+//                LogUtil.e(TAG, "onDoubleClick: coordinate: $coordinate")
+                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot ?: coordinate as MediaDot
+//                LogUtil.e(TAG, "onDoubleClick: mediaDot: $mediaDot")
+                page.getHandWritingByCoordinate(mediaDot)?.let {
+                    if(it.hasVideo() && it.penMac.equals(XmateNotesApplication.mBTMac)){
+                        //跳转视频播放
+                        LogUtil.e(TAG, "onDoubleClick: 跳转视频播放: videoId: "+it.videoId+" videoTime: "+it.videoTime)
+                        seekTime(it.videoTime, it.videoId)
                         return false
-                    } else {
-                        //跳转笔迹动态复现
                     }
                 }
             }
@@ -321,17 +330,18 @@ abstract class VideoNoteActivity : PageActivity() {
             }
 
             if (command != null) {
-                val penID = PenMacManager.getPenIDByMac(XmateNotesApplication.mBTMac)
-                videoManager.getVideoByID(currentId).addMate(penID)
-                videoManager.getVideoByID(currentId).addPage((command.handWriting.firstDot as MediaDot).pageID)
+                val v = videoManager.getVideoByID(currentId)
+                val penID = PenMacManager.getPenIDByMac(command.handWriting.penMac)
+                v?.let {
+                    v.addMate(penID)
+                    v.addPage((command.handWriting.firstDot as MediaDot).pageId)
+                    setCkTextView("[视频编号： " + v.videoID + " ][视频名称： " + v.videoName + " ][笔记人数：" + v.matesNumber + " ][笔记页数： " + v.pageNumber + " ]")
+                }
             }
-            val v1 = videoManager.getVideoByID(currentId)
-            setCkTextView("[视频编号： " + v1.videoID + " ][视频名称： " + v1.videoName + " ][笔记人数：" + v1.matesNumber + " ][笔记页数： " + v1.pageNumber + " ]")
 
             if (playOrFalse == 0) {
                 callJS("play()")
             }
-            //如果正在书写区答题，退出视频笔记
 
             return true
         }
@@ -353,7 +363,7 @@ abstract class VideoNoteActivity : PageActivity() {
                 val v1: VideoManager.Video = videoManager.getVideoByID(currentId)
                 setCkTextView("[视频编号： " + v1.videoID + " ][视频名称： " + v1.videoName + " ][笔记人数：" + v1.matesNumber + " ][笔记页数： " + v1.pageNumber + " ]")
             }
-            Log.e(TAG, "currentID: $currentId")
+            LogUtil.e(TAG, "currentID: $currentId")
         }
 
         @JavascriptInterface //该注解一定要加，从而让Javascript可以访问

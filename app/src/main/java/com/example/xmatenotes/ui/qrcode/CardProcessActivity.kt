@@ -424,7 +424,7 @@ class CardProcessActivity : AppCompatActivity() {
 
     fun processEachDot(simpleDot: SimpleDot){
         val mediaDot = MediaDot(simpleDot)
-        mediaDot.pageID = this.cardData.code.toLong()
+        mediaDot.pageId = this.cardData.code.toLong()
         //如果正在录音，再次长压结束录音
         if (audioRecorder) {
             mediaDot.audioID = Integer.parseInt(cardData.getLastAudioName())

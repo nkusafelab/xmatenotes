@@ -47,7 +47,7 @@ public class LongPress extends ActionCommand {
     }
 
     public static boolean recognize(Stroke stroke){
-        LogUtil.e(TAG, "recognize(): stroke.getDuration(): "+stroke.getDuration());
+        LogUtil.e(TAG, "recognize(): stroke.getDuration(): "+stroke.getDuration()+" ? "+LONG_PRESS_tLIMIT);
         if(stroke.getDuration() > LONG_PRESS_tLIMIT){
             double width = stroke.getBoundRectF().width();
             double height = stroke.getBoundRectF().height();

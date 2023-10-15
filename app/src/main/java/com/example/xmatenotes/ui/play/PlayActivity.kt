@@ -54,12 +54,12 @@ open class PlayActivity : CommandActivity() {
                 if(RoleDao.getRole() != null){
                     Log.e(TAG, "response: RoleDao.getRole()!!.roleName: "+RoleDao.getRole()!!.roleName)
                     localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
-                        mediaDot.pageID.toInt(), command.name, RoleDao.getRole()!!.roleName)
+                        mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
                 } else {
                     Log.e(TAG, "response: roleName: null")
                     localData = excelManager.getLocalData(
                         mediaDot.intX, mediaDot.intY,
-                        mediaDot.pageID.toInt(), command.name, null
+                        mediaDot.pageId.toInt(), command.name, null
                     )
                 }
                 localData?.let { localData ->

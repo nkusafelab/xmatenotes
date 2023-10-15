@@ -8,10 +8,13 @@ import android.widget.Toast
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.app.ax.A3
+import com.example.xmatenotes.logic.dao.RoleDao
 import com.example.xmatenotes.logic.manager.CoordinateConverter
+import com.example.xmatenotes.logic.manager.ExcelManager
 import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.model.Page.Page
 import com.example.xmatenotes.logic.model.Page.XueCheng
+import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
@@ -35,7 +38,11 @@ class XueChengViewActivity : PageViewActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_xue_cheng)
-
+        excelManager.init(this, "A3学程样例·纸分区坐标.xlsx")
+        val dataSheet = excelManager.dataSheetMap["Video"]
+        if(dataSheet != null){
+            VideoManager.getInstance().init(dataSheet)
+        }
     }
 
     override fun initCoordinateConverter() {
@@ -139,20 +146,44 @@ class XueChengViewActivity : PageViewActivity() {
             }
 
             command?.handWriting?.firstDot?.let {coordinate->
-                page.getHandWritingByCoordinate(coordinate)?.let {
-                    if(it.hasVideo()){
-                        //跳转视频播放
-                        if(baseActivity !is VideoNoteActivity){
-                            VideoManager.startVideoNoteActivity(this@XueChengViewActivity, it.videoId, it.videoTime)
+                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot
+                    ?: coordinate as MediaDot
+                page.getHandWritingByCoordinate(mediaDot)?.let {
+                    if(it.penMac.equals(XmateNotesApplication.mBTMac)){
+                        if(it.hasVideo()){
+                            //跳转视频播放
+                            if(baseActivity !is VideoNoteActivity){
+                                LogUtil.e(TAG, "onDoubleClick: 跳转视频播放: videoId: "+it.videoId+" videoTime: "+it.videoTime)
+                                VideoManager.startVideoNoteActivity(this@XueChengViewActivity, XueChengVideoNoteActivity::class.java, it.videoId, it.videoTime)
+                                return false
+                            }
+                        } else {
+                            //跳转笔迹动态复现
+                            page.getAudioNameByCoordinate(mediaDot)?.let { audioName ->
+                                LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
+                                audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
+                            }
+                            return false
                         }
-                    } else {
-                        //跳转笔迹动态复现
                     }
                 }
-                page.getAudioNameByCoordinate(coordinate)?.let { audioName ->
-                    LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
-                    audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
+                //资源卡跳转播放
+                var localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+                    mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
+
+                localData?.let {
+                    if("资源卡" == localData.areaIdentification){
+                        LogUtil.e(TAG, "双击资源卡")
+                        var v = VideoManager.getInstance().getVideoByName(localData.addInformation)
+                        VideoManager.getInstance().addVideo(v.videoID, v.videoName)
+                        LogUtil.e(TAG, "onDoubleClick: 跳转视频播放: videoId: "+v.videoID+" videoTime: "+5.0f)
+                        VideoManager.startVideoNoteActivity(this@XueChengViewActivity, XueChengVideoNoteActivity::class.java, v.videoID, 5.0f)
+                        LogUtil.e(TAG, "视频跳转至videoID: $v.videoID")
+                        LogUtil.e(TAG, "视频跳转至videoName: $v.videoName")
+                        return false
+                    }
                 }
+
             }
 
             showToast("双击命令")

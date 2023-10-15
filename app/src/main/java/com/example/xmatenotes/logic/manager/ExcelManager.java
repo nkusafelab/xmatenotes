@@ -4,6 +4,7 @@ package com.example.xmatenotes.logic.manager;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.xmatenotes.logic.dao.IExcelDao;
 import com.example.xmatenotes.logic.model.handwriting.BaseDot;
 import com.example.xmatenotes.logic.network.BitableManager;
 import com.example.xmatenotes.util.LogUtil;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ExcelManager extends ExcelHelper {
+public class ExcelManager extends ExcelHelper implements IExcelDao {
 
     private static final String TAG = "ExcelManager";
 
@@ -68,21 +69,23 @@ public class ExcelManager extends ExcelHelper {
 
         //解析数据表
         Map<String, String> dataMap = this.abstractSheet.getMap(AbstractSheet.DATA_SHEET_NAME);
-        Set<Map.Entry<String, String>> set = dataMap.entrySet();
-        Iterator<Map.Entry<String, String>> it = set.iterator();
-        this.dataSheetMap.clear();
-        while (it.hasNext()){
-            Map.Entry<String, String> node = it.next();
-            String dataSheetName = node.getValue();
-            DataSheet dataSheet = parseDataSheet(dataSheetName);
-            this.dataSheetMap.put(dataSheet.getName(), dataSheet);
-        }
+        if(!dataMap.isEmpty()){
+            Set<Map.Entry<String, String>> set = dataMap.entrySet();
+            Iterator<Map.Entry<String, String>> it = set.iterator();
+            this.dataSheetMap.clear();
+            while (it.hasNext()){
+                Map.Entry<String, String> node = it.next();
+                String dataSheetName = node.getValue();
+                DataSheet dataSheet = parseDataSheet(dataSheetName);
+                this.dataSheetMap.put(dataSheet.getName(), dataSheet);
+            }
 
-        LogUtil.e(TAG, "init(): 解析数据表完毕: "+dataSheetMap);
+            LogUtil.e(TAG, "init(): 解析数据表完毕: "+dataSheetMap);
+        }
 
         //初始化BitableManager
         Map<String, String> bitableMap = this.abstractSheet.getMap(AbstractSheet.BITABLE_PROPERTY);
-        if(bitableMap != null){
+        if(bitableMap != null && !bitableMap.isEmpty()){
             bitableManager.initial(bitableMap.get("AppId"), bitableMap.get("AppSecret"), bitableMap.get("Apptoken"));
             LogUtil.e(TAG, "init(): 初始化BitableManager完毕");
         }
@@ -147,6 +150,10 @@ public class ExcelManager extends ExcelHelper {
         }
 
         return dataSheet;
+    }
+
+    public Map<String, DataSheet> getDataSheetMap() {
+        return dataSheetMap;
     }
 
     /**
@@ -219,6 +226,7 @@ public class ExcelManager extends ExcelHelper {
         int realMaxRowIndex = Math.min(maxRowIndex, rowEnd);//实时最大行index
 
         int colIndex = minColIndex;//实时列index
+        int resetColIndex = colIndex;//回退列inde
 
         for(int rowIndex = realMinRowIndex; rowIndex <= realMaxRowIndex; ){
 
@@ -236,6 +244,7 @@ public class ExcelManager extends ExcelHelper {
                     cellRangeAddress = ExcelUtil.getMergedCellAddress(this.curSheet,rowCell);
                     rowCell = this.curSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
                     if(!isCompareCoordinates && this.abstractSheet.getMap(AbstractSheet.AREA_CODE_IDENTIFICATION).containsKey(getCellString(headerRow.getCell(rowCell.getColumnIndex())))){
+                        resetColIndex = colIndex;
                         int quickColIndex = colIndex;
                         int firstRowNum = cellRangeAddress.getFirstRow();
                         int lastRowNum = cellRangeAddress.getLastRow();
@@ -280,8 +289,8 @@ public class ExcelManager extends ExcelHelper {
                                 }
                             }
                             if(LocalData.MIN_X.equals(headerCellName)){
-                                int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(lastRow.getCell(quickColIndex)), localData).value));
-                                int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(lastRow.getCell(quickColIndex+1)), localData).value));
+                                int x = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(firstRow.getCell(quickColIndex)), localData).value));
+                                int y = Integer.parseInt(String.valueOf(new CellCite().parseCell(headerCellName,getCellString(firstRow.getCell(quickColIndex+1)), localData).value));
 
                                 BaseDot minDot = new BaseDot(x, y);
                                 BaseDot localDot = new BaseDot(localData.getX(), localData.getY());
@@ -290,7 +299,7 @@ public class ExcelManager extends ExcelHelper {
                                     quickColIndex += 2;
                                     continue;
                                 } else {
-                                    rowIndex++;
+                                    rowIndex = cellRangeAddress.getLastRow()+1;
                                     break;
                                 }
                             }
@@ -405,6 +414,7 @@ public class ExcelManager extends ExcelHelper {
                             colIndex += 3;
                             continue;
                         } else {
+                            colIndex = resetColIndex+1;
                             rowIndex++;
                             break;
                         }
@@ -423,7 +433,7 @@ public class ExcelManager extends ExcelHelper {
                             isCompareCoordinates = true;
                             continue;
                         } else {
-                            colIndex -= 3;
+                            colIndex  = resetColIndex+1;
                             rowIndex++;
                             break;
                         }
@@ -445,6 +455,7 @@ public class ExcelManager extends ExcelHelper {
                             colIndex += 2;
                             continue;
                         } else {
+                            colIndex = resetColIndex+1;
                             rowIndex++;
                             break;
                         }
@@ -469,7 +480,17 @@ public class ExcelManager extends ExcelHelper {
                             isCompareCoordinates = true;
                             continue;
                         } else {
-                            colIndex -= 2;
+                            colIndex = resetColIndex+1;
+                            rowIndex++;
+                            break;
+                        }
+                    }
+                    if(LocalData.PAGEID.equals(headerCellName)){
+                        int pageId = Integer.parseInt(String.valueOf(rowCellTrueValue));
+                        if(pageId == localData.getPageId()){
+                            colIndex++;
+                            continue;
+                        } else {
                             rowIndex++;
                             break;
                         }
@@ -1056,62 +1077,110 @@ public class ExcelManager extends ExcelHelper {
             this.sheetHeader = new SheetHeader().parseSheetHeaderRow(this.abstractSheet);
 
             //获取搜索起点和搜索范围
-            final int firstRowNum = rowNameToIndex(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
-            final int firstColNum = colNameToIndex(this.sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
-            int lastRowNum;
+            int minRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_ROW));
+            int minColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_FIRST_COLUMN));
+            int maxRowIndex = rowNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_ROW));
+            int maxColIndex = colNameToIndex(sheetHeader.get(SheetHeader.EFFECTIVE_LAST_COLUMN));
+            int lastRowIndex;
 
             //实时搜索坐标
+            int realRowIndex;
+            int realColIndex;
             int rowNum;
             int colNum;
             //下一个搜索起点
             int nextRowNum;
+            XSSFRow realRow;
+            XSSFCell realCell;
+            for(realRowIndex = minRowIndex, realColIndex = minColIndex;realRowIndex <= maxRowIndex && realColIndex <= maxColIndex;){
+                realRow = this.abstractSheet.getRow(realRowIndex);
+                realCell = realRow.getCell(realColIndex);
+                lastRowIndex = realRowIndex;
+                CellRangeAddress cellRangeAddress = null;
 
-            XSSFRow firstRow = this.abstractSheet.getRow(firstRowNum);
-
-            XSSFCell cell = firstRow.getCell(firstColNum);
-//            lastRowNum = cell.getRowIndex();
-//            nextRowNum = lastRowNum+1;
-            CellRangeAddress cellRangeAddress = null;
-
-            while (!isEmptyCell(cell)){
-                lastRowNum = cell.getRowIndex();
-                nextRowNum = lastRowNum+1;
-                if(ExcelUtil.inMerger(this.abstractSheet, cell)){
-                    cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
-                    cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
-                    lastRowNum = cellRangeAddress.getLastRow();
-                    nextRowNum = lastRowNum+1;
-                }
-
-                String fieldName = getCellString(cell);
-                LogUtil.e(TAG, "parseAbstractSheet(): 搜索到字段: "+fieldName);
-                Map<String, String> map = getMap(fieldName);
-                if(map != null){
-                    //获取字段键值对搜索起点
-                    rowNum = cell.getRowIndex();
-                    colNum = cell.getColumnIndex()+1;
-
-                    //循环存储键值对，直到键为空或到达该字段最后一行，循环停止；若值为空，存储null
-                    while(rowNum <=lastRowNum && !isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum))){
-
-                        if(!isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum+1))){
-                            map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum+1)));
-                            rowNum = rowNum +1;
-                        }
-                        else{
-                            LogUtil.e(TAG,"键所对应的值为空");
-                            map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),null);
-                            rowNum = rowNum +1;
-                        }
-                        LogUtil.e(TAG,String.valueOf(rowNum));
+                if (realCell != null && !isEmptyCell(realCell)){
+                    if(ExcelUtil.inMerger(this.abstractSheet, realCell)){
+                        cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,realCell);
+                        realCell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+                        lastRowIndex = cellRangeAddress.getLastRow();
                     }
-                    LogUtil.e(TAG,map.toString());
+
+                    String fieldName = getCellString(realCell);
+                    LogUtil.e(TAG, "parseAbstractSheet(): 搜索到字段: "+fieldName);
+                    Map<String, String> map = getMap(fieldName);
+                    if(map != null){
+                        //获取字段键值对搜索起点
+                        realRowIndex = realCell.getRowIndex();
+                        realColIndex = realCell.getColumnIndex()+1;
+                        //循环存储键值对，直到键为空或到达该字段最后一行，循环停止；若值为空，存储null
+                        XSSFCell keyCell;
+                        XSSFCell valueCell;
+                        while(realRowIndex <= lastRowIndex){
+                            keyCell = this.abstractSheet.getRow(realRowIndex).getCell(realColIndex);
+                            if(keyCell != null && !isEmptyCell(keyCell)){
+                                valueCell = this.abstractSheet.getRow(realRowIndex).getCell(realColIndex+1);
+                                if(valueCell != null && !isEmptyCell(valueCell)){
+                                    map.put(getCellString(keyCell),getCellString(valueCell));
+                                    LogUtil.e(TAG, "parseAbstractSheet: 存入键值对: "+getCellString(keyCell)+" : "+getCellString(valueCell));
+                                }
+                            } else {
+                                break;
+                            }
+                            realRowIndex++;
+                        }
+                        LogUtil.e(TAG,"parseAbstractSheet: 获得映射: "+map.toString());
+                    }
+                    realRowIndex = lastRowIndex +1;
+                    realColIndex--;
                 }
-
-                //确定下一字段搜索起点
-                cell = this.abstractSheet.getRow(nextRowNum).getCell(firstColNum);
-
             }
+
+//            XSSFRow firstRow = this.abstractSheet.getRow(realRowIndex);
+//
+//            XSSFCell cell = firstRow.getCell(realColIndex);
+////            lastRowNum = cell.getRowIndex();
+////            nextRowNum = lastRowNum+1;
+//            CellRangeAddress cellRangeAddress = null;
+//
+//            while (!isEmptyCell(cell)){
+//                lastRowIndex = cell.getRowIndex();
+//                nextRowNum = lastRowIndex+1;
+//                if(ExcelUtil.inMerger(this.abstractSheet, cell)){
+//                    cellRangeAddress = ExcelUtil.getMergedCellAddress(this.abstractSheet,cell);
+//                    cell = this.abstractSheet.getRow(cellRangeAddress.getFirstRow()).getCell(cellRangeAddress.getFirstColumn());
+//                    lastRowIndex = cellRangeAddress.getLastRow();
+//                    nextRowNum = lastRowIndex+1;
+//                }
+//
+//                String fieldName = getCellString(cell);
+//                LogUtil.e(TAG, "parseAbstractSheet(): 搜索到字段: "+fieldName);
+//                Map<String, String> map = getMap(fieldName);
+//                if(map != null){
+//                    //获取字段键值对搜索起点
+//                    rowNum = cell.getRowIndex();
+//                    colNum = cell.getColumnIndex()+1;
+//
+//                    //循环存储键值对，直到键为空或到达该字段最后一行，循环停止；若值为空，存储null
+//                    while(rowNum <=lastRowIndex && !isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum))){
+//
+//                        if(!isEmptyCell(this.abstractSheet.getRow(rowNum).getCell(colNum+1))){
+//                            map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum+1)));
+//                            rowNum = rowNum +1;
+//                        }
+//                        else{
+//                            LogUtil.e(TAG,"键所对应的值为空");
+//                            map.put(getCellString(this.abstractSheet.getRow(rowNum).getCell(colNum)),null);
+//                            rowNum = rowNum +1;
+//                        }
+//                        LogUtil.e(TAG,String.valueOf(rowNum));
+//                    }
+//                    LogUtil.e(TAG,map.toString());
+//                }
+//
+//                //确定下一字段搜索起点
+//                cell = this.abstractSheet.getRow(nextRowNum).getCell(firstColNum);
+//
+//            }
 
             return this;
         }
@@ -1200,7 +1269,7 @@ public class ExcelManager extends ExcelHelper {
 
         /**
          * 通过主键获取目标数据记录
-         * @param primaryKey
+         * @param primaryKey 主键
          * @return
          */
         public Map<String, String> getMap(String primaryKey){

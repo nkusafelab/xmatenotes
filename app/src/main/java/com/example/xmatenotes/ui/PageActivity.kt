@@ -23,6 +23,7 @@ import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
+import com.example.xmatenotes.ui.ckplayer.XueChengVideoNoteActivity
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
 import com.example.xmatenotes.util.LogUtil
@@ -69,7 +70,7 @@ abstract class PageActivity : CommandActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(getLayoutId())
+//        setContentView(getLayoutId())
 
 //        val gattServiceIntent = Intent(this, BluetoothLEService::class.java)
 //        val bBind = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE)
@@ -124,7 +125,7 @@ abstract class PageActivity : CommandActivity() {
     override fun initPage(){
         bitableManager.initial(null, null, APPToken).initialTable(PAGES_TABLEID)
         var mediaDot = MediaDot()
-        mediaDot.pageID = PageManager.currentPageID
+        mediaDot.pageId = PageManager.currentPageID
         switchPage(mediaDot)
     }
 
@@ -188,7 +189,7 @@ abstract class PageActivity : CommandActivity() {
 
     override fun processEachDot(mediaDot: MediaDot) {
         if (currentPageId != -1L){
-            if(currentPageId != mediaDot.pageID){
+            if(currentPageId != mediaDot.pageId){
                     switchPage(mediaDot)
                     LogUtil.e(TAG, "processEachDot: 切换PageId: $currentPageId")
             }
@@ -212,9 +213,9 @@ abstract class PageActivity : CommandActivity() {
 //    }
 
     protected open fun switchPage(mediaDot: MediaDot) : Boolean {
-        var pageBuffer = PageManager.getPageByPageID(mediaDot.pageID)
+        var pageBuffer = PageManager.getPageByPageID(mediaDot.pageId)
         if (pageBuffer != null){
-            currentPageId = mediaDot.pageID
+            currentPageId = mediaDot.pageId
             pageManager.update(mediaDot)
             page = pageBuffer
             this.writer.unBindPage()
@@ -269,17 +270,23 @@ abstract class PageActivity : CommandActivity() {
             }
 
             command?.handWriting?.firstDot?.let {coordinate->
-                page.getHandWritingByCoordinate(coordinate)?.let {
-                    if(it.hasVideo()){
-                        //跳转视频播放
-                        if(baseActivity !is VideoNoteActivity){
-                            VideoManager.startVideoNoteActivity(this@PageActivity, it.videoId, it.videoTime)
+                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot ?: coordinate as MediaDot
+                page.getHandWritingByCoordinate(mediaDot)?.let {
+                    if(it.penMac.equals(XmateNotesApplication.mBTMac)){
+                        if(it.hasVideo()){
+                            //跳转视频播放
+                            if(baseActivity !is VideoNoteActivity){
+                                LogUtil.e(TAG, "onDoubleClick: 跳转视频播放: videoId: "+it.videoId+" videoTime: "+it.videoTime)
+                                VideoManager.startVideoNoteActivity(this@PageActivity, VideoNoteActivity::class.java, it.videoId, it.videoTime)
+                            }
+                        } else {
+                            //跳转笔迹动态复现
+
                         }
-                    } else {
-                        //跳转笔迹动态复现
                     }
+
                 }
-                page.getAudioNameByCoordinate(coordinate)?.let { audioName ->
+                page.getAudioNameByCoordinate(mediaDot)?.let { audioName ->
                     LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
                     audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
                 }

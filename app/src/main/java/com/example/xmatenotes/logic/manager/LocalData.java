@@ -29,6 +29,8 @@ public class LocalData {
     public static final String ROW_SEARCH_START = "首行";
     public static final String ROW_SEARCH_END = "尾行";
     public static final String LIMIT = "权限边界";
+    public static final String AREA_IDENTIFICATION = "区域标识";
+    public static final String ADD_INFORMATION = "附加信息";
 
     /**
      * 索引与多维表格交互的数据
@@ -92,6 +94,14 @@ public class LocalData {
 
     public String getCommand(){
         return (String) this.data.get(COMMAND);
+    }
+
+    public String getAreaIdentification(){
+        return (String) this.data.get(AREA_IDENTIFICATION);
+    }
+
+    public String getAddInformation(){
+        return (String) this.data.get(ADD_INFORMATION);
     }
 
     public LocalData addField(String fieldName, Object fieldValue){

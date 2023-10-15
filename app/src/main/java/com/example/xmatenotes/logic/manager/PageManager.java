@@ -224,8 +224,8 @@ public class PageManager {
      * @param mediaDot
      */
     public void update(MediaDot mediaDot){
-        savePage((int) mediaDot.pageID);
-        currentPageID = mediaDot.pageID;
+        savePage((int) mediaDot.pageId);
+        currentPageID = mediaDot.pageId;
     }
 
     public static long getCurrentPageID() {

@@ -61,9 +61,9 @@ abstract class CommandActivity : BaseActivity() {
         super.onResume()
 
         if (BluetoothLEService.isPenConnected) {
-            supportActionBar!!.setTitle(resources.getString(R.string.app_name) + "（蓝牙已连接）")
+            supportActionBar!!.title = resources.getString(R.string.app_name) + "（蓝牙已连接）"
         } else {
-            supportActionBar!!.setTitle(resources.getString(R.string.app_name) + "（蓝牙未连接）")
+            supportActionBar!!.title = resources.getString(R.string.app_name) + "（蓝牙未连接）"
         }
         if (mService != null) {
             mService!!.setOnDataReceiveListener(dotsListener) //添加监听器

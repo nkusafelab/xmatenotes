@@ -304,7 +304,7 @@ public class OldPageManager {
 
                 if (MediaDot.computeDistance(lastMediaDot, d) > OldXueCheng.RECORD_MIN_DISTANCE || isSEMediaDot == true) {
                     //写入内存
-                    OldXueCheng oldXueCheng = oldXueChengList.get(pageIDToArray.get(d.pageID));
+                    OldXueCheng oldXueCheng = oldXueChengList.get(pageIDToArray.get(d.pageId));
                     oldXueCheng.writeDot(d);
 
                     //写入文件
@@ -342,7 +342,7 @@ public class OldPageManager {
             writer = new BufferedWriter(new OutputStreamWriter(out));
             StringBuilder data;
 
-            OldXueCheng oldXueCheng = oldXueChengList.get(pageIDToArray.get(mediaDot.pageID));
+            OldXueCheng oldXueCheng = oldXueChengList.get(pageIDToArray.get(mediaDot.pageId));
             oldXueCheng.writeDot(mediaDot);
 
             //写入文件
@@ -456,7 +456,7 @@ public class OldPageManager {
      * @param mediaDot 待处理MediaDot类型对象
      */
     public void processMediaDot(MediaDot mediaDot){
-        OldXueCheng oldXueCheng = savePage(mediaDot.pageID);//将新页加入页链
+        OldXueCheng oldXueCheng = savePage(mediaDot.pageId);//将新页加入页链
 
         //标志录音结束
         if(mediaDot.getIntX() == -2 && mediaDot.getIntY() == -2){
@@ -521,9 +521,9 @@ public class OldPageManager {
 
         byte penID = penMacManager.putMac(mediaDot.penMac);//存储笔mac
 
-        if(videoManager.contains(mediaDot.videoID)){
-            videoManager.getVideoByID(mediaDot.videoID).addMate(penID);
-            videoManager.getVideoByID(mediaDot.videoID).addPage(mediaDot.pageID);
+        if(videoManager.contains(mediaDot.videoId)){
+            videoManager.getVideoByID(mediaDot.videoId).addMate(penID);
+            videoManager.getVideoByID(mediaDot.videoId).addPage(mediaDot.pageId);
         }
 
         if(mediaDot.type == Dot.DotType.PEN_DOWN){
@@ -583,7 +583,7 @@ public class OldPageManager {
      * @param mediaDot
      */
     public void update(MediaDot mediaDot){
-        savePage(mediaDot.pageID);
-        currentPageID = mediaDot.pageID;
+        savePage(mediaDot.pageId);
+        currentPageID = mediaDot.pageId;
     }
 }

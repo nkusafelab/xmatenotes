@@ -140,9 +140,9 @@ public class DotInfoActivity extends BaseActivity {
 		if(mediaDot.type == Dot.DotType.PEN_DOWN){
 			bufferInit(xD, yD);
 			penID = penMacManager.getPenIDByMac(mediaDot.penMac);
-			page = mediaDot.pageID;
+			page = mediaDot.pageId;
         	time = mediaDot.videoTime;
-			videoID = mediaDot.videoID;
+			videoID = mediaDot.videoId;
     		strokesNumber++;
     		timelong = MediaDot.timelongFormat(mediaDot.timelong);
 		}

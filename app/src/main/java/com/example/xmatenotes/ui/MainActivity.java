@@ -34,11 +34,8 @@ import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.dao.RoleDao;
 import com.example.xmatenotes.logic.manager.CoordinateConverter;
 import com.example.xmatenotes.logic.manager.PageManager;
-import com.example.xmatenotes.logic.manager.RoleAManager;
 import com.example.xmatenotes.logic.manager.Writer;
 import com.example.xmatenotes.logic.model.Page.OldXueCheng;
-import com.example.xmatenotes.logic.model.Page.Page;
-import com.example.xmatenotes.logic.model.Role;
 import com.example.xmatenotes.logic.model.handwriting.Dots;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.app.XmateNotesApplication;
@@ -590,7 +587,7 @@ public class MainActivity extends BaseActivity {
                 SimpleDot simpleDot = command.getHandWriting().getFirstDot();
                 if(simpleDot != null){
                     MediaDot mediaDot = (MediaDot) coordinateConverter.convertOut(simpleDot) ;
-                    int pN = oldPageManager.getPageNumberByPageID(mediaDot.pageID);
+                    int pN = oldPageManager.getPageNumberByPageID(mediaDot.pageId);
                     //long start = System.currentTimeMillis();
                     LocalRect lR = excelReader.getLocalRectByXY(pN, mediaDot.getIntX(), mediaDot.getIntY());
                     //Log.e(TAG,"start - end = "+(System.currentTimeMillis()-start)+" ms");
@@ -599,7 +596,7 @@ public class MainActivity extends BaseActivity {
                         Log.e(TAG,"局域编码: "+lR.getLocalCode());
                     }
 
-                    mediaDot = oldPageManager.getDotMedia(mediaDot.pageID,mediaDot.getIntX(), mediaDot.getIntY());
+                    mediaDot = oldPageManager.getDotMedia(mediaDot.pageId,mediaDot.getIntX(), mediaDot.getIntY());
                     if(mediaDot != null){
                         Log.e(TAG,mediaDot.toString());
 
@@ -608,7 +605,7 @@ public class MainActivity extends BaseActivity {
                                 //跳转至ck
                                 Intent ckIntent = new Intent(MainActivity.this, CkplayerActivity.class);
                                 ckIntent.putExtra("time", mediaDot.videoTime);
-                                ckIntent.putExtra("videoID", mediaDot.videoID);
+                                ckIntent.putExtra("videoID", mediaDot.videoId);
                                 startActivity(ckIntent);
 //                }else if(mediaDot.audioID != 0){
                             }else {
@@ -616,7 +613,7 @@ public class MainActivity extends BaseActivity {
                                 //跳转至笔迹复现页面
                                 Intent rpIntent = new Intent(MainActivity.this, ReplayActivity.class);
 //                    rpIntent.putExtra("audioID",mediaDot.audioID);
-                                rpIntent.putExtra("pageID",mediaDot.pageID);
+                                rpIntent.putExtra("pageID",mediaDot.pageId);
 
                                 Log.e(TAG, "lR != null: "+(lR != null));
                                 if(lR != null){
@@ -703,12 +700,12 @@ public class MainActivity extends BaseActivity {
                 SimpleDot simpleDot = command.getHandWriting().getFirstDot();
                 if(simpleDot != null) {
                     MediaDot mediaDot = (MediaDot) coordinateConverter.convertOut(simpleDot);
-                    int pN = oldPageManager.getPageNumberByPageID(mediaDot.pageID);
+                    int pN = oldPageManager.getPageNumberByPageID(mediaDot.pageId);
                     LocalRect lR = excelReader.getLocalRectByXY(pN, mediaDot.getIntX(), mediaDot.getIntY());
                     if(lR == null){
                         return false;
                     }
-                    mediaDot = oldPageManager.getDotMedia(mediaDot.pageID,mediaDot.getIntX(), mediaDot.getIntY());
+                    mediaDot = oldPageManager.getDotMedia(mediaDot.pageId,mediaDot.getIntX(), mediaDot.getIntY());
                     if(mediaDot == null){
                         if(!pageSurfaceView.isLRInforShow){
                             //呈现局域统计信息
@@ -716,13 +713,13 @@ public class MainActivity extends BaseActivity {
                             int diam = 30, padding = 5;
                             pageSurfaceView.hwNumRect = new Rect(rectMaped.right-padding-diam, rectMaped.top+padding, rectMaped.right-padding, rectMaped.top+padding+diam);
                             Log.e(TAG, "receiveRecognizeResult: hwNumRect: "+pageSurfaceView.hwNumRect);
-                            pageSurfaceView.hwNumber = oldPageManager.getPageByPageID(mediaDot.pageID).getHandWritingsNum(lR.getLocalCode());
+                            pageSurfaceView.hwNumber = oldPageManager.getPageByPageID(mediaDot.pageId).getHandWritingsNum(lR.getLocalCode());
                             Rect rectPeo = new Rect(pageSurfaceView.hwNumRect);
                             rectPeo.left -= diam*2;rectPeo.right -= diam*2;
                             pageSurfaceView.peoNumRect = rectPeo;
                             Log.e(TAG, "receiveRecognizeResult: peoNumRect: "+pageSurfaceView.peoNumRect);
-                            pageSurfaceView.peoNumber = oldPageManager.getPageByPageID(mediaDot.pageID).getPeopleNum(lR.getLocalCode());
-                            pageSurfaceView.pageId = mediaDot.pageID;
+                            pageSurfaceView.peoNumber = oldPageManager.getPageByPageID(mediaDot.pageId).getPeopleNum(lR.getLocalCode());
+                            pageSurfaceView.pageId = mediaDot.pageId;
                             pageSurfaceView.lR = lR;
                             pageSurfaceView.peoOrHW = 0;
 
@@ -737,7 +734,7 @@ public class MainActivity extends BaseActivity {
                         //呈现笔迹详细信息
                         if(!pageSurfaceView.isDdrawLocalHWMap){
                             pageSurfaceView.isDdrawLocalHWMap = true;
-                            OldXueCheng oldXueCheng = XmateNotesApplication.oldPageManager.getPageByPageID(mediaDot.pageID);
+                            OldXueCheng oldXueCheng = XmateNotesApplication.oldPageManager.getPageByPageID(mediaDot.pageId);
                             Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
                             OldXueCheng.LocalHandwritingsMap lhwm = null;
                             for (OldXueCheng.LocalHandwritingsMap lh : oldXueCheng.getLocalHandwritings(lR.getLocalCode())) {
@@ -750,7 +747,7 @@ public class MainActivity extends BaseActivity {
                             pageSurfaceView.drawLocalHWMap(lR, lhwm, edimaDots);
                         }else {
                             pageSurfaceView.isDdrawLocalHWMap = false;
-                            pageSurfaceView.pageId = mediaDot.pageID;
+                            pageSurfaceView.pageId = mediaDot.pageId;
                             pageSurfaceView.drawlR(lR);
                         }
 
@@ -778,7 +775,7 @@ public class MainActivity extends BaseActivity {
                                         SimpleDot simpleDot = command.getHandWriting().getFirstDot();
                                         if(simpleDot != null) {
                                             MediaDot mediaDot = (MediaDot) coordinateConverter.convertOut(simpleDot);
-                                            int pN = oldPageManager.getPageNumberByPageID(mediaDot.pageID);
+                                            int pN = oldPageManager.getPageNumberByPageID(mediaDot.pageId);
                                             LocalRect lR = excelReader.getLocalRectByXY(pN, mediaDot.getIntX(), mediaDot.getIntY());
 
                                             if(lR != null){
@@ -788,7 +785,7 @@ public class MainActivity extends BaseActivity {
                                                 audioRecorder = false;
                                                 audioManager.stopRATimer();
 
-                                                OldXueCheng p = oldPageManager.getPageByPageID(mediaDot.pageID);
+                                                OldXueCheng p = oldPageManager.getPageByPageID(mediaDot.pageId);
                                                 p.addAudio(lR, audioManager.currentRecordAudioName);
                                                 if(lR != null){
                                                     Log.e(TAG,"writeTimerFinished(): lR != null: "+(lR != null));
@@ -1026,7 +1023,7 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
             case R.id.xuecheng_notes:
-                Intent xuechengIntent = new Intent(this, PageViewActivity.class);
+                Intent xuechengIntent = new Intent(this, XueChengViewActivity.class);
                 Log.e(TAG,"xuecheng");
                 startActivity(xuechengIntent);
                 return true;
@@ -1133,7 +1130,7 @@ public class MainActivity extends BaseActivity {
         MediaDot mediaDot = new MediaDot(dot);
         mediaDot.timelong = System.currentTimeMillis();//原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
         mediaDot.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
-        mediaDot.videoID = XmateNotesApplication.DEFAULT_INT;
+        mediaDot.videoId = XmateNotesApplication.DEFAULT_INT;
         mediaDot.audioID = XmateNotesApplication.DEFAULT_INT;
         //如果正在录音，再次长压结束录音
         if(audioRecorder == true){
@@ -1158,7 +1155,7 @@ public class MainActivity extends BaseActivity {
 
         if(curMediaDot.type == Dot.DotType.PEN_DOWN) {
 
-            if (oldPageManager.currentPageID != curMediaDot.pageID) {//是否更换页码
+            if (oldPageManager.currentPageID != curMediaDot.pageId) {//是否更换页码
                 OldXueCheng p = oldPageManager.getPageByPageID(oldPageManager.currentPageID);
                 if (p != null) {
                     int pPN = p.getPageNumber();//上一页号
@@ -1172,7 +1169,7 @@ public class MainActivity extends BaseActivity {
                         }
                     }
                     lastLocalRect = null;
-                    switchPage(curMediaDot.pageID);
+                    switchPage(curMediaDot.pageId);
                 }
             }
         }

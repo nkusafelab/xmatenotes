@@ -2,56 +2,70 @@ package com.example.xmatenotes.ui
 
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
+import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.PageManager
-import com.example.xmatenotes.logic.manager.VideoManager
+import com.example.xmatenotes.logic.manager.Writer
 import com.example.xmatenotes.logic.model.Page.Page
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
-import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
+import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.view.PageView
 import com.example.xmatenotes.util.LogUtil
-import com.example.xmatenotes.util.BitmapUtil
-import kotlin.concurrent.thread
 
 /**
  * 支持屏幕NK-cola的活动
  */
-open class PageViewActivity : PageActivity() {
+open class PageTestActivity : BaseActivity() {
 
     companion object {
-        private const val TAG = "PageViewActivity"
-        private const val PICTRUE_PARSE_WIDTH = 2560
-        private const val PICTRUE_PARSE_HEIGHT = 1600
+        private const val TAG = "PageActivity"
     }
 
+    protected var pageManager = PageManager.getInstance()
+    protected val audioManager = AudioManager.getInstance()
+    private var bitableManager = BitableManager.getInstance()
+    protected lateinit var writer: Writer
     protected lateinit var pageView: PageView
-
-    protected lateinit var bitmap: Bitmap
+    protected lateinit var page: Page
+    protected var bitmap: Bitmap? = null
+    protected var audioRecorder = false //录音开关
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_page_test)
+        pageView = findViewById(R.id.pageView)
+
+        supportActionBar?.hide()
 
         val matrix = Matrix()
         matrix.postRotate(90F) // 顺时针旋转90度
+
+        //测试接口用
+        pageView.setPaintSize(40F)
+        pageView.setPaintTypeface(Typeface.MONOSPACE)
 
     }
 
     override fun onStart() {
         super.onStart()
+
+        this.writer = Writer.getInstance().init().setResponser(getPageResponsor())
+        initPage()
+
     }
 
     override fun onResume() {
@@ -71,71 +85,50 @@ open class PageViewActivity : PageActivity() {
             }
         }
         super.onResume()
-//        pageView.setImageResource(R.drawable.x2)
-//        pageView.post {
-//            pageView.setImageBitmap(BitmapFactory.decodeResource(resources, R.drawable.x2))
-//            LogUtil.e(TAG, "onResume: "+pageView.drawable)
-//        }
+
         //绘制笔迹
-        updatePageViewDots()
+        pageView.post {
+            pageView.drawDots(page.dotList, page.coordinateCropper)
+        }
 
     }
 
     override fun onPause() {
         super.onPause()
-//        if (audioRecorder) {
-//            audioRecorder = false
-//            audioManager.stopRATimer()
-//        }
+        if (audioRecorder) {
+            audioRecorder = false
+            audioManager.stopRATimer()
+        }
     }
 
-    override fun getLayoutId() : Int{
-        return R.layout.activity_pageview
+    protected open fun initPage(){
+
+        bitmap = getViewBitmap()
+        bitmap?.let {
+
+            //imageView.setPaintColor(Color.RED)
+
+            pageView.setImageBitmap(it)
+
+        }
+        page = getViewPage()
+        this.writer.bindPage(page)
+        page.create()
+        var pageAbsolutePath = pageManager.mkdirs(page)
     }
 
-    override fun initUI(){
-        super.initUI()
-//        supportActionBar?.hide()
-        pageView = findViewById(R.id.pageView)
-        //测试接口用
-        pageView.setPaintSize(40F)
-        pageView.setPaintTypeface(Typeface.MONOSPACE)
-        Log.e(TAG, "initUI: ")
-//        pageView.setImageResource(R.drawable.x2)
-    }
-
-//    protected override fun initPage(){
-//
-//        bitmap = getViewBitmap()
-//        bitmap?.let {
-//
-//            //imageView.setPaintColor(Color.RED)
-//
-//            pageView.setImageBitmap(it)
-//
-//        }
-//        page = getViewPage()
-//        this.writer.bindPage(page)
-//        page.create()
-//        var pageAbsolutePath = pageManager.mkdirs(page)
-//    }
-
-    override fun getResponser(): Responser{
-        return PageViewResponser()
+    fun getPageResponsor(): PageResponsor{
+        return PageResponsor()
     }
 
     fun getViewBitmap(): Bitmap {
         return getViewBitmap(0)
     }
 
-    /**
-     * 根据pageId解析对应页码图片资源
-     */
-    protected fun getViewBitmap(pageId: Long): Bitmap {
-        var resId = PageManager.getResIDByPageID(pageId)
-        LogUtil.e(TAG, "getViewBitmap(): pageId: $pageId resources: $resources resId: $resId")
-//        return BitmapFactory.decodeResource(resources, resId).copy(Bitmap.Config.ARGB_8888, true)
-        return BitmapUtil.decodeSampledBitmapFromResource(resources, resId, PICTRUE_PARSE_WIDTH, PICTRUE_PARSE_HEIGHT)
+    protected fun getViewBitmap(pageId: Int): Bitmap {
+        var resId = PageManager.getResIDByPageID(pageId.toLong())
+        LogUtil.e(TAG, "resources: $resources resId: $resId")
+        return BitmapFactory.decodeResource(resources, resId).copy(Bitmap.Config.ARGB_8888, true)
     }
 
     fun getViewPage(): Page {
@@ -148,42 +141,8 @@ open class PageViewActivity : PageActivity() {
 //        return page.setRealDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
     }
 
-    override fun switchPage(mediaDot: MediaDot): Boolean {
-        if(super.switchPage(mediaDot)){
-            LogUtil.e(TAG, "switchPage: 切换pageId: "+mediaDot.pageId)
-//            pageView.resetPath()
-//            bitmap = getViewBitmap(mediaDot.pageID)
-//            bitmap?.let {
-//                pageView.setImageBitmap(it)
-//            }
-//            updatePageViewDots()
-//            LogUtil.e(TAG, "switchPage: "+bitmap+" = getViewBitmap( "+mediaDot.pageID+" )")
-//            Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
-            if (!::bitmap.isInitialized){
-                bitmap = getViewBitmap(mediaDot.pageId)
-                pageView.setImageBitmap(bitmap)
-                updatePageViewDots()
-            } else {
-                thread {
-                    //时间耗费较大
-                    BitmapUtil.recycleBitmap(bitmap)
-                    bitmap = getViewBitmap(mediaDot.pageId)
-                    LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID): "+mediaDot.pageId)
-                    Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
-                    runOnUiThread {
-                        pageView.setImageBitmap(bitmap)
-                        updatePageViewDots()
-                    }
-                }
-            }
-            return true
-        }
-        return false
-    }
-
     /**
      * 生成带有笔迹的卡片图片
-     * 不直接使用PageView中的bitmap是为了使得不同设备能够生成相同分辨率的图片
      */
     fun generatePageBmp(page: Page, mBitmap: Bitmap): Bitmap{
         val bitmap: Bitmap = mBitmap.copy(Bitmap.Config.ARGB_8888, true)
@@ -205,50 +164,39 @@ open class PageViewActivity : PageActivity() {
 
     fun processEachDot(simpleDot: SimpleDot) {
 
-        processEachDot((createMediaDot(simpleDot)))
+        processEachDot(createMediaDot(simpleDot))
     }
 
-    override fun processEachDot(mediaDot: MediaDot) {
-//        if (currentPageId != -1L){
-//            if(currentPageId != mediaDot.pageID){
-//                this.pageView.resetPath()
-//            }
-//        }
-        super.processEachDot(mediaDot)
+    fun processEachDot(mediaDot: MediaDot) {
+        writer.let {
+            writer.processEachDot(page.coordinateCropper.cropOut(mediaDot) as MediaDot)
+        }
     }
 
     protected fun createMediaDot(simpleDot: SimpleDot): MediaDot {
         val mediaDot = MediaDot(simpleDot)
-        mediaDot.pageId = this.currentPageId
+        mediaDot.pageId = this.page.code.toLong()
+        //如果正在录音，再次长压结束录音
+        if (audioRecorder) {
+            mediaDot.audioID = Integer.parseInt(page.lastAudioName)
+            mediaDot.color = MediaDot.DEEP_GREEN
+        }
+
         mediaDot.penMac = XmateNotesApplication.mBTMac
         LogUtil.e(TAG, "封装MediaDot: $mediaDot")
         return mediaDot
     }
 
-    override fun commit(point: SimpleDot, page: Page, bmp: Bitmap) {
-
-    }
-
-    override fun initCoordinateConverter() {
-
-    }
-
-    protected open fun updatePageViewDots(){
-        //绘制笔迹
-        pageView.post {
-            pageView.drawDots(page.dotList, page.coordinateCropper)
-        }
-    }
-
-    open inner class PageViewResponser: Responser() {
+    inner class PageResponsor: Responser() {
         override fun onLongPress(command: Command?):Boolean {
             if(!super.onLongPress(command)){
                 return false
             }
+
             showToast("长压命令")
             pageManager.save(page, bitmap?.let { generatePageBmp(page, it) })
 
-            return true
+            return false
         }
 
         override fun onSingleClick(command: Command?):Boolean {
@@ -272,23 +220,16 @@ open class PageViewActivity : PageActivity() {
             }
 
             command?.handWriting?.firstDot?.let {coordinate->
-                page.getHandWritingByCoordinate(coordinate)?.let {
-                    if(it.hasVideo()){
-                        //跳转视频播放
-                        VideoManager.startVideoNoteActivity(this@PageViewActivity, VideoNoteActivity::class.java, it.videoId, it.videoTime);
-                    } else {
-                        //跳转笔迹动态复现
+                if(coordinate is MediaDot)
+                    page.getAudioNameByCoordinate(coordinate)?.let { audioName ->
+                        LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
+                        audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
                     }
-                }
-                page.getAudioNameByCoordinate(coordinate)?.let { audioName ->
-                    LogUtil.e(CardProcessActivity.TAG, "播放AudioName为：$audioName")
-                    audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
-                }
             }
 
             showToast("双击命令")
 
-            return true
+            return false
         }
 
         override fun onActionCommand(command: Command?):Boolean {
@@ -304,7 +245,7 @@ open class PageViewActivity : PageActivity() {
             }
 
             //绘制笔迹
-            updatePageViewDots()
+            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
 
             return super.onCalligraphy(command)
         }
@@ -338,7 +279,7 @@ open class PageViewActivity : PageActivity() {
             }
 
             //绘制笔迹
-            updatePageViewDots()
+            pageView.post { pageView.drawDots(page.dotList, page.coordinateCropper) }
 
             return false
         }

@@ -28,6 +28,7 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
+import com.example.xmatenotes.ui.PageTestActivity;
 import com.example.xmatenotes.ui.PageViewActivity;
 import com.example.xmatenotes.util.LogUtil;
 import com.example.xmatenotes.util.BitmapUtil;
@@ -82,21 +83,21 @@ public class PageView extends AppCompatImageView {
         if (getContext() instanceof PageViewActivity) {
             this.pageViewActivity = (PageViewActivity) getContext();
         }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true){
-                    LogUtil.e(TAG, "init: mBitmap: "+mBitmap);
-                    LogUtil.e(TAG, "init: getDrawable(): "+getDrawable());
-                    LogUtil.e(TAG, "init: pageViewActivity.bitmap:  "+pageViewActivity.bitmap);
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true){
+//                    LogUtil.e(TAG, "init: mBitmap: "+mBitmap);
+//                    LogUtil.e(TAG, "init: getDrawable(): "+getDrawable());
+////                    LogUtil.e(TAG, "init: pageViewActivity.bitmap:  "+pageViewActivity.bitmap);
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//            }
+//        }).start();
 
 
     }
@@ -125,11 +126,11 @@ public class PageView extends AppCompatImageView {
 
 //        canvas.drawRect(new Rect(10, 10, 300, 300), mPaint);
         Log.e(TAG, "onDraw: mBitmap: "+mBitmap);
-        Log.e(TAG, "onDraw: pageViewActivity.bitmap: "+pageViewActivity.bitmap);
+//        Log.e(TAG, "onDraw: pageViewActivity.bitmap: "+pageViewActivity.bitmap);
         Log.e(TAG, "onDraw: getDrawable(): "+getDrawable());
-        if (mBitmap != null) {
-            canvas.drawBitmap(mBitmap, mMatrix, mPaint);
-        }
+//        if (mBitmap != null) {
+//            canvas.drawBitmap(mBitmap, mMatrix, mPaint);
+//        }
 //        canvas.drawBitmap(pageViewActivity.bitmap, mMatrix, mPaint);
 //        RectF rectF = getIntrinsicRectF();
 
@@ -242,8 +243,9 @@ public class PageView extends AppCompatImageView {
     @Override
     public void setImageBitmap(Bitmap bm) {
 //        setImageDrawable(new BitmapDrawable(pageViewActivity.getResources(), bm));
-        super.setImageBitmap(pageViewActivity.bitmap);
-//        BitmapUtil.recycleBitmap(mBitmap);
+//        super.setImageBitmap(pageViewActivity.bitmap);
+        super.setImageBitmap(bm);
+        BitmapUtil.recycleBitmap(mBitmap);
 //        mBitmap = bm;
 //        mBitmap = Bitmap.createBitmap(100,100, Bitmap.Config.ARGB_8888);
         mBitmap = bm;
@@ -257,13 +259,13 @@ public class PageView extends AppCompatImageView {
 //            }
 //        }).start();
         mCanvas = new Canvas(mBitmap);
-        calculateMatrix();
+//        calculateMatrix();
         RectF rectF = getIntrinsicRectF();
         setCoordinateConverter(this.pageViewActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
-        LogUtil.e(TAG, "setImageBitmap: mBitmap 1: "+mBitmap);
+//        LogUtil.e(TAG, "setImageBitmap: mBitmap 1: "+mBitmap);
         postInvalidate();
-        LogUtil.e(TAG, "setImageBitmap: mBitmap 2: "+mBitmap);
-        Log.e(TAG, "setImageBitmap: getDrawable(): "+getDrawable());
+//        LogUtil.e(TAG, "setImageBitmap: mBitmap 2: "+mBitmap);
+//        Log.e(TAG, "setImageBitmap: getDrawable(): "+getDrawable());
     }
 
     @Override

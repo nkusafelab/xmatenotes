@@ -1,7 +1,10 @@
 package com.example.xmatenotes.logic.manager;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +12,8 @@ import android.util.Log;
 
 import com.example.xmatenotes.ui.MainActivity;
 import com.example.xmatenotes.ui.ckplayer.CkplayerActivity;
+import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * <p><strong>视频管理类</strong></p>
@@ -18,15 +23,16 @@ public class VideoManager {
 	
 	private final static String TAG = "VideoManager";
 
-	private volatile static VideoManager videoManager = null;
+	private static final VideoManager videoManager = new VideoManager();
 
-	public static ArrayList<Video> videos = null;
+	public static ArrayList<Video> videos = new ArrayList<Video>();
 	private int videosNumber = 0;
 
 	private VideoManager() {
-		super();
-		videos = new ArrayList<Video>();
-		addVideo(1, "001不等号的由来《一元一次不等式》初一下doc.mp4");
+
+//		videos = new ArrayList<Video>();
+//		addVideo(1, "001不等号的由来《一元一次不等式》初一下doc.mp4");
+//		addVideo(2, "");
 //		addVideo(1,"p1");//如果从0开始，意味着每次新page都要把videoID矩阵所有元素初始化为-1
 //		addVideo(2,"p2");
 //		addVideo(3,"p3");
@@ -36,16 +42,27 @@ public class VideoManager {
 
 	}
 	public static VideoManager getInstance(){
-		if(videoManager == null){
-			synchronized (VideoManager.class){
-				if(videoManager == null){
-					Log.e(TAG,videoManager+"");
-					videoManager = new VideoManager();
-					Log.e(TAG,"videoManager = new VideoManager();");
-				}
-			}
-		}
+//		if(videoManager == null){
+//			synchronized (VideoManager.class){
+//				if(videoManager == null){
+//					Log.e(TAG,videoManager+"");
+//					videoManager = new VideoManager();
+//					Log.e(TAG,"videoManager = new VideoManager();");
+//				}
+//			}
+//		}
 		return videoManager;
+	}
+
+	public void init(ExcelManager.DataSheet videoDataSheet){
+		final String VIDEO_NAME = "视频名称";
+		Map<String, Map<String, String>> map = videoDataSheet.getData();
+		Set<Map.Entry<String, Map<String, String>>> set = map.entrySet();
+		Iterator<Map.Entry<String, Map<String, String>>> it = set.iterator();
+		while (it.hasNext()){
+			Map.Entry<String, Map<String, String>> node = it.next();
+			addVideo(Integer.parseInt(node.getKey()), node.getValue().get(VIDEO_NAME));
+		}
 	}
 	
 	public boolean contains(int id){
@@ -59,14 +76,32 @@ public class VideoManager {
 	}
 	
 	public Video getVideoByID(int id){
+		LogUtil.e(TAG, "getVideoByID: id: "+id);
 		for (int i = 0;i<videos.size();i++) {
+			LogUtil.e(TAG, "getVideoByID: i: "+i);
 			Video v = videos.get(i);
 			Log.e(TAG, "getVideoByID: videos.get("+i+").videoID: "+videos.get(i).videoID);
-			Log.e(TAG, "getVideoByID: id: "+id);
+
 			if(v.videoID == id){
-				Log.e(TAG, "getVideoByID: videos.get("+i+"): "+videos.get(i));
+				Log.e(TAG, "getVideoByID: 找到: videos.get("+i+"): "+videos.get(i));
 //				return videos.get(i);
-				return new Video(v.videoID, v.videoName,v.matesNumber,v.pageNumber);
+				return v;
+			}
+		}
+		return null;
+	}
+
+	public Video getVideoByName(String name){
+		LogUtil.e(TAG, "getVideoByName: name: "+name);
+		for (int i = 0;i<videos.size();i++) {
+			LogUtil.e(TAG, "getVideoByName: i: "+i);
+			Video v = videos.get(i);
+			Log.e(TAG, "getVideoByName: videos.get("+i+").videoID: "+videos.get(i).videoName);
+
+			if(v.videoName.equals(name)){
+				Log.e(TAG, "getVideoByName: 找到: videos.get("+i+"): "+videos.get(i));
+//				return videos.get(i);
+				return v;
 			}
 		}
 		return null;
@@ -84,12 +119,14 @@ public class VideoManager {
 	/**
 	 * 启动视频笔记活动
 	 * @param context 启动源
+	 * @param cls 跳转目标活动，必须是VideoNoteActivity或其子类
 	 */
-	public static void startVideoNoteActivity(Context context, int videoID, float videoTime){
+	public static void startVideoNoteActivity(Context context, Class<?> cls, int videoID, float videoTime){
 		//跳转至ck
-		Intent ckIntent = new Intent(context, CkplayerActivity.class);
+		Intent ckIntent = new Intent(context, cls);
 		ckIntent.putExtra("videoTime", videoTime);
-		ckIntent.putExtra("videoID", videoID);
+		ckIntent.putExtra("videoId", videoID);
+		LogUtil.e(TAG, "startVideoNoteActivity: 跳转至: videoID: "+videoID+" videoTime: "+videoTime);
 		context.startActivity(ckIntent);
 	}
 	
@@ -101,20 +138,35 @@ public class VideoManager {
 		this.videosNumber = videosNumber;
 	}
 
-	public int getVideoIDByID(int id){
-		return videos.get(id-1).getVideoID();
-	}
+//	public int getVideoIDByID(int id){
+//		return videos.get(id-1).getVideoID();
+//	}
 	
 	public String getVideoNameByID(int id){
-		return videos.get(id-1).getVideoName();
+		Video video = getVideoByID(id);
+		if(video != null){
+			return video.getVideoName();
+		}
+		return null;
+//		return videos.get(id-1).getVideoName();
 	}
 	
 	public int getMatesNumberByID(int id){
-		return videos.get(id-1).getMatesNumber();
+		Video video = getVideoByID(id);
+		if(video != null){
+			return video.getMatesNumber();
+		}
+		return 0;
+//		return videos.get(id-1).getMatesNumber();
 	}
 	
 	public int getPageNumberByID(int id){
-		return videos.get(-1).getPageNumber();
+		Video video = getVideoByID(id);
+		if(video != null){
+			return video.getPageNumber();
+		}
+		return 0;
+//		return videos.get(-1).getPageNumber();
 	}
 	
 	public void clear(){
@@ -123,6 +175,7 @@ public class VideoManager {
 		for(Video v : videos){
 			v.clear();
 		}
+		videos.clear();
 	}
 
 	/**

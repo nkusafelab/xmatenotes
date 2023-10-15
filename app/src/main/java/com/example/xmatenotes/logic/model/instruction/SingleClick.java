@@ -47,7 +47,7 @@ public class SingleClick extends ActionCommand{
     }
 
     public static boolean recognize(Stroke stroke){
-        LogUtil.e(TAG, "recognize(): stroke.getDuration(): "+stroke.getDuration());
+        LogUtil.e(TAG, "recognize(): stroke.getDuration(): "+stroke.getDuration()+" ? "+SINGLE_CLICK_tLIMIT);
         if(stroke.getDuration() < SINGLE_CLICK_tLIMIT){
             double width = stroke.getBoundRectF().width();
             double height = stroke.getBoundRectF().height();

@@ -8,7 +8,7 @@
         android:id="@+id/cktextview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20sp"/>
+        android:textSize="14sp"/>
 
     <WebView
         android:id="@+id/web_view"

@@ -421,7 +421,7 @@ public class Instruction {
                     Log.e(TAG, "BaseActivity.baseActivity: " + BaseActivity.baseActivity);
                     if (BaseActivity.baseActivity != null) {
                         Log.e(TAG, "回调响应");
-                        BaseActivity.baseActivity.receiveRecognizeResult(gesture, dcdotFirst.pageID, dcdotFirst.getIntX(), dcdotFirst.getIntY());
+                        BaseActivity.baseActivity.receiveRecognizeResult(gesture, dcdotFirst.pageId, dcdotFirst.getIntX(), dcdotFirst.getIntY());
                     }
                 }
 //            }
@@ -453,8 +453,8 @@ public class Instruction {
         Log.e(TAG, "System.currentTimeMillis(): " + System.currentTimeMillis());
 
         //存储pageID
-        oldPageManager.savePage(mediaDot.pageID);
-        oldPageManager.currentPageID = mediaDot.pageID;
+        oldPageManager.savePage(mediaDot.pageId);
+        oldPageManager.currentPageID = mediaDot.pageId;
 
         penMacManager.putMac(XmateNotesApplication.mBTMac);
 
@@ -728,7 +728,7 @@ public class Instruction {
 
                             //延迟响应
                             if (BaseActivity.baseActivity != null && hwDotFirst != null) {
-                                BaseActivity.baseActivity.writeTimerFinished(hwDotFirst.pageID, hwDotFirst.getIntX(), hwDotFirst.getIntY());
+                                BaseActivity.baseActivity.writeTimerFinished(hwDotFirst.pageId, hwDotFirst.getIntX(), hwDotFirst.getIntY());
                             }
                             hwDotFirst = null;
                         }
@@ -909,7 +909,7 @@ public class Instruction {
             Log.e(TAG, "BaseActivity.baseActivity: " + BaseActivity.baseActivity);
             if (BaseActivity.baseActivity != null) {
                 Log.e(TAG, "回调响应");
-                BaseActivity.baseActivity.receiveRecognizeResult(ges, dcdotFirst.pageID, dcdotFirst.getIntX(), dcdotFirst.getIntY());
+                BaseActivity.baseActivity.receiveRecognizeResult(ges, dcdotFirst.pageId, dcdotFirst.getIntX(), dcdotFirst.getIntY());
             }
 //        }
     }

@@ -1163,7 +1163,7 @@ public class PageSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         simpleDot.setY(simpleDot.getFloatY()*A3.ORDINATE_RANGE/bitmap.getHeight());
 
         MediaDot mediaDot = new MediaDot(simpleDot);
-        mediaDot.pageID = XmateNotesApplication.oldPageManager.currentPageID;
+        mediaDot.pageId = XmateNotesApplication.oldPageManager.currentPageID;
         mediaDot.penMac = XmateNotesApplication.mBTMac;
         new Thread(new Runnable() {
             @Override

@@ -97,7 +97,7 @@ public class HandWriting extends Instruction{
      */
     public void addAttribute(MediaDot mediaDot){
         this.time = mediaDot.videoTime;
-        this.videoID = mediaDot.videoID;
+        this.videoID = mediaDot.videoId;
         this.audioID = mediaDot.audioID;
         this.penMac = mediaDot.penMac;
     }

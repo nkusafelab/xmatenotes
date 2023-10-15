@@ -377,7 +377,7 @@ public class CkplayerActivity extends BaseActivity {
 		}
 
 		mediaDot.videoTime = timeR;
-		mediaDot.videoID = currentID;
+		mediaDot.videoId = currentID;
 		mediaDot.color = MediaDot.DEEP_ORANGE;
 
 		mediaDot.penMac = XmateNotesApplication.mBTMac;
@@ -468,7 +468,7 @@ public class CkplayerActivity extends BaseActivity {
 			MediaDot mediaDot = oldPageManager.getDotMedia(pageID,firstX,firstY);
 			if(mediaDot != null){
 				if(mediaDot.isVideoDot() && mediaDot.penMac.equals(XmateNotesApplication.mBTMac)){//跳转
-					seekTime(mediaDot.videoTime, mediaDot.videoID);
+					seekTime(mediaDot.videoTime, mediaDot.videoId);
 				}
 			}else {
 				int pN = oldPageManager.getPageNumberByPageID(pageID);

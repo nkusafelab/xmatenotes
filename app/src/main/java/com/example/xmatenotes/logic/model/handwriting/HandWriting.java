@@ -59,6 +59,8 @@ public class HandWriting implements Serializable,Cloneable {
      */
     private boolean isClosed = false;
 
+    private String penMac;
+
     /**
      * 音频文件ID
      */
@@ -187,8 +189,9 @@ public class HandWriting implements Serializable,Cloneable {
         if(sDot instanceof  MediaDot){
             MediaDot mDot = (MediaDot)sDot;
             this.audioId = mDot.audioID;
-            this.videoId = mDot.videoID;
+            this.videoId = mDot.videoId;
             this.videoTime = mDot.videoTime;
+            this.penMac = mDot.penMac;
             sDot = mDot;
         }
 
@@ -339,6 +342,10 @@ public class HandWriting implements Serializable,Cloneable {
 
     public void setVideoTime(float videoTime) {
         this.videoTime = videoTime;
+    }
+
+    public String getPenMac() {
+        return penMac;
     }
 
     /**

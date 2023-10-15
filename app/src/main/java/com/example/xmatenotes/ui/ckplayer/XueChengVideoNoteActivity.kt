@@ -1,7 +1,9 @@
 package com.example.xmatenotes.ui.ckplayer
 
 import android.os.Bundle
+import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.app.ax.A3
+import com.example.xmatenotes.logic.dao.RoleDao
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
@@ -17,6 +19,7 @@ class XueChengVideoNoteActivity : VideoNoteActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_xue_cheng_video_note)
+
     }
 
     override fun getResponser(): Responser {
@@ -40,23 +43,45 @@ class XueChengVideoNoteActivity : VideoNoteActivity() {
             }
 
             command?.handWriting?.firstDot?.let {coordinate->
-                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot
-                val pN = PageManager.getPageNumberByPageID(mediaDot.pageID)
-                val lR = excelReader.getLocalRectByXY(pN, mediaDot.intX, mediaDot.intY)
-                if (lR != null) {
-                    LogUtil.e(TAG, "局域编码: " + lR.localCode)
-                    if ("资源卡" == lR.localName) {
-                        LogUtil.e(TAG, "双击资源卡")
+                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot ?: coordinate as MediaDot
+                //资源卡播放
+                var localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+                    mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
 
-                        val videoID = lR.videoIDByAddInf
-                        val videoName = lR.videoNameByAddInf
-                        videoManager.addVideo(videoID, videoName)
-                        seekTime(5.0f, videoID)
-                        LogUtil.e(TAG, "ckplayer跳转至videoID: $videoID")
-                        LogUtil.e(TAG, "ckplayer跳转至videoName: $videoName")
+                localData?.let {
+                    if("资源卡" == localData.areaIdentification){
+                        LogUtil.e(TAG, "双击资源卡")
+                        var v = videoManager.getVideoByName(localData.addInformation)
+                        videoManager.addVideo(v.videoID, v.videoName)
+                        seekTime(5.0f, v.videoID)
+                        LogUtil.e(TAG, "视频跳转至videoID: $v.videoID")
+                        LogUtil.e(TAG, "视频跳转至videoName: $v.videoName")
+                        return false
                     }
                 }
             }
+
+            return true
+        }
+
+        override fun onDelayHandWriting(command: Command?): Boolean {
+            if(!super.onDelayHandWriting(command)){
+                return false
+            }
+
+            command?.handWriting?.firstDot?.let {coordinate->
+                var mediaDot = coordinateConverter?.convertOut(coordinate) as MediaDot ?: coordinate as MediaDot
+
+                var localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+                    mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
+                //如果正在书写区答题，退出视频笔记
+//                localData?.let {
+//                    if("书写区" == localData.areaIdentification){
+//                        finish();
+//                    }
+//                }
+            }
+
 
             return true
         }

@@ -27,7 +27,7 @@ public class MediaDot extends SimpleDot {
     /**
      * 页号
      */
-    public long pageID;
+    public long pageId;
 
     /**
      * 笔Mac地址
@@ -38,7 +38,7 @@ public class MediaDot extends SimpleDot {
     /**
      * 视频ID
      */
-    public int videoID;
+    public int videoId;
 
     /**
      * 视频进度
@@ -85,9 +85,9 @@ public class MediaDot extends SimpleDot {
 
     public MediaDot(SimpleDot simpleDot){
         super(simpleDot.getFloatX(), simpleDot.getFloatY(), simpleDot.type, simpleDot.timelong);
-        this.pageID = XmateNotesApplication.DEFAULT_INT;
+        this.pageId = XmateNotesApplication.DEFAULT_INT;
         this.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
-        this.videoID = XmateNotesApplication.DEFAULT_INT;
+        this.videoId = XmateNotesApplication.DEFAULT_INT;
         this.audioID = XmateNotesApplication.DEFAULT_INT;
         this.color = DEFAULT_COLOR;
         this.width = DEFAULT_WIDTH;
@@ -96,9 +96,9 @@ public class MediaDot extends SimpleDot {
 
     public MediaDot(Dot dot) {
         super(dot);
-        this.pageID = dot.PageID;
+        this.pageId = dot.PageID;
         this.videoTime = XmateNotesApplication.DEFAULT_FLOAT;
-        this.videoID = XmateNotesApplication.DEFAULT_INT;
+        this.videoId = XmateNotesApplication.DEFAULT_INT;
         this.audioID = XmateNotesApplication.DEFAULT_INT;
         this.color = DEFAULT_COLOR;
         this.width = DEFAULT_WIDTH;
@@ -110,19 +110,19 @@ public class MediaDot extends SimpleDot {
 
         this.strokesID = strokesID;
         this.videoTime = timeS;
-        this.videoID = videoIDS;
+        this.videoId = videoIDS;
         this.audioID = audioIDS;
         this.penMac = penMac;
     }
 
-    public MediaDot(int x, int y, Dot.DotType type, int strokesID, int pageID, long timelong, float videoTime, int videoID, int audioID, String penMac) {
+    public MediaDot(int x, int y, Dot.DotType type, int strokesID, int pageId, long timelong, float videoTime, int videoId, int audioID, String penMac) {
         super(x, y);
         this.type = type;
         this.strokesID = strokesID;
-        this.pageID = pageID;
+        this.pageId = pageId;
         this.timelong = timelong;
         this.videoTime = videoTime;
-        this.videoID = videoID;
+        this.videoId = videoId;
         this.audioID = audioID;
         this.penMac = penMac;
     }
@@ -130,9 +130,9 @@ public class MediaDot extends SimpleDot {
     public MediaDot(MediaDot mediaDot) {
         super(mediaDot);
         this.strokesID = mediaDot.strokesID;
-        this.pageID = mediaDot.pageID;
+        this.pageId = mediaDot.pageId;
         this.videoTime = mediaDot.videoTime;
-        this.videoID = mediaDot.videoID;
+        this.videoId = mediaDot.videoId;
         this.audioID = mediaDot.audioID;
         this.penMac = mediaDot.penMac;
         this.color = mediaDot.color;
@@ -185,9 +185,9 @@ public class MediaDot extends SimpleDot {
     public String toString() {
         return "MediaDot{" +
                 "strokesID=" + strokesID +
-                ", pageID=" + pageID +
+                ", pageID=" + pageId +
                 ", penMac='" + penMac + '\'' +
-                ", videoID=" + videoID +
+                ", videoID=" + videoId +
                 ", videoTime=" + videoTime +
                 ", audioID=" + audioID +
                 ", color=" + color +
@@ -208,12 +208,12 @@ public class MediaDot extends SimpleDot {
      */
     public String storageFormat(){
         StringBuilder string = new StringBuilder();
-        string.append(pageID+" ");
+        string.append(pageId +" ");
         string.append(strokesID+" ");
         string.append(type+" ");
         string.append(fx+" ");
         string.append(fy+" ");
-        string.append(videoID +" ");
+        string.append(videoId +" ");
         string.append(videoTime +" ");
         string.append(audioID +" ");
         string.append(penMac+" ");
@@ -235,7 +235,7 @@ public class MediaDot extends SimpleDot {
         MediaDot mediaDot = new MediaDot();
 
         end = line.indexOf(" ", start);
-        mediaDot.pageID = Integer.parseInt(line.substring(start, end));//PageID
+        mediaDot.pageId = Integer.parseInt(line.substring(start, end));//PageID
 
         start = end+1;
         end = line.indexOf(" ", start);
@@ -268,7 +268,7 @@ public class MediaDot extends SimpleDot {
 
         start = end+1;
         end = line.indexOf(" ", start);
-        mediaDot.videoID = Integer.parseInt(line.substring(start, end));//视频ID
+        mediaDot.videoId = Integer.parseInt(line.substring(start, end));//视频ID
 
         start = end+1;
         end = line.indexOf(" ", start);
@@ -318,7 +318,7 @@ public class MediaDot extends SimpleDot {
      * @return
      */
     public boolean isVideoDot(){
-        if(videoID == XmateNotesApplication.DEFAULT_INT){
+        if(videoId == XmateNotesApplication.DEFAULT_INT){
             return false;
         }else {
            return true;
