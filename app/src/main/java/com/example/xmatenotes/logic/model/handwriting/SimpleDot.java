@@ -6,6 +6,10 @@ import androidx.annotation.NonNull;
 
 import com.tqltech.tqlpencomm.bean.Dot;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 /**
  * 识别所需最简的点，坐标为包含小数部分的完整坐标
@@ -46,7 +50,11 @@ public class SimpleDot extends BaseDot implements Cloneable {
     public SimpleDot(Dot dot){
         this(computeCompletedDot(dot.x, dot.fx), computeCompletedDot(dot.y, dot.fy));
         this.type = dot.type;
-        this.timelong = dot.timelong;
+        try {
+            this.timelong = reviseTimelong(dot.timelong);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public SimpleDot(MediaDot mediaDot) {
@@ -72,6 +80,18 @@ public class SimpleDot extends BaseDot implements Cloneable {
     public static double computeDistance(SimpleDot sDot1, SimpleDot sDot2){
         return computeDistance(sDot1.getFloatX(), sDot1.getFloatY(), sDot2.getFloatX(), sDot2.getFloatY());
     }
+    /**
+     * 将Dot的timelong起始时间从2010-01-01 00:00:00 000修正为1970-01-01 00:00:00 000
+     * @param timelong
+     * @return
+     * @throws ParseException
+     */
+    public static long reviseTimelong(long timelong) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");
+        Date datetime = sdf.parse("2010-01-01 00:00:00 000");
+        return datetime.getTime() + timelong;
+    }
+
 
     //SimpleDot点转换为Dot类型
 

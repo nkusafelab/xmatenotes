@@ -13,6 +13,7 @@ import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * 可能会是命令的笔迹
@@ -54,10 +55,17 @@ public class HandWriting implements Serializable,Cloneable {
 //    private Region region = new Region();
     private SerializableRectF boundRect = new SerializableRectF();
 
+    private SimpleDot lastDot;
+
     /**
      * 表示普通书写是否完整
      */
     private boolean isClosed = false;
+
+    /**
+     * 是否已经绘制过
+     */
+    private boolean isDrawed = false;
 
     private String penMac;
 
@@ -185,6 +193,7 @@ public class HandWriting implements Serializable,Cloneable {
         Stroke stroke = this.strokes.get(strokes.size()-1);
 
         stroke.addDot(sDot);
+        lastDot = sDot;
 
         if(sDot instanceof  MediaDot){
             MediaDot mDot = (MediaDot)sDot;
@@ -252,11 +261,14 @@ public class HandWriting implements Serializable,Cloneable {
     }
 
     public SimpleDot getLastDot(){
-        if(!strokes.isEmpty()){
-            return strokes.get(strokes.size()-1).getLastDot();
+//        if(!strokes.isEmpty()){
+//            return strokes.get(strokes.size()-1).getLastDot();
+//        }
+        if(lastDot == null){
+            LogUtil.e(TAG, "getLastDot: strokes为空！");
         }
-        LogUtil.e(TAG, "getLastDot: strokes为空！");
-        return null;
+
+        return lastDot;
     }
 
     public Stroke getFirstStroke(){
@@ -348,6 +360,14 @@ public class HandWriting implements Serializable,Cloneable {
         return penMac;
     }
 
+    public boolean isDrawed() {
+        return isDrawed;
+    }
+
+    public void setDrawed(boolean drawed) {
+        isDrawed = drawed;
+    }
+
     /**
      * 是否包含某个点
      * @param simpleDot
@@ -398,6 +418,19 @@ public class HandWriting implements Serializable,Cloneable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HandWriting that = (HandWriting) o;
+        return strokesNumber == that.strokesNumber && prePeriod == that.prePeriod && firsttime == that.firsttime && duration == that.duration && isClosed == that.isClosed && audioId == that.audioId && videoId == that.videoId && Float.compare(that.videoTime, videoTime) == 0 && color == that.color && width == that.width && Objects.equals(strokes, that.strokes) && Objects.equals(boundRect, that.boundRect) && Objects.equals(penMac, that.penMac);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(strokes, strokesNumber, prePeriod, firsttime, duration, boundRect, isClosed, penMac, audioId, videoId, videoTime, color, width);
+    }
+
+    @Override
     public String toString() {
         return "HandWriting{" +
                 "strokes=" + strokes +
@@ -407,6 +440,7 @@ public class HandWriting implements Serializable,Cloneable {
                 ", duration=" + duration +
                 ", boundRect=" + boundRect +
                 ", isClosed=" + isClosed +
+                ", penMac='" + penMac + '\'' +
                 ", audioId=" + audioId +
                 ", videoId=" + videoId +
                 ", videoTime=" + videoTime +

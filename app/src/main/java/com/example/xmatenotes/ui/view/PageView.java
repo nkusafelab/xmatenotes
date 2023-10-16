@@ -8,15 +8,12 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,14 +25,14 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
-import com.example.xmatenotes.ui.PageTestActivity;
+import com.example.xmatenotes.ui.HWReplayActivity;
 import com.example.xmatenotes.ui.PageViewActivity;
 import com.example.xmatenotes.util.LogUtil;
 import com.example.xmatenotes.util.BitmapUtil;
-import com.google.android.datatransport.cct.internal.LogEvent;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,9 +49,13 @@ public class PageView extends AppCompatImageView {
     private Path mPath;
 
     private PageViewActivity pageViewActivity = null;
+    private HWReplayActivity hwReplayActivity = null;
 
     //坐标转换器
-    private CoordinateConverter coordinateConverter;
+    private CoordinateConverter screenCoordinateConverter;
+    private CoordinateConverter bitmapCoordinateConverter;
+
+    private SimpleDot lastSimpleDot = null;
 
 
     public PageView(@NonNull Context context) {
@@ -79,9 +80,14 @@ public class PageView extends AppCompatImageView {
         mPaint.setStyle(Paint.Style.STROKE);
         mBitmap = null;
         mMatrix = new Matrix();
+        mPath = new Path();
 
         if (getContext() instanceof PageViewActivity) {
             this.pageViewActivity = (PageViewActivity) getContext();
+        }
+
+        if(getContext() instanceof HWReplayActivity){
+            this.hwReplayActivity = (HWReplayActivity) getContext();
         }
 //        new Thread(new Runnable() {
 //            @Override
@@ -128,11 +134,11 @@ public class PageView extends AppCompatImageView {
         Log.e(TAG, "onDraw: mBitmap: "+mBitmap);
 //        Log.e(TAG, "onDraw: pageViewActivity.bitmap: "+pageViewActivity.bitmap);
         Log.e(TAG, "onDraw: getDrawable(): "+getDrawable());
-//        if (mBitmap != null) {
-//            canvas.drawBitmap(mBitmap, mMatrix, mPaint);
-//        }
+        if (mBitmap != null) {
+            canvas.drawBitmap(mBitmap, mMatrix, mPaint);
+        }
 //        canvas.drawBitmap(pageViewActivity.bitmap, mMatrix, mPaint);
-//        RectF rectF = getIntrinsicRectF();
+        RectF rectF = getIntrinsicRectF();
 
 //        if (this.coordinateConverter == null && this.pageActivity != null) {
 //            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
@@ -140,8 +146,12 @@ public class PageView extends AppCompatImageView {
 //            setCoordinateConverter(this.pageActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
 //        }
 
-//        mPaint.setColor(Color.RED);
-//        canvas.drawRect(rectF, mPaint);
+//        if(rectF != null){
+//            mPaint.setColor(Color.RED);
+//            canvas.drawRect(rectF, mPaint);
+//            LogUtil.e(TAG, "onDraw: rectF: "+rectF);
+//        }
+
 //
 //        mPaint.setColor(Color.BLACK);
         //绘画正在画的路径
@@ -151,12 +161,25 @@ public class PageView extends AppCompatImageView {
     }
 
     public void drawDots(List<SingleHandWriting> singleHandWritingList) {
-        mPath = drawDots(singleHandWritingList, this.coordinateConverter, null);
+        mPath = drawDots(singleHandWritingList, this.screenCoordinateConverter, null);
         postInvalidate();
     }
 
     public void drawDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter.CoordinateCropper cropper) {
-        mPath = drawDots(singleHandWritingList, this.coordinateConverter, cropper);
+        mPath = drawDots(singleHandWritingList, this.screenCoordinateConverter, cropper);
+        postInvalidate();
+    }
+
+    public void drawAddDots(SingleHandWriting singleHandWriting, CoordinateConverter.CoordinateCropper cropper) {
+        drawAddDots(new ArrayList<SingleHandWriting>(){
+            {
+                add(singleHandWriting);
+            }
+        }, cropper);
+    }
+
+    public void drawAddDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter.CoordinateCropper cropper) {
+        mPath.addPath(drawDots(singleHandWritingList, this.screenCoordinateConverter, cropper));
         postInvalidate();
     }
 
@@ -209,12 +232,107 @@ public class PageView extends AppCompatImageView {
         return path;
     }
 
-    public void drawDot(MediaDot mediaDot, CoordinateConverter.CoordinateCropper cropper) {
-        drawDot(mediaDot, this.coordinateConverter, cropper);
+    public void drawLineDots(SingleHandWriting singleHandWriting, CoordinateConverter.CoordinateCropper cropper) {
+        drawLineDots(new ArrayList<SingleHandWriting>(){
+            {
+                add(singleHandWriting);
+            }
+        }, cropper);
+    }
+
+    public void drawLineDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter.CoordinateCropper cropper) {
+        drawLineDots(singleHandWritingList, this.bitmapCoordinateConverter, cropper);
         postInvalidate();
     }
 
-    public Path drawDot(MediaDot mediaDot, CoordinateConverter converter, CoordinateConverter.CoordinateCropper cropper) {
+    public void drawLineDots(List<SingleHandWriting> singleHandWritingList, CoordinateConverter converter, CoordinateConverter.CoordinateCropper cropper) {
+        LogUtil.e(TAG, "drawLineDots");
+        LogUtil.e(TAG, "drawLineDots: converter != null: "+(converter != null));
+        if (converter != null) {
+            SimpleDot lastSimpleDot = null;
+            for (SingleHandWriting singleHandWriting : singleHandWritingList) {
+                //旧笔迹不绘制
+                if (!singleHandWriting.isNew()) {
+                    LogUtil.e(TAG, "drawLineDots: 旧笔迹不绘制");
+                    continue;
+                }
+                for (HandWriting handWriting : singleHandWriting.getHandWritings()) {
+                    for (Stroke stroke : handWriting.getStrokes()) {
+                        for (SimpleDot simpleDot : stroke.getDots()) {
+                            SimpleDot outSimpleDot = simpleDot;
+                            LogUtil.e(TAG, "drawLineDot: 绘制前outSimpleDot: " + outSimpleDot);
+                            if(cropper != null){
+                                outSimpleDot = cropper.cropIn(simpleDot);
+                            }
+                            //将内部真实物理坐标转换为UI坐标
+                            outSimpleDot = converter.convertOut(outSimpleDot);
+                            if (outSimpleDot instanceof MediaDot) {
+
+                            }
+                            LogUtil.e(TAG, "drawLineDot: 绘制后outSimpleDot:" + outSimpleDot);
+                            if(outSimpleDot.type == Dot.DotType.PEN_DOWN){
+                                lastSimpleDot = outSimpleDot;
+                                LogUtil.e(TAG, "drawLineDots: PEN_DOWN: lastSimpleDot: "+lastSimpleDot);
+                            }
+                            if(outSimpleDot.type == Dot.DotType.PEN_MOVE){
+                                mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
+                                lastSimpleDot = outSimpleDot;
+                                LogUtil.e(TAG, "drawLineDots: PEN_MOVE: "+lastSimpleDot+" - "+outSimpleDot);
+                            }
+                            if(outSimpleDot.type == Dot.DotType.PEN_UP){
+                                mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
+                                lastSimpleDot = outSimpleDot;
+                                LogUtil.e(TAG, "drawLineDots: PEN_UP: "+lastSimpleDot+" - "+outSimpleDot);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void drawLineDot(SimpleDot simpleDot, CoordinateConverter.CoordinateCropper cropper) {
+        drawLineDot(simpleDot, this.bitmapCoordinateConverter, cropper);
+        postInvalidate();
+    }
+
+    public void drawLineDot(SimpleDot simpleDot, CoordinateConverter converter, CoordinateConverter.CoordinateCropper cropper) {
+        LogUtil.e(TAG, "drawLineDot");
+        LogUtil.e(TAG, "drawLineDot: converter != null: "+(converter != null));
+        if (converter != null) {
+            SimpleDot outSimpleDot = simpleDot;
+            LogUtil.e(TAG, "drawLineDot: 绘制前outSimpleDot: " + outSimpleDot);
+            if(cropper != null){
+                outSimpleDot = cropper.cropIn(simpleDot);
+            }
+            //将内部真实物理坐标转换为UI坐标
+            outSimpleDot = converter.convertOut(outSimpleDot);
+
+            LogUtil.e(TAG, "drawLineDot: 绘制后outSimpleDot:" + outSimpleDot);
+            if(outSimpleDot.type == Dot.DotType.PEN_DOWN){
+                lastSimpleDot = outSimpleDot;
+                LogUtil.e(TAG, "drawLineDot: PEN_DOWN: lastSimpleDot: "+lastSimpleDot);
+            }
+            if(outSimpleDot.type == Dot.DotType.PEN_MOVE){
+                mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
+                lastSimpleDot = outSimpleDot;
+                LogUtil.e(TAG, "drawLineDot: PEN_MOVE: "+lastSimpleDot+" - "+outSimpleDot);
+            }
+            if(outSimpleDot.type == Dot.DotType.PEN_UP){
+                mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
+                lastSimpleDot = outSimpleDot;
+                LogUtil.e(TAG, "drawLineDot: PEN_UP: "+lastSimpleDot+" - "+outSimpleDot);
+            }
+        }
+    }
+
+    public void drawPathDot(MediaDot mediaDot, CoordinateConverter.CoordinateCropper cropper) {
+        drawPathDot(mediaDot, this.screenCoordinateConverter, cropper);
+        postInvalidate();
+    }
+
+    public Path drawPathDot(MediaDot mediaDot, CoordinateConverter converter, CoordinateConverter.CoordinateCropper cropper) {
         LogUtil.e(TAG, "drawDot: 绘制笔迹点");
         LogUtil.e(TAG, "drawDot: converter != null: "+(converter != null));
         if (converter != null && !this.mPath.isEmpty()) {
@@ -245,7 +363,7 @@ public class PageView extends AppCompatImageView {
 //        setImageDrawable(new BitmapDrawable(pageViewActivity.getResources(), bm));
 //        super.setImageBitmap(pageViewActivity.bitmap);
         super.setImageBitmap(bm);
-        BitmapUtil.recycleBitmap(mBitmap);
+//        BitmapUtil.recycleBitmap(mBitmap);
 //        mBitmap = bm;
 //        mBitmap = Bitmap.createBitmap(100,100, Bitmap.Config.ARGB_8888);
         mBitmap = bm;
@@ -259,9 +377,18 @@ public class PageView extends AppCompatImageView {
 //            }
 //        }).start();
         mCanvas = new Canvas(mBitmap);
-//        calculateMatrix();
+        calculateMatrix();
         RectF rectF = getIntrinsicRectF();
-        setCoordinateConverter(this.pageViewActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
+        LogUtil.e(TAG, "setImageBitmap: getIntrinsicRectF(): "+rectF);
+        if(this.pageViewActivity != null){
+            setScreenCoordinateConverter(this.pageViewActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
+            setBitmapCoordinateConverter(this.pageViewActivity.getCoordinateConverter(0, 0, mBitmap.getWidth(), mBitmap.getHeight()));
+        }
+        if(this.hwReplayActivity != null){
+            setScreenCoordinateConverter(this.hwReplayActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
+            setBitmapCoordinateConverter(this.hwReplayActivity.getCoordinateConverter(0, 0, mBitmap.getWidth(), mBitmap.getHeight()));
+        }
+
 //        LogUtil.e(TAG, "setImageBitmap: mBitmap 1: "+mBitmap);
         postInvalidate();
 //        LogUtil.e(TAG, "setImageBitmap: mBitmap 2: "+mBitmap);
@@ -283,6 +410,22 @@ public class PageView extends AppCompatImageView {
         setImageBitmap(BitmapUtil.decodeSampledBitmapFromStream(in, getWidth(), getHeight()));
     }
 
+    /**
+     * 初始化画笔配置
+     */
+    public void initPaint(){
+        mPaint.setColor(Color.BLACK);
+        mPaint.setStrokeWidth(2f);
+        mPaint.setStyle(Paint.Style.STROKE);
+    }
+
+    public void setPenWidth ( int w){
+        this.mPaint.setStrokeWidth(w);
+    }
+
+    public void setPenColor ( int color){
+        mPaint.setColor(color);
+    }
 
     public void setPaintSize(float size) {
         mPaint.setTextSize(size);
@@ -295,16 +438,29 @@ public class PageView extends AppCompatImageView {
     /**
      * 设置UI坐标到真实物理坐标的转换参数
      *
-     * @param coordinateConverter
+     * @param screenCoordinateConverter
      * @return
      */
-    public void setCoordinateConverter(CoordinateConverter coordinateConverter) {
-        this.coordinateConverter = coordinateConverter;
-        LogUtil.e(TAG, "配置坐标转换器: "+this.coordinateConverter.toString());
+    public void setScreenCoordinateConverter(CoordinateConverter screenCoordinateConverter) {
+        this.screenCoordinateConverter = screenCoordinateConverter;
+        LogUtil.e(TAG, "配置屏幕坐标转换器: "+this.screenCoordinateConverter.toString());
     }
 
-    public CoordinateConverter getCoordinateConverter() {
-        return coordinateConverter;
+    public CoordinateConverter getScreenCoordinateConverter() {
+        return screenCoordinateConverter;
+    }
+
+    public CoordinateConverter getBitmapCoordinateConverter() {
+        return bitmapCoordinateConverter;
+    }
+
+    /**
+     * 设置bitmap坐标到真实物理坐标的转换参数
+     * @param bitmapCoordinateConverter
+     */
+    public void setBitmapCoordinateConverter(CoordinateConverter bitmapCoordinateConverter) {
+        this.bitmapCoordinateConverter = bitmapCoordinateConverter;
+        LogUtil.e(TAG, "配置bitmap坐标转换器: "+this.bitmapCoordinateConverter.toString());
     }
 
     //利用矩阵缩放位图至合适大小
@@ -357,8 +513,8 @@ public class PageView extends AppCompatImageView {
         LogUtil.e(TAG, "触摸点：" + simpleDot);
         SimpleDot inSimpleDot = simpleDot;
         //将UI坐标转换为内部真实物理坐标
-        if (this.coordinateConverter != null) {
-            inSimpleDot = this.coordinateConverter.convertIn(simpleDot);
+        if (this.screenCoordinateConverter != null) {
+            inSimpleDot = this.screenCoordinateConverter.convertIn(simpleDot);
         }
 
         if (this.pageViewActivity != null) {

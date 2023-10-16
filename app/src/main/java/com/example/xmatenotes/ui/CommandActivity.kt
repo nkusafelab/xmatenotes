@@ -16,6 +16,7 @@ import com.example.xmatenotes.logic.manager.Writer
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
+import com.example.xmatenotes.util.DateUtil
 import com.example.xmatenotes.util.LogUtil
 import com.tqltech.tqlpencomm.bean.Dot
 
@@ -132,8 +133,9 @@ abstract class CommandActivity : BaseActivity() {
     }
 
     protected open fun createMediaDot(dot: Dot): MediaDot {
+//        LogUtil.e(TAG, "createMediaDot: dot.timelong: "+DateUtil.formatTimelong(MediaDot.reviseTimelong(dot.timelong), "yyyy年MM月dd日-HH时mm分ss秒SSS毫秒"))
         val mediaDot = MediaDot(dot)
-        mediaDot.timelong = System.currentTimeMillis() //原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
+//        mediaDot.timelong = System.currentTimeMillis() //原始timelong太早，容易早于录音开始，也可能是原始timelong不准的缘故
         mediaDot.penMac = XmateNotesApplication.mBTMac
         return mediaDot
     }

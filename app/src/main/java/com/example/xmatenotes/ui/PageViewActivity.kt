@@ -16,8 +16,10 @@ import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.model.Page.Page
+import com.example.xmatenotes.logic.model.handwriting.HandWriting
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
+import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
@@ -161,19 +163,21 @@ open class PageViewActivity : PageActivity() {
 //            Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
             if (!::bitmap.isInitialized){
                 bitmap = getViewBitmap(mediaDot.pageId)
-                pageView.setImageBitmap(bitmap)
-                updatePageViewDots()
+                pageView.post {
+                    pageView.setImageBitmap(bitmap)
+                    pageView.drawLineDots(page.dotList.clone() as List<SingleHandWriting>, page.coordinateCropper)
+                }
+
             } else {
-                thread {
-                    //时间耗费较大
-                    BitmapUtil.recycleBitmap(bitmap)
-                    bitmap = getViewBitmap(mediaDot.pageId)
-                    LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID): "+mediaDot.pageId)
-                    Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
-                    runOnUiThread {
-                        pageView.setImageBitmap(bitmap)
-                        updatePageViewDots()
-                    }
+                //时间耗费较大
+                var oldBmp = bitmap
+                bitmap = getViewBitmap(mediaDot.pageId)
+                LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID): "+mediaDot.pageId)
+                Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
+                pageView.post {
+                    pageView.setImageBitmap(bitmap)
+                    pageView.drawLineDots(page.dotList.clone() as List<SingleHandWriting>, page.coordinateCropper)
+                    BitmapUtil.recycleBitmap(oldBmp)
                 }
             }
             return true
@@ -236,7 +240,27 @@ open class PageViewActivity : PageActivity() {
     protected open fun updatePageViewDots(){
         //绘制笔迹
         pageView.post {
-            pageView.drawDots(page.dotList, page.coordinateCropper)
+            pageView.drawLineDots(page.dotList, page.coordinateCropper)
+        }
+    }
+
+    protected open fun updatePageViewDots(handWriting: HandWriting){
+
+        //绘制笔迹
+        pageView.post {
+            for (stroke in handWriting.strokes){
+                for (simpleDot in stroke.dots){
+                    pageView.drawLineDot(simpleDot, page.coordinateCropper)
+                }
+            }
+        }
+
+    }
+
+    protected open fun updatePageViewDot(simpleDot: SimpleDot){
+        //绘制笔迹点
+        pageView.post {
+            pageView.drawLineDot(simpleDot, page.coordinateCropper)
         }
     }
 
@@ -304,7 +328,17 @@ open class PageViewActivity : PageActivity() {
             }
 
             //绘制笔迹
-            updatePageViewDots()
+//            updatePageViewDots()
+            command?.handWriting?.let { handWriting ->
+                if(!handWriting.isDrawed){
+                    updatePageViewDots(handWriting)
+                    handWriting.isDrawed = true
+                } else {
+                    handWriting.lastDot?.let {
+                        updatePageViewDot(it)
+                    }
+                }
+            }
 
             return super.onCalligraphy(command)
         }
@@ -338,7 +372,9 @@ open class PageViewActivity : PageActivity() {
             }
 
             //绘制笔迹
-            updatePageViewDots()
+//            command?.handWriting?.lastDot?.let {
+//                updatePageViewDot(it)
+//            }
 
             return false
         }

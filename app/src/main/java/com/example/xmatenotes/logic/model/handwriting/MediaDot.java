@@ -151,17 +151,7 @@ public class MediaDot extends SimpleDot {
         return (float) (timeS - (c-reviseTimelong(timelong))/1000.0);
     }
 
-    /**
-     * 将Dot的timelong起始时间从2010-01-01 00:00:00 000修正为1970-01-01 00:00:00 000
-     * @param timelong
-     * @return
-     * @throws ParseException
-     */
-    public static long reviseTimelong(long timelong) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");
-        Date datetime = sdf.parse("2010-01-01 00:00:00 000");
-        return datetime.getTime() + timelong;
-    }
+
 
     //格式化显示timelong
     public static String timelongFormat(long timelong){

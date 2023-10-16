@@ -177,6 +177,11 @@ public class SerializableRectF implements Serializable,Cloneable {
                 && this.right >= right && this.bottom >= bottom;
     }
 
+    public boolean contains(SerializableRectF rectF) {
+        // check for empty first
+        return contains(rectF.left, rectF.top, rectF.right, rectF.bottom);
+    }
+
     /**
      * Update this Rect to enclose itself and the specified rectangle. If the
      * specified rectangle is empty, nothing is done. If this rectangle is empty

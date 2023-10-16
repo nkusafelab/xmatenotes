@@ -1,5 +1,6 @@
 package com.example.xmatenotes.logic.model.Page;
 
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 
@@ -18,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -222,6 +224,10 @@ public class Page implements IPage,Serializable {
         return newAudioName;
     }
 
+    public String getAudioNameByAudioId(int audioId){
+        return String.valueOf(audioId);
+    }
+
     public ArrayList<String> getAudioNameList() {
         return audioNameList;
     }
@@ -249,6 +255,38 @@ public class Page implements IPage,Serializable {
         LogUtil.e(TAG, "getHandWritingByCoordinate(): 未找到目标坐标上的笔迹！");
         return null;
     }
+
+    /**
+     *
+     * @param dot
+     * @return
+     */
+    public SingleHandWriting getSingleHandWritingByCoordinate(SimpleDot dot){
+        for(SingleHandWriting singleHandWriting : this.dotList){
+            if(singleHandWriting.contains(dot)){
+                return singleHandWriting;
+            }
+        }
+        LogUtil.e(TAG, "getSingleHandWritingByCoordinate(): 未找到目标坐标上的笔迹！");
+        return null;
+    }
+
+    /**
+     *
+     * @param rect
+     * @return
+     */
+    public List<SingleHandWriting> getSingleHandWritingListByRect(Rect rect){
+        SerializableRectF rectF = new SerializableRectF(rect);
+        List<SingleHandWriting> singleHandWritingList = new ArrayList<>();
+        for(SingleHandWriting singleHandWriting : this.dotList){
+            if(rectF.contains(singleHandWriting.getBoundRectF())){
+                singleHandWritingList.add(singleHandWriting);
+            }
+        }
+        return singleHandWritingList;
+    }
+
 
     /**
      * 根据坐标获取可能叠加的音频，若无音频，返回null

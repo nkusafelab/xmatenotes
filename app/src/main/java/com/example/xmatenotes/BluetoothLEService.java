@@ -187,6 +187,7 @@ public class BluetoothLEService extends Service {
 
             penCommAgent = PenCommAgent.GetInstance(getApplication());
             penStatus = penCommAgent.getPenStatus();
+            penCommAgent.ReqAdjustRTC();
             onReceivePenAllStatus(penStatus);
         }
 

@@ -5,6 +5,7 @@ import com.example.xmatenotes.util.LogUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * 单次迭代笔迹
@@ -191,5 +192,18 @@ public class SingleHandWriting implements Serializable {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SingleHandWriting that = (SingleHandWriting) o;
+        return handWritingsNumber == that.handWritingsNumber && prePeriod == that.prePeriod && firsttime == that.firsttime && duration == that.duration && isNew == that.isNew && isClosed == that.isClosed && Objects.equals(handWritings, that.handWritings) && Objects.equals(boundRect, that.boundRect);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(handWritings, handWritingsNumber, prePeriod, firsttime, duration, isNew, boundRect, isClosed);
     }
 }

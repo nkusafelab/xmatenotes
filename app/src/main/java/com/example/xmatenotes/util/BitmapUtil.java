@@ -150,6 +150,32 @@ public class BitmapUtil {
         return Bitmap.createScaledBitmap(bmp, (int) (bmp.getWidth()*ratio), (int) (bmp.getHeight()*ratio), true);
     }
 
+    //解析图片资源原始尺寸
+    public static Rect decodeDimensionOfImageFromResource(Resources res, int resId){
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resId, options);
+
+        return new Rect(0,0,options.outWidth,options.outHeight);
+
+    }
+
+    /**
+     * subRect包含于superRect
+     * @param subRect
+     * @param superRect
+     * @param newSuperRect
+     * @return
+     */
+    public static Rect mapRect(Rect subRect, Rect superRect, Rect newSuperRect){
+        Rect newSubRect = new Rect();
+        newSubRect.left = (int) (((double)(subRect.left - superRect.left)/superRect.width())*newSuperRect.width() + newSuperRect.left);
+        newSubRect.top = (int) (((double)(subRect.top - superRect.top)/superRect.height())*newSuperRect.height() + newSuperRect.top);
+        newSubRect.right = (int) (newSuperRect.right - ((double)(superRect.right - subRect.right)/superRect.width())*newSuperRect.width());
+        newSubRect.bottom = (int) (newSuperRect.bottom - ((double)(superRect.bottom - subRect.bottom)/superRect.height())*newSuperRect.height());
+        return newSubRect;
+    }
+
     /**
      * 旋转图片
      * @param b
@@ -174,6 +200,7 @@ public class BitmapUtil {
         // 先判断是否已经回收
         if(bitmap != null && !bitmap.isRecycled()){
             // 回收并且置为null
+            LogUtil.e(TAG, "recycleBitmap: 回收bitmap: "+bitmap);
             bitmap.recycle();
             bitmap = null;
         }

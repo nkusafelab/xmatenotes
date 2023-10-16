@@ -31,6 +31,8 @@ public class LocalData {
     public static final String LIMIT = "权限边界";
     public static final String AREA_IDENTIFICATION = "区域标识";
     public static final String ADD_INFORMATION = "附加信息";
+    public static final String FIRST_AREA_CODE = "一级区域编码";
+    public static final String SECOND_AREA_CODE = "二级区域编码";
 
     /**
      * 索引与多维表格交互的数据
@@ -96,12 +98,20 @@ public class LocalData {
         return (String) this.data.get(COMMAND);
     }
 
+    public Rect getLocalBound() {
+        return localBound;
+    }
+
     public String getAreaIdentification(){
         return (String) this.data.get(AREA_IDENTIFICATION);
     }
 
     public String getAddInformation(){
         return (String) this.data.get(ADD_INFORMATION);
+    }
+
+    public String getAreaCode(){
+        return ((String) this.data.get(FIRST_AREA_CODE))+"-"+((String) this.data.get(SECOND_AREA_CODE));
     }
 
     public LocalData addField(String fieldName, Object fieldValue){

@@ -4,6 +4,8 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.util.LogUtil;
 
+import java.io.Serializable;
+
 /**
  * 坐标转换器
  */
@@ -87,9 +89,10 @@ public class CoordinateConverter {
     /**
      * 坐标裁剪器
      */
-    public static class CoordinateCropper {
+    public static class CoordinateCropper implements Serializable {
 
         private static final String TAG = "CoordinateCropper";
+        private static final long serialVersionUID = 3922787934389024485L;
 
         private float left = 0F;
 
