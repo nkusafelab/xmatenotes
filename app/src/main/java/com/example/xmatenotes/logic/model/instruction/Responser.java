@@ -45,6 +45,7 @@ public abstract class Responser implements Observer, CommandResponse {
                     method.invoke(this, com);
                 } catch (NoSuchMethodException | InvocationTargetException |
                          IllegalAccessException ex) {
+                    //当您在代码中使用反射调用方法时，如果被调用的方法本身抛出了异常，那么反射调用将会捕获并封装该异常，并抛出InvocationTargetException。
                     throw new RuntimeException(ex);
                 }
 

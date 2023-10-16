@@ -7,7 +7,9 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import com.example.xmatenotes.R
 import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
@@ -27,8 +29,8 @@ class HWReplayActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "HWReplayActivity"
-        private const val SPEED: Long = 10 //笔迹绘制速度
-        private const val HANDWRITING_PERIOD: Long = 30 //相邻两次笔迹间隔时间
+        private const val SPEED: Long = 15 //笔迹绘制速度10
+        private const val HANDWRITING_PERIOD: Long = 100 //相邻两次笔迹间隔时间30
 
         @JvmStatic
         fun startHWReplayActivity(context: Context, subRect: Rect, bitmapKey: String, page: Page, localCode: String, singleHandWriting: SingleHandWriting){
@@ -60,7 +62,7 @@ class HWReplayActivity : BaseActivity() {
 
     private lateinit var singleHandWriting: SingleHandWriting
     private lateinit var localCode: String
-    private val penWidth = 3
+    private val penWidth = 2
     private lateinit var bitmap: Bitmap
     /**
      * 索引和对应颜色的映射
@@ -105,13 +107,15 @@ class HWReplayActivity : BaseActivity() {
             bitmap = BitmapCacheManager.getBitmap(bitmapKey)!!
         }
 
-        if ("" == localCode) {
+        isSupportActionBarDisplayConnected = false
+
+        if (localCode == "null") {
             localCode = "" + page.code
             supportActionBar!!.title = "页码: $localCode"
-            LogUtil.e(TAG, "onCreate: "+supportActionBar!!.title)
+            LogUtil.e(TAG, "onCreate: supportActionBar!!.title: "+supportActionBar!!.title)
         } else {
             supportActionBar!!.title = "局域编码: $localCode"
-            LogUtil.e(TAG, "onCreate: "+supportActionBar!!.title)
+            LogUtil.e(TAG, "onCreate: supportActionBar!!.title: "+supportActionBar!!.title)
         }
 
         pageView = findViewById(R.id.hwReplayView)
@@ -120,6 +124,7 @@ class HWReplayActivity : BaseActivity() {
             pageView.setImageBitmap(bitmap)
             pageView.setPenWidth(penWidth)
             var singleHandWritingList = page.getSingleHandWritingListByRect(rect)
+            LogUtil.e(TAG, "onCreate: singleHandWritingList.size: ${singleHandWritingList.size}")
             LogUtil.e(TAG, "onCreate: singleHandWritingList: $singleHandWritingList")
             var cropper = CoordinateConverter.CoordinateCropper(rect.left.toFloat(),
                 rect.top.toFloat()
@@ -137,10 +142,14 @@ class HWReplayActivity : BaseActivity() {
 
                 for(shw in singleHandWritingList){
                     pageView.setPenColor(getColor())
-                    if(shw.equals(singleHandWriting)){
-                        quickDraw = false
-                        LogUtil.e(TAG, "onCreate: quickDraw = false")
+                    LogUtil.e(TAG, "onCreate: shw.equals(singleHandWriting): "+shw.equals(singleHandWriting)+" shw: "+shw+" ?= singleHandWriting: "+singleHandWriting)
+                    if(quickDraw){
+                        if(shw.equals(singleHandWriting)){
+                            quickDraw = false
+                            LogUtil.e(TAG, "onCreate: quickDraw = false")
+                        }
                     }
+
 
                     if(quickDraw){
                         pageView.drawLineDots(shw, cropper)
@@ -158,7 +167,7 @@ class HWReplayActivity : BaseActivity() {
                                                 timelongStart = System.currentTimeMillis()
                                                 isHwStart = true
                                             }
-                                            pageView.drawLineDot(simpleDot as MediaDot, cropper)
+                                            pageView.drawLineDot(simpleDot, cropper)
 
                                         }
                                         //控制音频笔迹同步绘制
@@ -177,7 +186,7 @@ class HWReplayActivity : BaseActivity() {
                                 for(stroke in hw.strokes){
                                     for(simpleDot in stroke.dots){
                                         if(simpleDot is MediaDot){
-                                            pageView.drawLineDot(simpleDot as MediaDot, cropper)
+                                            pageView.drawLineDot(simpleDot, cropper)
                                             try {
                                                 Thread.sleep(SPEED)
                                             } catch (e: InterruptedException) {
@@ -201,7 +210,7 @@ class HWReplayActivity : BaseActivity() {
                 }
 
                 try {
-                    Thread.sleep(10000)
+                    Thread.sleep(5000)
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }

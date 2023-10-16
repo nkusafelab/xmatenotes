@@ -195,15 +195,29 @@ public class SingleHandWriting implements Serializable {
     }
 
     @Override
+    public String toString() {
+        return "SingleHandWriting{" +
+                "handWritings=" + handWritings +
+                ", handWritingsNumber=" + handWritingsNumber +
+                ", prePeriod=" + prePeriod +
+                ", firsttime=" + firsttime +
+                ", duration=" + duration +
+                ", isNew=" + isNew +
+                ", boundRect=" + boundRect +
+                ", isClosed=" + isClosed +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SingleHandWriting that = (SingleHandWriting) o;
-        return handWritingsNumber == that.handWritingsNumber && prePeriod == that.prePeriod && firsttime == that.firsttime && duration == that.duration && isNew == that.isNew && isClosed == that.isClosed && Objects.equals(handWritings, that.handWritings) && Objects.equals(boundRect, that.boundRect);
+        return handWritingsNumber == that.handWritingsNumber && prePeriod == that.prePeriod && firsttime == that.firsttime && duration == that.duration && Objects.equals(boundRect, that.boundRect);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(handWritings, handWritingsNumber, prePeriod, firsttime, duration, isNew, boundRect, isClosed);
+        return Objects.hash(handWritingsNumber, prePeriod, firsttime, duration, boundRect);
     }
 }

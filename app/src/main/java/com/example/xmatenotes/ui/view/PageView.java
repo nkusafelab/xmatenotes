@@ -57,6 +57,8 @@ public class PageView extends AppCompatImageView {
 
     private SimpleDot lastSimpleDot = null;
 
+    private float pWidth = 2f;
+
 
     public PageView(@NonNull Context context) {
         super(context);
@@ -74,10 +76,7 @@ public class PageView extends AppCompatImageView {
     }
 
     private void init() {
-        mPaint = new Paint();
-        mPaint.setColor(Color.BLACK);
-        mPaint.setStrokeWidth(2f);
-        mPaint.setStyle(Paint.Style.STROKE);
+        initPaint();
         mBitmap = null;
         mMatrix = new Matrix();
         mPath = new Path();
@@ -271,18 +270,18 @@ public class PageView extends AppCompatImageView {
                             }
                             LogUtil.e(TAG, "drawLineDot: 绘制后outSimpleDot:" + outSimpleDot);
                             if(outSimpleDot.type == Dot.DotType.PEN_DOWN){
-                                lastSimpleDot = outSimpleDot;
                                 LogUtil.e(TAG, "drawLineDots: PEN_DOWN: lastSimpleDot: "+lastSimpleDot);
+                                lastSimpleDot = outSimpleDot;
                             }
                             if(outSimpleDot.type == Dot.DotType.PEN_MOVE){
                                 mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
-                                lastSimpleDot = outSimpleDot;
                                 LogUtil.e(TAG, "drawLineDots: PEN_MOVE: "+lastSimpleDot+" - "+outSimpleDot);
+                                lastSimpleDot = outSimpleDot;
                             }
                             if(outSimpleDot.type == Dot.DotType.PEN_UP){
                                 mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
-                                lastSimpleDot = outSimpleDot;
                                 LogUtil.e(TAG, "drawLineDots: PEN_UP: "+lastSimpleDot+" - "+outSimpleDot);
+                                lastSimpleDot = outSimpleDot;
                             }
 
                         }
@@ -311,18 +310,18 @@ public class PageView extends AppCompatImageView {
 
             LogUtil.e(TAG, "drawLineDot: 绘制后outSimpleDot:" + outSimpleDot);
             if(outSimpleDot.type == Dot.DotType.PEN_DOWN){
-                lastSimpleDot = outSimpleDot;
                 LogUtil.e(TAG, "drawLineDot: PEN_DOWN: lastSimpleDot: "+lastSimpleDot);
+                lastSimpleDot = outSimpleDot;
             }
             if(outSimpleDot.type == Dot.DotType.PEN_MOVE){
                 mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
-                lastSimpleDot = outSimpleDot;
                 LogUtil.e(TAG, "drawLineDot: PEN_MOVE: "+lastSimpleDot+" - "+outSimpleDot);
+                lastSimpleDot = outSimpleDot;
             }
             if(outSimpleDot.type == Dot.DotType.PEN_UP){
                 mCanvas.drawLine(lastSimpleDot.getFloatX(), lastSimpleDot.getFloatY(), outSimpleDot.getFloatX(), outSimpleDot.getFloatY(), mPaint);
-                lastSimpleDot = outSimpleDot;
                 LogUtil.e(TAG, "drawLineDot: PEN_UP: "+lastSimpleDot+" - "+outSimpleDot);
+                lastSimpleDot = outSimpleDot;
             }
         }
     }
@@ -414,9 +413,14 @@ public class PageView extends AppCompatImageView {
      * 初始化画笔配置
      */
     public void initPaint(){
+        mPaint = new Paint();
         mPaint.setColor(Color.BLACK);
-        mPaint.setStrokeWidth(2f);
+        mPaint.setStrokeWidth(pWidth);
         mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setAntiAlias(true);//锯齿不显示
+        mPaint.setDither(true);  //防抖动
+        mPaint.setStrokeJoin(Paint.Join.ROUND);//设置线段连接处样式为圆弧
+        mPaint.setStrokeCap(Paint.Cap.ROUND);//设置线冒样式为圆形线冒
     }
 
     public void setPenWidth ( int w){

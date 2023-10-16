@@ -20,6 +20,7 @@ import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.handwriting.Gesture;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.util.ActivityCollector;
+import com.example.xmatenotes.util.LogUtil;
 
 /**
  * 活动基类
@@ -33,17 +34,17 @@ public class BaseActivity extends AppCompatActivity {
 
     private static BLEStatusReceiver bleStatusReceiver = null;
 
-    Toast mToast;
+    private boolean isSupportActionBarDisplayConnected = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, getClass().getSimpleName());
+        LogUtil.d(TAG, getClass().getSimpleName());
         ActivityCollector.addActivity(this);
 
-        Log.w(BaseActivity.TAG,"BaseActivity-"+getClass().getSimpleName()+": onCreate()");
+        LogUtil.w(TAG,"BaseActivity-"+getClass().getSimpleName()+": onCreate()");
         baseActivity = this;
-        Log.e(BaseActivity.TAG,"当前活动： "+baseActivity+" onCreate()");
+        LogUtil.e(TAG,"当前活动： "+baseActivity+" onCreate()");
 
     }
 
@@ -51,20 +52,20 @@ public class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         ActivityCollector.removeActivity(this);
-        Log.w(BaseActivity.TAG,"BaseActivity-"+getClass().getSimpleName()+": onDestroy()");
+        LogUtil.w(TAG,"BaseActivity-"+getClass().getSimpleName()+": onDestroy()");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.w(BaseActivity.TAG,"BaseActivity-"+getClass().getSimpleName()+": onStart()");
+        LogUtil.w(TAG,"BaseActivity-"+getClass().getSimpleName()+": onStart()");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        Log.w(BaseActivity.TAG,"BaseActivity-"+getClass().getSimpleName()+": onStop()");
+        LogUtil.w(TAG,"BaseActivity-"+getClass().getSimpleName()+": onStop()");
     }
 
     @Override
@@ -79,12 +80,12 @@ public class BaseActivity extends AppCompatActivity {
         registerReceiver(bleStatusReceiver,intentFilter);
 
         baseActivity = this;
-        Log.e(BaseActivity.TAG,"当前活动： "+baseActivity+" onResume()");
+        LogUtil.e(TAG,"当前活动： "+baseActivity+" onResume()");
 
-        Log.w(BaseActivity.TAG,"BaseActivity-"+getClass().getSimpleName()+": onResume()");
+        LogUtil.w(TAG,"BaseActivity-"+getClass().getSimpleName()+": onResume()");
 
         //每个活动标题栏都能看到蓝牙实时连接状态
-        if(BluetoothLEService.isPenConnected){
+        if(BluetoothLEService.isPenConnected && isSupportActionBarDisplayConnected){
             final Intent intent = new Intent(BluetoothLEService.ACTION_GATT_CONNECTED);
             sendBroadcast(intent);
         }
@@ -96,9 +97,17 @@ public class BaseActivity extends AppCompatActivity {
 
         //注销接收蓝牙状态变化的广播
         unregisterReceiver(bleStatusReceiver);
-        Log.w(BaseActivity.TAG,"BaseActivity-"+getClass().getSimpleName()+": onPause()");
+        LogUtil.w(TAG,"BaseActivity-"+getClass().getSimpleName()+": onPause()");
 
-        Log.e(BaseActivity.TAG,"当前活动： "+baseActivity+" onPause()");
+        LogUtil.e(TAG,"当前活动： "+baseActivity+" onPause()");
+    }
+
+    public boolean isSupportActionBarDisplayConnected() {
+        return isSupportActionBarDisplayConnected;
+    }
+
+    public void setSupportActionBarDisplayConnected(boolean supportActionBarDisplayConnected) {
+        isSupportActionBarDisplayConnected = supportActionBarDisplayConnected;
     }
 
     /**

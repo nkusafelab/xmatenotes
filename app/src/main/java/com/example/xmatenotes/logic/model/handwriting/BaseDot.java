@@ -5,6 +5,7 @@ import android.graphics.Point;
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 点基类
@@ -17,22 +18,22 @@ public class BaseDot implements Serializable,Cloneable,Comparable<BaseDot> {
     /**
      * 点横坐标，整数部分
      */
-    protected int x;
+    public int x;
 
     /**
      * 点纵坐标，整数部分
      */
-    protected int y;
+    public int y;
 
     /**
      * 点完整横坐标
      */
-    protected float fx;
+    public float fx;
 
     /**
      * 点完整纵坐标
      */
-    protected float fy;
+    public float fy;
 
     public BaseDot(int x, int y){
         setX(x);
@@ -122,6 +123,19 @@ public class BaseDot implements Serializable,Cloneable,Comparable<BaseDot> {
                 ", fx=" + fx +
                 ", fy=" + fy +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseDot baseDot = (BaseDot) o;
+        return x == baseDot.x && y == baseDot.y && Float.compare(baseDot.fx, fx) == 0 && Float.compare(baseDot.fy, fy) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, fx, fy);
     }
 
     @NonNull

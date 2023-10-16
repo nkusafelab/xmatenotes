@@ -175,6 +175,7 @@ class XueChengViewActivity : PageViewActivity() {
                                 subRect.bottom = Math.min(subRect.bottom + MARGIN, superRect.bottom)
                                 var newSuperRect = Rect(0, 0, bitmap.width, bitmap.height)
                                 var newSubRect = BitmapUtil.mapRect(subRect, superRect, newSuperRect)
+                                LogUtil.e(TAG, "onDoubleClick: newSubRect: $newSubRect")
                                 var subBitmap = Bitmap.createBitmap(bitmap, newSubRect.left, newSubRect.top, newSubRect.width(), newSubRect.height())
 //                                LogUtil.e(TAG, "onDoubleClick: ", )
                                 BitmapCacheManager.putBitmap("subBitmap", subBitmap)

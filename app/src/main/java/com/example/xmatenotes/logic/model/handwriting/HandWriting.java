@@ -422,12 +422,12 @@ public class HandWriting implements Serializable,Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HandWriting that = (HandWriting) o;
-        return strokesNumber == that.strokesNumber && prePeriod == that.prePeriod && firsttime == that.firsttime && duration == that.duration && isClosed == that.isClosed && audioId == that.audioId && videoId == that.videoId && Float.compare(that.videoTime, videoTime) == 0 && color == that.color && width == that.width && Objects.equals(strokes, that.strokes) && Objects.equals(boundRect, that.boundRect) && Objects.equals(penMac, that.penMac);
+        return strokesNumber == that.strokesNumber && prePeriod == that.prePeriod && firsttime == that.firsttime && duration == that.duration && isClosed == that.isClosed && isDrawed == that.isDrawed && audioId == that.audioId && videoId == that.videoId && Float.compare(that.videoTime, videoTime) == 0 && color == that.color && width == that.width && Objects.equals(boundRect, that.boundRect) && Objects.equals(lastDot, that.lastDot) && Objects.equals(penMac, that.penMac);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(strokes, strokesNumber, prePeriod, firsttime, duration, boundRect, isClosed, penMac, audioId, videoId, videoTime, color, width);
+        return Objects.hash(strokesNumber, prePeriod, firsttime, duration, boundRect, lastDot, isClosed, isDrawed, penMac, audioId, videoId, videoTime, color, width);
     }
 
     @Override

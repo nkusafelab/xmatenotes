@@ -630,6 +630,8 @@ public class Writer {
          */
         public void stop(){
             isStart = false;
+            this.priorityQueue.clear();
+            this.responseWorkerMap.clear();
             LogUtil.e(TAG, "stop: 延时计时器关闭");
         }
     }

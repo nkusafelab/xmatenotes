@@ -9,6 +9,7 @@ import com.tqltech.tqlpencomm.bean.Dot;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -106,6 +107,20 @@ public class SimpleDot extends BaseDot implements Cloneable {
                 ", fx=" + fx +
                 ", fy=" + fy +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SimpleDot simpleDot = (SimpleDot) o;
+        return timelong == simpleDot.timelong && type == simpleDot.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), type, timelong);
     }
 
     @NonNull

@@ -10,6 +10,7 @@ import com.tqltech.tqlpencomm.bean.Dot;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 附加媒体信息的点
@@ -172,6 +173,20 @@ public class MediaDot extends SimpleDot {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        MediaDot mediaDot = (MediaDot) o;
+        return strokesID == mediaDot.strokesID && pageId == mediaDot.pageId && videoId == mediaDot.videoId && Float.compare(mediaDot.videoTime, videoTime) == 0 && audioID == mediaDot.audioID && color == mediaDot.color && width == mediaDot.width && ins == mediaDot.ins && Objects.equals(penMac, mediaDot.penMac);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), strokesID, pageId, penMac, videoId, videoTime, audioID, color, width, ins);
+    }
+
+    @Override
     public String toString() {
         return "MediaDot{" +
                 "strokesID=" + strokesID +
@@ -322,5 +337,6 @@ public class MediaDot extends SimpleDot {
     public boolean isCharInstruction(){
         return this.ins > 0 && this.ins != 1 && this.ins != 2 && this.ins != 3 && this.ins < 10;
     }
+
 
 }
