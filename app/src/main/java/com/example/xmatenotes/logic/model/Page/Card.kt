@@ -111,8 +111,12 @@ class Card: Page(),Serializable {
         if (preCode.isNotEmpty()){
             this.preCode = preCode
             this.cardDataLabel.preCode = this.preCode
-//            this.code = this.preCode.substring(0,4)
-//            this.qrObject.pn = this.code
+            if(preCode.length == 18){
+                this.code = this.preCode.substring(0,4)
+            }else if (preCode.length == 19){
+                this.code = this.preCode.substring(0,6)
+            }
+            this.qrObject.pn = this.code
         }
     }
 
