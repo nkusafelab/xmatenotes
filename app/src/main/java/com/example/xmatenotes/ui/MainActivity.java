@@ -463,7 +463,7 @@ public class MainActivity extends BaseActivity {
         penMac = XmateNotesApplication.mBTMac;
         penMacManager = PenMacManager.getInstance();//必须在加载数据之前
 //        drawImageView = (DrawImageView)findViewById(R.id.drawImageView);
-        pageSurfaceView = (PageSurfaceView)findViewById(R.id.drawImageSurfaceView);
+//        pageSurfaceView = (PageSurfaceView)findViewById(R.id.drawImageSurfaceView);
 //        switchPage(0);
 //        DisplayMetrics dm = new DisplayMetrics();
 //        getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -667,15 +667,15 @@ public class MainActivity extends BaseActivity {
                         }
 
                         //依次按照圆圈从左到右的顺序对不同笔迹类别进行颜色区分
-                        if(pageSurfaceView.isLRInforShow){
-                            if(pageSurfaceView.peoOrHW == 0){
-                                pageSurfaceView.peoOrHW = 1;
-                            }else if(pageSurfaceView.peoOrHW == 1){
-                                pageSurfaceView.peoOrHW = 2;
-                            }else if(pageSurfaceView.peoOrHW == 2){
-                                pageSurfaceView.peoOrHW = 1;
-                            }
-                        }
+//                        if(pageSurfaceView.isLRInforShow){
+//                            if(pageSurfaceView.peoOrHW == 0){
+//                                pageSurfaceView.peoOrHW = 1;
+//                            }else if(pageSurfaceView.peoOrHW == 1){
+//                                pageSurfaceView.peoOrHW = 2;
+//                            }else if(pageSurfaceView.peoOrHW == 2){
+//                                pageSurfaceView.peoOrHW = 1;
+//                            }
+//                        }
 
                     }
                 }
@@ -707,49 +707,49 @@ public class MainActivity extends BaseActivity {
                     }
                     mediaDot = oldPageManager.getDotMedia(mediaDot.pageId,mediaDot.getIntX(), mediaDot.getIntY());
                     if(mediaDot == null){
-                        if(!pageSurfaceView.isLRInforShow){
-                            //呈现局域统计信息
-                            Rect rectMaped = pageSurfaceView.mapRect(lR.rect);
-                            int diam = 30, padding = 5;
-                            pageSurfaceView.hwNumRect = new Rect(rectMaped.right-padding-diam, rectMaped.top+padding, rectMaped.right-padding, rectMaped.top+padding+diam);
-                            Log.e(TAG, "receiveRecognizeResult: hwNumRect: "+pageSurfaceView.hwNumRect);
-                            pageSurfaceView.hwNumber = oldPageManager.getPageByPageID(mediaDot.pageId).getHandWritingsNum(lR.getLocalCode());
-                            Rect rectPeo = new Rect(pageSurfaceView.hwNumRect);
-                            rectPeo.left -= diam*2;rectPeo.right -= diam*2;
-                            pageSurfaceView.peoNumRect = rectPeo;
-                            Log.e(TAG, "receiveRecognizeResult: peoNumRect: "+pageSurfaceView.peoNumRect);
-                            pageSurfaceView.peoNumber = oldPageManager.getPageByPageID(mediaDot.pageId).getPeopleNum(lR.getLocalCode());
-                            pageSurfaceView.pageId = mediaDot.pageId;
-                            pageSurfaceView.lR = lR;
-                            pageSurfaceView.peoOrHW = 0;
-
-                            pageSurfaceView.isLRInforShow = true;
-                        }else {
-                            //隐藏局域统计信息
-                            pageSurfaceView.isLRInforShow = false;
-                            pageSurfaceView.drawlR(pageSurfaceView.lR);
-                        }
+//                        if(!pageSurfaceView.isLRInforShow){
+//                            //呈现局域统计信息
+//                            Rect rectMaped = pageSurfaceView.mapRect(lR.rect);
+//                            int diam = 30, padding = 5;
+//                            pageSurfaceView.hwNumRect = new Rect(rectMaped.right-padding-diam, rectMaped.top+padding, rectMaped.right-padding, rectMaped.top+padding+diam);
+//                            Log.e(TAG, "receiveRecognizeResult: hwNumRect: "+pageSurfaceView.hwNumRect);
+//                            pageSurfaceView.hwNumber = oldPageManager.getPageByPageID(mediaDot.pageId).getHandWritingsNum(lR.getLocalCode());
+//                            Rect rectPeo = new Rect(pageSurfaceView.hwNumRect);
+//                            rectPeo.left -= diam*2;rectPeo.right -= diam*2;
+//                            pageSurfaceView.peoNumRect = rectPeo;
+//                            Log.e(TAG, "receiveRecognizeResult: peoNumRect: "+pageSurfaceView.peoNumRect);
+//                            pageSurfaceView.peoNumber = oldPageManager.getPageByPageID(mediaDot.pageId).getPeopleNum(lR.getLocalCode());
+//                            pageSurfaceView.pageId = mediaDot.pageId;
+//                            pageSurfaceView.lR = lR;
+//                            pageSurfaceView.peoOrHW = 0;
+//
+//                            pageSurfaceView.isLRInforShow = true;
+//                        }else {
+//                            //隐藏局域统计信息
+//                            pageSurfaceView.isLRInforShow = false;
+//                            pageSurfaceView.drawlR(pageSurfaceView.lR);
+//                        }
 
                     }else {
                         //呈现笔迹详细信息
-                        if(!pageSurfaceView.isDdrawLocalHWMap){
-                            pageSurfaceView.isDdrawLocalHWMap = true;
-                            OldXueCheng oldXueCheng = XmateNotesApplication.oldPageManager.getPageByPageID(mediaDot.pageId);
-                            Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
-                            OldXueCheng.LocalHandwritingsMap lhwm = null;
-                            for (OldXueCheng.LocalHandwritingsMap lh : oldXueCheng.getLocalHandwritings(lR.getLocalCode())) {
-                                if(lh.contains(mediaDot.getIntX(),mediaDot.getIntY())){
-                                    lhwm = lh;
-                                }
-                            }
-//                   Page.LocalHandwritingsMap lhwm  = page.getLocalHandwritings(lR.getLocalCode()).get(mediaDot.strokesID);
-                            ArrayList<MediaDot> edimaDots = oldXueCheng.getPageDotsBuffer();
-                            pageSurfaceView.drawLocalHWMap(lR, lhwm, edimaDots);
-                        }else {
-                            pageSurfaceView.isDdrawLocalHWMap = false;
-                            pageSurfaceView.pageId = mediaDot.pageId;
-                            pageSurfaceView.drawlR(lR);
-                        }
+//                        if(!pageSurfaceView.isDdrawLocalHWMap){
+//                            pageSurfaceView.isDdrawLocalHWMap = true;
+//                            OldXueCheng oldXueCheng = XmateNotesApplication.oldPageManager.getPageByPageID(mediaDot.pageId);
+//                            Log.e(TAG, "receiveRecognizeResult: lR.getLocalCode(): "+lR.getLocalCode());
+//                            OldXueCheng.LocalHandwritingsMap lhwm = null;
+//                            for (OldXueCheng.LocalHandwritingsMap lh : oldXueCheng.getLocalHandwritings(lR.getLocalCode())) {
+//                                if(lh.contains(mediaDot.getIntX(),mediaDot.getIntY())){
+//                                    lhwm = lh;
+//                                }
+//                            }
+////                   Page.LocalHandwritingsMap lhwm  = page.getLocalHandwritings(lR.getLocalCode()).get(mediaDot.strokesID);
+//                            ArrayList<MediaDot> edimaDots = oldXueCheng.getPageDotsBuffer();
+//                            pageSurfaceView.drawLocalHWMap(lR, lhwm, edimaDots);
+//                        }else {
+//                            pageSurfaceView.isDdrawLocalHWMap = false;
+//                            pageSurfaceView.pageId = mediaDot.pageId;
+//                            pageSurfaceView.drawlR(lR);
+//                        }
 
                     }
                 }
@@ -999,7 +999,7 @@ public class MainActivity extends BaseActivity {
                 return true;
             case R.id.action_clear:
                 oldPageManager.clear();
-                pageSurfaceView.clear();
+//                pageSurfaceView.clear();
                 Log.e(TAG,"action_clear");
                 return true;
             case R.id.dot_info_intent:
@@ -1194,12 +1194,12 @@ public class MainActivity extends BaseActivity {
 //                    isWriteFirst = false;
 //                }
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        pageSurfaceView.drawMDot(curMediaDot);
-                    }
-                }).start();
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        pageSurfaceView.drawMDot(curMediaDot);
+//                    }
+//                }).start();
 
 //            drawImageSurfaceView.drawDot(dot);
             }
@@ -1230,24 +1230,24 @@ public class MainActivity extends BaseActivity {
     private void switchPage(long pageID){
         oldPageManager.currentPageID = pageID;
         int resID = oldPageManager.getResIDByPageID(pageID);
-        if(resID != -1){
-            pageSurfaceView.setImageBitmapByResId(resID);
-        }else {
-            pageSurfaceView.setImageBitmapByResId(-1);
-            Toast.makeText(MainActivity.this, "不存在页码对应的图片资源", Toast.LENGTH_SHORT).show();
-            Log.e(TAG,"switchPage(): 不存在页码对应的图片资源");
-        }
+//        if(resID != -1){
+//            pageSurfaceView.setImageBitmapByResId(resID);
+//        }else {
+//            pageSurfaceView.setImageBitmapByResId(-1);
+//            Toast.makeText(MainActivity.this, "不存在页码对应的图片资源", Toast.LENGTH_SHORT).show();
+//            Log.e(TAG,"switchPage(): 不存在页码对应的图片资源");
+//        }
 
         OldXueCheng oldXueCheng = oldPageManager.getPageByPageID(pageID);
         if(oldXueCheng != null){
             //确保在绘制新页码底图之后再绘制，否则上一个invalidate()发送的WM_PAINT消息还在队列里没取出来，bitmap都还是null
-            pageSurfaceView.post(new Runnable() {
-                @Override
-                public void run() {
-                    pageSurfaceView.drawMDots(oldXueCheng.getPageDotsBuffer());
-                    Log.e(TAG,"switchPage(): 新页上的点绘制完毕");
-                }
-            });
+//            pageSurfaceView.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    pageSurfaceView.drawMDots(oldXueCheng.getPageDotsBuffer());
+//                    Log.e(TAG,"switchPage(): 新页上的点绘制完毕");
+//                }
+//            });
         }else {
             Log.e(TAG,"switchPage(): 尚未存储该页");
         }
@@ -1262,13 +1262,13 @@ public class MainActivity extends BaseActivity {
 
         if(ges.isCharInstruction()){
             //按照特定样式重绘
-            pageSurfaceView.restoreRect(Gesture.rectFToRect(ges.getRectF()));
-            pageSurfaceView.lastMediaDot = null;
-            pageSurfaceView.curMediaDot = null;
-            Set<Map.Entry<String, ArrayList<MediaDot>>> set = ges.getStrokes().entrySet();
-            for (Map.Entry<String, ArrayList<MediaDot>> node: set) {
-                pageSurfaceView.drawMDots(node.getValue());
-            }
+//            pageSurfaceView.restoreRect(Gesture.rectFToRect(ges.getRectF()));
+//            pageSurfaceView.lastMediaDot = null;
+//            pageSurfaceView.curMediaDot = null;
+//            Set<Map.Entry<String, ArrayList<MediaDot>>> set = ges.getStrokes().entrySet();
+//            for (Map.Entry<String, ArrayList<MediaDot>> node: set) {
+//                pageSurfaceView.drawMDots(node.getValue());
+//            }
 
         }
 

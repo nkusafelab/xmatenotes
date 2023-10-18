@@ -115,6 +115,7 @@ class XueChengViewActivity : PageViewActivity() {
         )
         var subPage = (page as XueCheng).getSubPageByCoordinate(point)
         subPage?.let {
+            pageManager.iterateVersion(page)
             subPage.createTime = page.createTime
             var rectF = it.pageBounds
             LogUtil.e(TAG, "commit: subPage.pageBounds: $rectF")

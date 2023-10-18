@@ -380,19 +380,6 @@ public class PageManager {
             }
         }
 
-        if(page instanceof XueChengCard){
-            LogUtil.e(TAG, "save: page为XueChengCard");
-            XueChengCard xueChengCard = (XueChengCard)page;
-            oldFile = new File(getPageAbsolutePath(xueChengCard.getSuperPageName()));
-            pageAbsolutePath = oldFile.getAbsolutePath();
-            LogUtil.e(TAG, "save: xueChengCard.getSuperPageAbsolutePath: "+pageAbsolutePath);
-            xueChengCard.create();
-            newFile = new File(getPageAbsolutePath(xueChengCard));
-            newFile.mkdirs();
-            LogUtil.e(TAG, "save: XueChengCard: newFile.mkdirs(): "+newFile.getAbsolutePath());
-        }
-
-
         bitableManager.initialTable(Page.pagesTableId);
 
         String dataPath = getDataAbsolutePath(page);
