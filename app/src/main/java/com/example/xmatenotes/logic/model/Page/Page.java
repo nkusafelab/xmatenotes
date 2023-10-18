@@ -478,6 +478,8 @@ public class Page implements IPage,Serializable {
         this.qrObject.setTime(this.createTime);
         LogUtil.e(TAG, "create(): 生成时间: "+this.createTime);
 
+        LogUtil.e(TAG,"展示具体code"+this.code);
+
         this.code = this.code.substring(0,6) + this.createTime;
         this.qrObject.setPn(this.code);
         LogUtil.e(TAG, "create()(): 生成code: "+this.code);
