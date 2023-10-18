@@ -711,17 +711,22 @@ public class BitableManager {
 
     /**
      * 上传文件获取文件的file_token;文件大小不要超过或接近20MB
-     * @param path  文件绝对路径列表
+     * @param pathList  文件绝对路径列表
      * @param callBack
      */
-    public void uploadFile(List<String> path, BitableResp callBack){
+    public void uploadFile(List<String> pathList, BitableResp callBack){
+        LogUtil.e(TAG, "uploadFile");
+        if(pathList.isEmpty()){
+            LogUtil.e(TAG, "uploadFile: pathList为空!");
+            return;
+        }
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i = 0; i < path.size(); i++) {
+                for(int i = 0; i < pathList.size(); i++) {
                     // 创建请求对象
-                    File file = new File(path.get(i));
+                    File file = new File(pathList.get(i));
                     if (!file.exists()) {
                         Log.e(TAG, "uploadFile: 上传文件不存在！");
                         return;

@@ -260,6 +260,56 @@ public class SerializableRectF implements Serializable,Cloneable {
         }
     }
 
+    /**
+     * Returns true if this rectangle intersects the specified rectangle.
+     * In no event is this rectangle modified. No check is performed to see
+     * if either rectangle is empty. To record the intersection, use intersect()
+     * or setIntersect().
+     *
+     * @param left The left side of the rectangle being tested for intersection
+     * @param top The top of the rectangle being tested for intersection
+     * @param right The right side of the rectangle being tested for
+     *              intersection
+     * @param bottom The bottom of the rectangle being tested for intersection
+     * @return true iff the specified rectangle intersects this rectangle. In
+     *              no event is this rectangle modified.
+     */
+    public boolean intersects(float left, float top, float right,
+                              float bottom) {
+        return this.left < right && left < this.right
+                && this.top < bottom && top < this.bottom;
+    }
+
+    /**
+     * Returns true if this rectangle intersects the specified rectangle.
+     * In no event is this rectangle modified. No check is performed to see
+     * if either rectangle is empty. To record the intersection, use intersect()
+     * or setIntersect().
+     *
+     * @param sRectF The object rectangle being tested for intersection
+     * @return true iff the specified rectangle intersects this rectangle. In
+     *              no event is this rectangle modified.
+     */
+    public boolean intersects(SerializableRectF sRectF) {
+        return this.left < sRectF.right && sRectF.left < this.right
+                && this.top < sRectF.bottom && sRectF.top < this.bottom;
+    }
+
+    /**
+     * Returns true iff the two specified rectangles intersect. In no event are
+     * either of the rectangles modified. To record the intersection,
+     * use intersect() or setIntersect().
+     *
+     * @param a The first rectangle being tested for intersection
+     * @param b The second rectangle being tested for intersection
+     * @return true iff the two specified rectangles intersect. In no event are
+     *              either of the rectangles modified.
+     */
+    public static boolean intersects(SerializableRectF a, SerializableRectF b) {
+        return a.left < b.right && b.left < a.right
+                && a.top < b.bottom && b.top < a.bottom;
+    }
+
     @NonNull
     @Override
     protected SerializableRectF clone() throws CloneNotSupportedException {

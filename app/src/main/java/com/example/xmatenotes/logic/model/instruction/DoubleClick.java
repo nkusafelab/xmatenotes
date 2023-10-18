@@ -12,7 +12,7 @@ public class DoubleClick extends ActionCommand{
     private static final String TAG = "DoubleClick";
 
     //时间常量
-    public final static int DOUBLE_CLICK_PERIOD = 300;//定义双击的两次点击最大时间间隔
+    public final static int DOUBLE_CLICK_PERIOD = 1500;//定义双击的两次点击最大时间间隔300
 
     public final static int STROKES_NUMBER = 2;//定义单击命令的笔划数
 

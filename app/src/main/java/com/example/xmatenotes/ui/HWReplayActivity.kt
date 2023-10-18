@@ -159,42 +159,32 @@ class HWReplayActivity : BaseActivity() {
                                 var audioName = page.getAudioNameByAudioId(hw.audioId)
                                 audioManager.comPlayAudio(pageManager.getAudioAbsolutePath(page, audioName))
                                 LogUtil.e(TAG, "播放AudioName为：$audioName")
-                                for(stroke in hw.strokes){
-                                    for(simpleDot in stroke.dots){
-                                        if(simpleDot is MediaDot){
-                                            if(!isHwStart){
-                                                dotTimelongStart = simpleDot.timelong
-                                                timelongStart = System.currentTimeMillis()
-                                                isHwStart = true
-                                            }
-                                            pageView.drawLineDot(simpleDot, cropper)
+                                LogUtil.e(TAG, "onCreate: audioManager.isPlaying: "+audioManager.isPlaying)
+                            }
 
+                            for(stroke in hw.strokes){
+                                for(simpleDot in stroke.dots){
+                                    if(simpleDot is MediaDot){
+                                        if(!isHwStart){
+                                            dotTimelongStart = simpleDot.timelong
+                                            timelongStart = System.currentTimeMillis()
+                                            isHwStart = true
                                         }
-                                        //控制音频笔迹同步绘制
-                                        if (audioManager.isPlaying) {
-                                            while (System.currentTimeMillis() - timelongStart < simpleDot.timelong - dotTimelongStart) {
-                                            }
+                                        pageView.drawLineDot(simpleDot, cropper)
+                                        while (System.currentTimeMillis() - timelongStart < simpleDot.timelong - dotTimelongStart) {
                                         }
+
                                     }
+                                    //控制音频笔迹同步绘制
+//                                        if (audioManager.isPlaying) {
+//                                            while (System.currentTimeMillis() - timelongStart < simpleDot.timelong - dotTimelongStart) {
+//                                            }
+//                                        }
                                 }
+                            }
 
-                                isHwStart = false
-                                while (audioManager.isPlaying){
-                                }
-
-                            } else {
-                                for(stroke in hw.strokes){
-                                    for(simpleDot in stroke.dots){
-                                        if(simpleDot is MediaDot){
-                                            pageView.drawLineDot(simpleDot, cropper)
-                                            try {
-                                                Thread.sleep(SPEED)
-                                            } catch (e: InterruptedException) {
-                                                e.printStackTrace()
-                                            }
-                                        }
-                                    }
-                                }
+                            isHwStart = false
+                            while (hw.hasAudio() && audioManager.isPlaying){
                             }
 
                             try {
@@ -205,7 +195,6 @@ class HWReplayActivity : BaseActivity() {
                         }
                     }
                     //单次笔迹绘制完成
-
 
                 }
 

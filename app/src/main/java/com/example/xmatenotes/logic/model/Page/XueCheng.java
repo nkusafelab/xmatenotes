@@ -1,5 +1,7 @@
 package com.example.xmatenotes.logic.model.Page;
 
+import android.util.Log;
+
 import com.example.xmatenotes.app.ax.A3;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
@@ -40,7 +42,7 @@ public class XueCheng extends CompositePage {
         this.setRealDimensions(A3.ABSCISSA_RANGE,A3.ORDINATE_RANGE);//采用真实尺寸太大，命令识别不准
 
         //各子版面无交叉重合部分
-        this.subPages.put("01", new XueChengCard("01", pageId, pageNumber, 0F, 0F, this.realWidth, this.realHeight));
+        this.subPages.put("01", new XueChengCard("01", pageId, pageNumber, 0F, 0F, this.realWidth/2, this.realHeight));
         this.subPages.put("02", new XueChengCard("02", pageId, pageNumber, this.realWidth/2, 0F, this.realWidth/2, this.realHeight));
     }
 
@@ -88,10 +90,10 @@ public class XueCheng extends CompositePage {
         return this;
     }
 
-    public String getPageName() {
-        this.pageStorageName = Page.getPageStorageName(this.code, this.createTime);
-        return this.pageStorageName;
-    }
+//    public String getPageName() {
+//        this.pageStorageName = getPageStorageName(this.code, this.createTime);
+//        return this.pageStorageName;
+//    }
 
     /**
      *
@@ -102,12 +104,27 @@ public class XueCheng extends CompositePage {
         Set<Map.Entry<String, Page>> set = this.subPages.entrySet();
         Iterator<Map.Entry<String, Page>> it = set.iterator();
         while (it.hasNext()){
-            Page subPage = (Page)it.next();
+            Map.Entry<String, Page> node = it.next();
+            Page subPage = node.getValue();
             if(subPage.getPageBounds().contains(simpleDot.getFloatX(), simpleDot.getFloatY())){
                 return subPage;
             }
         }
         LogUtil.e(TAG, "未找到包含目标坐标的subPage!");
         return null;
+    }
+
+    @Override
+    public String getNewAudioName(SimpleDot simpleDot) {
+        String newAudioName = String.valueOf(this.audioNameList.size());
+        this.audioNameList.add(newAudioName);
+        Page subPage = getSubPageByCoordinate(simpleDot);
+        if(subPage != null){
+            subPage.getAudioNameList().add(newAudioName);
+            LogUtil.e(TAG, "getNewAudioName: 音频 "+newAudioName+" 分发至: "+subPage.getCode() );
+        }
+        LogUtil.e(TAG, "getNewAudioName: audioNameList.size为: "+this.audioNameList.size());
+        return newAudioName;
+//        return super.getNewAudioName();
     }
 }

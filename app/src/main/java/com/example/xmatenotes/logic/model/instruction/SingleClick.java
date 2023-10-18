@@ -11,7 +11,7 @@ public class SingleClick extends ActionCommand{
 
     private static final String TAG = "SingleClick";
 
-    public final static double SINGLE_CLICK_dLIMIT = 1;//定义单击笔划的最大上下或左右距离，mm
+    public final static double SINGLE_CLICK_dLIMIT = 2;//定义单击笔划的最大上下或左右距离，mm
     public final static long SINGLE_CLICK_tLIMIT = 300;//定义单击笔划的最大时间跨度
     public final static int STROKES_NUMBER = 1;//定义单击命令的笔划数
 

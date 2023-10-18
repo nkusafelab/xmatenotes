@@ -48,7 +48,6 @@ import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
@@ -796,7 +795,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
                                 cropRect(rectF, rectCrop)
                                 cardData.setQRCodeRect(rectF.left.toInt(), rectF.top.toInt(), rectF.width().toInt())
-                                cardData.setPageRect(bMap.width, bMap.height)
+                                cardData.setRealDimensions(bMap.width.toFloat(), bMap.height.toFloat())
                                 cardData.toQRObject().toQRCodeBitmap(rectF)
                                     ?.let {
                                         LogUtil.e(TAG, "变换后:$rectF")
@@ -807,6 +806,13 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
 //                var bMap = result.bitmap?.let { warpPerspective(it, pageBitMapPs, desPoints, desWidth, desHeight) }
                         ivResult.setImageBitmap(bMap)
+                        val matrix: Matrix = ivResult.imageMatrix
+                        val drawable = ivResult.drawable
+                        var intrnRectF = RectF()
+                        if (drawable != null) {
+                            intrnRectF.set(0f, 0f, drawable.intrinsicWidth.toFloat(),drawable.intrinsicHeight.toFloat())
+                            matrix.mapRect(intrnRectF)
+                        }
                         previewView.alpha = 0F
 
                         viewfinderView.isShowPoints = false
@@ -830,6 +836,12 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                         //初始化回false为下次做准备
                         keyDown=false
                         val intent = Intent(getContext(), CardProcessActivity::class.java)
+                        if(!intrnRectF.isEmpty){
+                            intent.putExtra("left", intrnRectF.left)
+                            intent.putExtra("right", intrnRectF.right)
+                            intent.putExtra("top", intrnRectF.top)
+                            intent.putExtra("bottom", intrnRectF.bottom)
+                        }
                         startActivity(intent)
                     }
                 } else {

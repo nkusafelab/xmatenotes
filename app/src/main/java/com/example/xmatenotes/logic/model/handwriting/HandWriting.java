@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -109,6 +110,7 @@ public class HandWriting implements Serializable,Cloneable {
     public HandWriting(long prePeriod, long firsttime) {
         this.prePeriod = prePeriod;
         this.firsttime = firsttime;
+        LogUtil.e(TAG, "HandWriting: this.prePeriod: "+this.prePeriod+" this.firsttime: "+this.firsttime);
     }
 
 //    /**
@@ -193,6 +195,7 @@ public class HandWriting implements Serializable,Cloneable {
         Stroke stroke = this.strokes.get(strokes.size()-1);
 
         stroke.addDot(sDot);
+        LogUtil.e(TAG, "addDot: "+sDot);
         lastDot = sDot;
 
         if(sDot instanceof  MediaDot){
@@ -230,6 +233,7 @@ public class HandWriting implements Serializable,Cloneable {
 //                region.union(rectFToRect(stroke.getBoundRectF()));
 //            }
             isClosed = true;
+            LogUtil.e(TAG, "close");
         }
     }
 
@@ -238,6 +242,7 @@ public class HandWriting implements Serializable,Cloneable {
         this.strokesNumber = 0;
         this.firsttime = XmateNotesApplication.DEFAULT_LONG;
         this.boundRect.setEmpty();
+        LogUtil.e(TAG, "clear");
 //        this.region.setEmpty();
     }
 

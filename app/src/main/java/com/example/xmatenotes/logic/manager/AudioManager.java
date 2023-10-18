@@ -292,6 +292,7 @@ public class AudioManager {
             startRecordAudio();
             return;
         }
+        LogUtil.e(TAG, "startRecordAudio: audioAbsolutePath: "+audioAbsolutePath);
         File file = new File(audioAbsolutePath);
         File fileParent = file.getParentFile();
         if(!fileParent.exists()){
@@ -436,22 +437,22 @@ public class AudioManager {
      * 开启录音。该方法会开启线程和计时器来进行录音。对应的关闭录音方法为{@link #stopRATimer()}
      */
     public void startRATimer(String audioAbsolutePath){
+        try {
+            comPlayAssetsAudio("startrecord.mp3");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Log.e(TAG,"执行完comPlayAssetsAudio(beep.ogg); "+System.currentTimeMillis()+" ms");
+        long a = System.currentTimeMillis();//记录录音开始时间
+        startRecordAudio(audioAbsolutePath);
+        long s = System.currentTimeMillis();
+        Log.e(TAG,"startRecordAudio()执行了 "+(s-a)+" ms");
+        LogUtil.e(TAG, "startRATimer: RATimer: "+RATimer);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 //播放录音开始提示音
 //                comPlayAssetsAudio("startrecord.mp3");
-                try {
-                    comPlayAssetsAudio("startrecord.mp3");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                Log.e(TAG,"执行完comPlayAssetsAudio(beep.ogg); "+System.currentTimeMillis()+" ms");
-                long a = System.currentTimeMillis();//记录录音开始时间
-                startRecordAudio(audioAbsolutePath);
-                long s = System.currentTimeMillis();
-                Log.e(TAG,"startRecordAudio()执行了 "+(s-a)+" ms");
-                LogUtil.e(TAG, "startRATimer: RATimer: "+RATimer);
                 while (RATimer){
 
                 }
@@ -528,10 +529,10 @@ public class AudioManager {
      * @param audioAbsolutePath 音频文件完整绝对路径
      */
     public void comPlayAudio(String audioAbsolutePath){
+        startPlayAudio(audioAbsolutePath);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                startPlayAudio(audioAbsolutePath);
                 while (isPlaying()){
 
                 }

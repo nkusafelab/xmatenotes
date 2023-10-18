@@ -146,10 +146,10 @@ public class BaseDot implements Serializable,Cloneable,Comparable<BaseDot> {
 
     @Override
     public int compareTo(BaseDot o) {
-        if(this.fx > o.fx && this.fy > o.fy){
+        if(this.fx >= o.fx && this.fy >= o.fy){
             return 1;
         }
-        if(this.fx < o.fx && this.fy < o.fy){
+        if(this.fx <= o.fx && this.fy <= o.fy){
             return -1;
         }
         return 0;

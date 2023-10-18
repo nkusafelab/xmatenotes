@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageProxy;
 
+import com.example.xmatenotes.ui.qrcode.QRResultListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -122,6 +123,43 @@ public class MLScanningAnalyzer  implements Analyzer<List<String>> {
 
         }
     }
+
+    public void analyze(Bitmap bitmap, QRResultListener listener) {
+        InputImage image = InputImage.fromBitmap(bitmap, 0);
+        Task<List<Barcode>> results = scanner.process(image)
+                .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+                    @Override
+                    public void onSuccess(List<Barcode> barcodes) {
+                        // Task completed successfully
+                        // ...
+                        Log.e(TAG, "onSuccess: barcode analyze");
+                        if (barcodes.isEmpty()) {
+                            Log.v(TAG, "No barcode has been detected");
+                        }else {
+                            AnalyzeResult<List<String>> result = null;
+                            List<String> values = new ArrayList<>();
+                            for (Barcode barcode: barcodes) {
+                                values.add(barcode.getRawValue());
+                            }
+                            result = new MLQRCodeAnalyzeResult<List<String>>(bitmap, values, barcodes);
+                            if (result != null && !result.getResult().isEmpty()) {
+                                listener.onSuccess(result);
+                            } else {
+                                listener.onFailure(null);
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Task failed with an exception
+                        // ...
+                        Log.e(TAG, "onFailure: barcode analyze");
+                    }
+                });
+    }
+
     /**
      * 二维码分析结果
      *

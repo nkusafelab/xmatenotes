@@ -44,17 +44,17 @@ public class Page implements IPage,Serializable {
     /**
      * 版面唯一标识符编码
      */
-    protected String code;
+    protected String code = "";
 
     /**
      * 前置编码
      */
-    protected String preCode;
+    protected String preCode = "";
 
     /**
      * 后置编码
      */
-    protected String postCode;
+    protected String postCode = "";
 
     /**
      * 新迭代版本中笔迹的最小矩形left
@@ -135,7 +135,7 @@ public class Page implements IPage,Serializable {
     /**
      * 版面上的音频文件名，不含后缀
      */
-    private ArrayList<String> audioNameList = new ArrayList<>();
+    protected ArrayList<String> audioNameList = new ArrayList<>();
 
     /**
      * 笔迹数据
@@ -144,7 +144,7 @@ public class Page implements IPage,Serializable {
 
     private CoordinateConverter.CoordinateCropper coordinateCropper = null;
 
-    private QRObject qrObject = new QRObject(
+    protected QRObject qrObject = new QRObject(
             "01",
             2290,
             1700,
@@ -191,7 +191,7 @@ public class Page implements IPage,Serializable {
         }
     }
 
-    public Page addDotsList(int index, ArrayList<SingleHandWriting> singleHandWritingList){
+    public Page addDotsList(int index, List<SingleHandWriting> singleHandWritingList){
         this.dotList.addAll(index, singleHandWritingList);
         return this;
     }
@@ -208,7 +208,7 @@ public class Page implements IPage,Serializable {
         return null;
     }
 
-    public Page addAudioNameList(int index, ArrayList<String> audioNameList){
+    public Page addAudioNameList(int index, List<String> audioNameList){
         this.audioNameList.addAll(index, audioNameList);
         return this;
     }
@@ -217,7 +217,7 @@ public class Page implements IPage,Serializable {
      * 生成一个新音频文件名，不含后缀，存入audioNameList，并返回
      * @return
      */
-    public String getNewAudioName(){
+    public String getNewAudioName(SimpleDot simpleDot){
         String newAudioName = String.valueOf(this.audioNameList.size());
         this.audioNameList.add(newAudioName);
         LogUtil.e(TAG, "getNewAudioName: audioNameList.size为: "+this.audioNameList.size());
@@ -228,7 +228,7 @@ public class Page implements IPage,Serializable {
         return String.valueOf(audioId);
     }
 
-    public ArrayList<String> getAudioNameList() {
+    public List<String> getAudioNameList() {
         return audioNameList;
     }
 
@@ -248,6 +248,7 @@ public class Page implements IPage,Serializable {
         for(SingleHandWriting singleHandWriting : this.dotList){
             for(HandWriting handWriting : singleHandWriting.getHandWritings()){
                 if(handWriting.contains(dot)){
+                    LogUtil.e(TAG, "getHandWritingByCoordinate: 找到目标handWriting: "+handWriting);
                     return handWriting;
                 }
             }
@@ -264,6 +265,7 @@ public class Page implements IPage,Serializable {
     public SingleHandWriting getSingleHandWritingByCoordinate(SimpleDot dot){
         for(SingleHandWriting singleHandWriting : this.dotList){
             if(singleHandWriting.contains(dot)){
+                LogUtil.e(TAG, "getSingleHandWritingByCoordinate: 找到目标singleHandWriting: "+singleHandWriting);
                 return singleHandWriting;
             }
         }
@@ -280,7 +282,7 @@ public class Page implements IPage,Serializable {
         SerializableRectF rectF = new SerializableRectF(rect);
         List<SingleHandWriting> singleHandWritingList = new ArrayList<>();
         for(SingleHandWriting singleHandWriting : this.dotList){
-            if(rectF.contains(singleHandWriting.getBoundRectF())){
+            if(rectF.intersects(singleHandWriting.getBoundRectF())){
                 singleHandWritingList.add(singleHandWriting);
             }
         }
@@ -360,6 +362,19 @@ public class Page implements IPage,Serializable {
     public Page setRealDimensions(float showWidth, float showHeight, float dpi){
         setRealDimensions((showWidth / dpi) *254, (showHeight / dpi) *254);
         return this;
+    }
+
+    /**
+     * 设置二维码位置
+     * @param left
+     * @param top
+     * @param length
+     */
+    public void setQRCodeRect(int left, int top, int length){
+        this.qrObject.setQx(left);
+        this.qrObject.setQy(top);
+        this.qrObject.setQl(length);
+        LogUtil.e(TAG, "setQRCodeRect( left:"+left+", top:"+top+", length:"+length+" )");
     }
 
     public CoordinateConverter.CoordinateCropper getCoordinateCropper() {
@@ -530,37 +545,43 @@ public class Page implements IPage,Serializable {
     }
 
     /**
-     * 设置二维码位置
-     * @param left
-     * @param top
-     * @param length
+     * 迭代版本自加1
      */
-    public void setQRCodeRect(int left, int top, int length){
-        this.qrObject.setQx(left);
-        this.qrObject.setQy(top);
-        this.qrObject.setQl(length);
-        LogUtil.e(TAG, "setQRCodeRect( left:"+left+", top:"+top+", length:"+length+" )");
+    public void addIteration(){
+        String newIteration = String.valueOf((Integer.parseInt(this.qrObject.getData()) + 1));
+        this.qrObject.setData(newIteration);
+        LogUtil.e(TAG, "setIteration( newIteration: "+newIteration+" )");
     }
+
+    public void setQrObject(QRObject qrObject) {
+        this.qrObject = qrObject;
+    }
+
     /**
      * 更新角色身份信息
      * @param role
      */
     public void updateRole(Role role){
-        //角色
-        this.role = role.getRoleName();
-        //学生编号
-        this.qrObject.setSt(role.getStudentNumber());
-        //小组编号
-        this.qrObject.setGn(role.getGroupNumber());
-        //小组组型
-        this.qrObject.setGl(role.getGroupTip());
-        //学校
-        this.qrObject.setSc(role.getSchool());
-        //班级
-        this.qrObject.setCl(role.getClassNumber());
-        //年级
-        this.qrObject.setGr(role.getGrade());
-        LogUtil.e(TAG, "updateRole: "+role);
+        if(role != null){
+            //角色
+            this.role = role.getRoleName();
+            //学生编号
+            this.qrObject.setSt(role.getStudentNumber());
+            //小组编号
+            this.qrObject.setGn(role.getGroupNumber());
+            //小组组型
+            this.qrObject.setGl(role.getGroupTip());
+            //学校
+            this.qrObject.setSc(role.getSchool());
+            //班级
+            this.qrObject.setCl(role.getClassNumber());
+            //年级
+            this.qrObject.setGr(role.getGrade());
+            LogUtil.e(TAG, "updateRole: "+role);
+        } else {
+            LogUtil.e(TAG, "updateRole: null");
+        }
+
     }
 
     public Role getRole(){
@@ -582,5 +603,13 @@ public class Page implements IPage,Serializable {
 
     public float getRealHeight() {
         return realHeight;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 }

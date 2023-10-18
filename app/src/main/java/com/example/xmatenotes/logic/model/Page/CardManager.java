@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.manager.Storager;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.network.BitableManager;
 import com.example.xmatenotes.util.LogUtil;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
@@ -62,8 +63,8 @@ public class CardManager {
         return getPageAbsolutePath(card)+"/"+"pic"+".png";
     }
 
-    public String getNewAudioAbsolutePath(Card card){
-        return getPageAbsolutePath(card)+"/"+card.getNewAudioName()+".mp4";
+    public String getNewAudioAbsolutePath(SimpleDot simpleDot, Card card){
+        return getPageAbsolutePath(card)+"/"+card.getNewAudioName(simpleDot)+".mp4";
     }
 
     public String getAudioAbsolutePath(Card card, String audioName){
@@ -109,7 +110,7 @@ public class CardManager {
             LogUtil.e(TAG,"Could not rename directory " + newFile.getName());
         }
 
-        bitableManager.initialTable(Card.cardsTableId);
+        bitableManager.initialTable(Page.pagesTableId);
 
         String dataPath = getDataAbsolutePath(card);
         String picPath = getPicAbsolutePath(card);
@@ -130,23 +131,23 @@ public class CardManager {
         //存储音频
 
         //上传飞书
-        bitableManager.createAppTableRecord(Card.cardsTableId, card.toMap(), new BitableManager.BitableResp() {
+        bitableManager.createAppTableRecord(Page.pagesTableId, card.toMap(), new BitableManager.BitableResp() {
             @Override
             public void onFinish(AppTableRecord appTableRecord) {
                 super.onFinish(appTableRecord);
-                bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "卡片数据",new ArrayList<String>(){
+                bitableManager.coverAttachmentCell(Page.pagesTableId, appTableRecord.getRecordId(), "卡片数据",new ArrayList<String>(){
                     {
                         add(dataPath);
                     }
                 });
                 LogUtil.e(TAG, "上传卡片数据文件");
-                bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "卡片图片",new ArrayList<String>(){
+                bitableManager.coverAttachmentCell(Page.pagesTableId, appTableRecord.getRecordId(), "卡片图片",new ArrayList<String>(){
                     {
                         add(picPath);
                     }
                 });
                 LogUtil.e(TAG, "上传卡片图片");
-                bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "音频",getAudioAbsolutePathList(card));
+                bitableManager.coverAttachmentCell(Page.pagesTableId, appTableRecord.getRecordId(), "音频",getAudioAbsolutePathList(card));
                 LogUtil.e(TAG, "上传卡片音频文件");
             }
 
@@ -167,10 +168,10 @@ public class CardManager {
         }
 
         //配置BitTableManager
-        bitableManager.initialTable(Card.cardsTableId);
+        bitableManager.initialTable(Page.pagesTableId);
 
         //查飞书多维表格
-        bitableManager.searchAppTableRecords(Card.cardsTableId, null, "CurrentValue.[Code] = " + code, new BitableManager.BitableResp() {
+        bitableManager.searchAppTableRecords(Page.pagesTableId, null, "CurrentValue.[Code] = " + code, new BitableManager.BitableResp() {
             @Override
             public void onFinish(AppTableRecord[] appTableRecords) {
                 super.onFinish(appTableRecords);
@@ -194,9 +195,10 @@ public class CardManager {
                                 super.onFinish(string);
                                 //解析Card对象
                                 try {
-                                    Card card = (Card) storager.serializeParseObject(getDataAbsolutePath(cardAbsolutePath));
+//                                    Card card = (Card) storager.serializeParseObject(getDataAbsolutePath(cardAbsolutePath));
+                                    Object obj = storager.serializeParseObject(getDataAbsolutePath(cardAbsolutePath));
                                     if(objectInputResp != null){
-                                        objectInputResp.onFinish(card);
+                                        objectInputResp.onFinish(obj);
                                     }
                                 } catch (Exception e) {
                                     LogUtil.e(TAG, "card解析失败");
@@ -247,7 +249,7 @@ public class CardManager {
      * Card对象解析返回接口
      */
     public interface ObjectInputResp {
-        public void onFinish(Card card);
+        public void onFinish(Object obj);
 
         public void onError(String errorMsg);
     }

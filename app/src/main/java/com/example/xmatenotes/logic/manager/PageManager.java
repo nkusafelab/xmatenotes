@@ -9,7 +9,9 @@ import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.logic.model.Page.Card;
 import com.example.xmatenotes.logic.model.Page.Page;
 import com.example.xmatenotes.logic.model.Page.XueCheng;
+import com.example.xmatenotes.logic.model.Page.XueChengCard;
 import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.network.BitableManager;
 import com.example.xmatenotes.util.LogUtil;
 import com.lark.oapi.service.bitable.v1.model.AppTableRecord;
@@ -243,11 +245,11 @@ public class PageManager {
 
     /**
      * 通过卡片数据文件名，获得完整存储绝对路径
-     * @param cardName
+     * @param pageName
      * @return
      */
-    public String getPageAbsolutePath(String cardName){
-        return absoluteRootPath+"/"+cardName;
+    public String getPageAbsolutePath(String pageName){
+        return absoluteRootPath+"/"+pageName;
     }
 
     private String getDataAbsolutePath(Page page){
@@ -262,12 +264,16 @@ public class PageManager {
         return getPageAbsolutePath(page)+"/"+"pic"+".png";
     }
 
-    public String getNewAudioAbsolutePath(Page page){
-        return getPageAbsolutePath(page)+"/"+page.getNewAudioName()+".mp4";
+    public String getNewAudioAbsolutePath(SimpleDot simpleDot, Page page){
+        return getPageAbsolutePath(page)+"/"+page.getNewAudioName(simpleDot)+".mp4";
     }
 
     public String getAudioAbsolutePath(Page page, String audioName){
         return getPageAbsolutePath(page)+"/"+audioName+".mp4";
+    }
+
+    public String getAudioAbsolutePath(String pageAbsolutePath, String audioName){
+        return pageAbsolutePath+"/"+audioName+".mp4";
     }
 
     public List<String> getAudioAbsolutePathList(Page page){
@@ -276,6 +282,16 @@ public class PageManager {
         for (String audioName: audioNameList) {
             audioAbsolutePathList.add(getAudioAbsolutePath(page, audioName));
         }
+        return audioAbsolutePathList;
+    }
+
+    public List<String> getAudioAbsolutePathList(String pageAbsolutePath, Page page){
+        List<String> audioNameList = page.getAudioNameList();
+        List<String> audioAbsolutePathList = new ArrayList<>();
+        for (String audioName: audioNameList) {
+            audioAbsolutePathList.add(getAudioAbsolutePath(pageAbsolutePath, audioName));
+        }
+        LogUtil.e(TAG, "getAudioAbsolutePathList: audioAbsolutePathList: "+audioAbsolutePathList);
         return audioAbsolutePathList;
     }
 
@@ -293,26 +309,96 @@ public class PageManager {
         File file = new File(pageAbsolutePath);
         if(!file.exists()){
             file.mkdirs();
+            LogUtil.e(TAG, "mkdirs: 创建file: "+file);
+        }
+    }
+
+    /**
+     * 使得目标page生成新版本
+     * if(!pagePathexists(page)){
+     *      createVersion(Page page);
+     * }
+     * @param page
+     */
+    public void createVersion(Page page){
+        LogUtil.e(TAG, "createVersion");
+        page.create();
+        mkdirs(page);
+    }
+
+    /**
+     * 使得目标page迭代新版本
+     * @param page
+     */
+    public void iterateVersion(Page page){
+        if(!pagePathexists(page)){
+            LogUtil.e(TAG, "generateVersion: pagePathexists(page): false");
+            createVersion(page);
+        } else {
+            File oldFile = new File(getPageAbsolutePath(page));
+            page.create();
+            File newFile = new File(getPageAbsolutePath(page));
+            if (oldFile.renameTo(newFile)) {
+                LogUtil.e(TAG,"save: Directory " + oldFile.getName() + " renamed to " + newFile.getName());
+            } else {
+                LogUtil.e(TAG,"save: Could not rename directory " + oldFile.getName() + " to " + newFile.getName());
+            }
         }
     }
 
     public void save(Page page, Bitmap bitmap){
 
         File oldFile = new File(getPageAbsolutePath(page));
-        page.create();
-        File newFile = new File(getPageAbsolutePath(page));
-
+        LogUtil.e(TAG, "save: oldFile.getAbsolutePath(): "+oldFile.getAbsolutePath());
+        File newFile;
+        String pageAbsolutePath = oldFile.getAbsolutePath();
         //重命名
-        if (oldFile.renameTo(newFile)) {
-            LogUtil.e(TAG,"Directory " + oldFile.getName() + " renamed to " + newFile.getName());
+        if(oldFile.exists()){
+            page.create();
+            newFile = new File(getPageAbsolutePath(page));
+            if (oldFile.renameTo(newFile)) {
+                pageAbsolutePath = newFile.getAbsolutePath();
+                LogUtil.e(TAG,"save: Directory " + oldFile.getName() + " renamed to " + newFile.getName());
+            } else {
+                LogUtil.e(TAG,"save: Could not rename directory " + oldFile.getName() + " to " + newFile.getName());
+            }
         } else {
-            LogUtil.e(TAG,"Could not rename directory " + newFile.getName());
+            LogUtil.e(TAG, "save: oldFile不存在!");
+            if(page instanceof XueChengCard){
+                LogUtil.e(TAG, "save: page为XueChengCard");
+                XueChengCard xueChengCard = (XueChengCard)page;
+                oldFile = new File(getPageAbsolutePath(xueChengCard.getSuperPageName()));
+                pageAbsolutePath = oldFile.getAbsolutePath();
+                LogUtil.e(TAG, "save: xueChengCard.getSuperPageAbsolutePath: "+pageAbsolutePath);
+                xueChengCard.create();
+                newFile = new File(getPageAbsolutePath(xueChengCard));
+                newFile.mkdirs();
+                LogUtil.e(TAG, "save: XueChengCard: newFile.mkdirs(): "+newFile.getAbsolutePath());
+            } else {
+                LogUtil.e(TAG, "save: 退出save流程");
+                return;
+            }
         }
+
+        if(page instanceof XueChengCard){
+            LogUtil.e(TAG, "save: page为XueChengCard");
+            XueChengCard xueChengCard = (XueChengCard)page;
+            oldFile = new File(getPageAbsolutePath(xueChengCard.getSuperPageName()));
+            pageAbsolutePath = oldFile.getAbsolutePath();
+            LogUtil.e(TAG, "save: xueChengCard.getSuperPageAbsolutePath: "+pageAbsolutePath);
+            xueChengCard.create();
+            newFile = new File(getPageAbsolutePath(xueChengCard));
+            newFile.mkdirs();
+            LogUtil.e(TAG, "save: XueChengCard: newFile.mkdirs(): "+newFile.getAbsolutePath());
+        }
+
 
         bitableManager.initialTable(Page.pagesTableId);
 
         String dataPath = getDataAbsolutePath(page);
         String picPath = getPicAbsolutePath(page);
+        LogUtil.e(TAG, "save: dataPath: "+dataPath);
+        LogUtil.e(TAG, "save: picPath: "+picPath);
 
         //存储图片
         if(bitmap != null){
@@ -332,6 +418,8 @@ public class PageManager {
         //存储音频
 
         //上传飞书
+        String finalPageAbsolutePath = pageAbsolutePath;
+        LogUtil.e(TAG, "save: finalPageAbsolutePath: "+finalPageAbsolutePath);
         bitableManager.createAppTableRecord(Page.pagesTableId, page.toMap(), new BitableManager.BitableResp() {
             @Override
             public void onFinish(AppTableRecord appTableRecord) {
@@ -351,7 +439,7 @@ public class PageManager {
                     LogUtil.e(TAG, "上传卡片图片");
                 }
 
-                bitableManager.coverAttachmentCell(Card.cardsTableId, appTableRecord.getRecordId(), "音频",getAudioAbsolutePathList(page));
+                bitableManager.coverAttachmentCell(Page.pagesTableId, appTableRecord.getRecordId(), "音频",getAudioAbsolutePathList(finalPageAbsolutePath, page));
                 LogUtil.e(TAG, "上传卡片音频文件");
             }
 

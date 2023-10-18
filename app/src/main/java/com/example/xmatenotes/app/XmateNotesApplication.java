@@ -14,6 +14,7 @@ import com.example.xmatenotes.logic.manager.AudioManager;
 //import com.example.xmatenotes.logic.manager.ExcelA0Reader;
 import com.example.xmatenotes.logic.manager.ExcelReader;
 import com.example.xmatenotes.logic.manager.OldPageManager;
+import com.example.xmatenotes.logic.manager.PageManager;
 import com.example.xmatenotes.logic.manager.PenMacManager;
 import com.example.xmatenotes.logic.manager.VideoManager;
 import com.example.xmatenotes.logic.manager.Writer;
@@ -63,6 +64,7 @@ public class XmateNotesApplication extends Application {
 
     public static PenCommAgent bleManager = null;
     public static ExcelReader excelReader = null;
+    public static PageManager pageManager = null;
     public static OldPageManager oldPageManager = null;
     public static PenMacManager penMacManager = null;
     public static VideoManager videoManager = null;
@@ -88,9 +90,10 @@ public class XmateNotesApplication extends Application {
         penMacManager = PenMacManager.getInstance();
         excelReader = ExcelReader.getInstance();
         writer = Writer.getInstance().init();
+        pageManager = PageManager.getInstance().init();
 
-        excelReader.openExcel("excel/A3学程样例·纸分区坐标.xlsx","一级局域索引表");
-        excelReader.switchSheet("二级局域编码表");
+//        excelReader.openExcel("excel/A3学程样例·纸分区坐标.xlsx","一级局域索引表");
+//        excelReader.switchSheet("二级局域编码表");
 
         //打开关于A0表格的各种工作表
 //        excelA0Reader = ExcelA0Reader.getInstance();
@@ -117,7 +120,7 @@ public class XmateNotesApplication extends Application {
 //        oldPageManager = OldPageManager.getInstance();
         Log.e(TAG,"PageManager.getInstance() end");
 
-        instruction = new Instruction();
+//        instruction = new Instruction();
 //        writer.init();
 
     }

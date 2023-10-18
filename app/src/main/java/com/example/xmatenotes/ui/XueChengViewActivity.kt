@@ -2,11 +2,16 @@ package com.example.xmatenotes.ui
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
+import com.example.xmatenotes.MLScanningAnalyzer
+import com.example.xmatenotes.OpenCVQRCodeActivity
 import com.example.xmatenotes.R
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.app.ax.A3
@@ -14,6 +19,7 @@ import com.example.xmatenotes.logic.dao.RoleDao
 import com.example.xmatenotes.logic.manager.CoordinateConverter
 import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.model.Page.Page
+import com.example.xmatenotes.logic.model.Page.QRObject
 import com.example.xmatenotes.logic.model.Page.XueCheng
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
@@ -24,10 +30,17 @@ import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.ui.ckplayer.XueChengVideoNoteActivity
 import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
 import com.example.xmatenotes.ui.qrcode.CardProcessActivity
+import com.example.xmatenotes.ui.qrcode.QRResultListener
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
 import com.example.xmatenotes.util.BitmapUtil
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import com.king.mlkit.vision.camera.AnalyzeResult
 import com.king.wechat.qrcode.WeChatQRCodeDetector
 import org.opencv.OpenCV
+import org.opencv.core.Mat
+import java.lang.Exception
+import kotlin.concurrent.thread
 
 /**
  * 学程版面使用的活动
@@ -102,28 +115,116 @@ class XueChengViewActivity : PageViewActivity() {
         )
         var subPage = (page as XueCheng).getSubPageByCoordinate(point)
         subPage?.let {
+            subPage.createTime = page.createTime
             var rectF = it.pageBounds
+            LogUtil.e(TAG, "commit: subPage.pageBounds: $rectF")
             var leftTopDot = SimpleDot(rectF.left, rectF.top)
             var rightBottomDot = SimpleDot(rectF.right, rectF.bottom)
             leftTopDot = cConverter.convertOut(leftTopDot)
             rightBottomDot = cConverter.convertOut(rightBottomDot)
-            pageManager.save(subPage, generatePageBmp(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY)))
+            var subRectF = RectF(leftTopDot.floatX, leftTopDot.floatY, rightBottomDot.floatX, rightBottomDot.floatY)
+            //迭代新二维码
+            MLScanningAnalyzer(true).analyze(bmp, object : QRResultListener {
+                override fun onSuccess(result: AnalyzeResult<MutableList<String>>?) {
+                    if (result != null) {
+                        LogUtil.e(TAG, result.result.toString())
+                        if (result is MLScanningAnalyzer.MLQRCodeAnalyzeResult) {
+                            var isQRPToPagePList = ArrayList<Boolean>()
+                            var qrBitMapPoints = ArrayList<org.opencv.core.Point>() //二维码四角坐标
+                            var qrObjectList = ArrayList<QRObject>()
+                            val gson = Gson()
+                            var isQRPToPageP = true //是否将二维码四角点坐标转换为版面四角点坐标
+                            result.result.forEach {
+                                //将二维码字符串解析为数据对象
+                                var qrO : QRObject? = null
+                                try {
+                                    qrO = gson.fromJson(it, QRObject::class.java)
+                                    qrObjectList.add(qrO)
+                                    isQRPToPagePList.add(true)
+                                } catch (e: JsonSyntaxException) {
+                                    LogUtil.e(WeChatQRCodeActivity.TAG, "JSON解析失败: ${e.message}")
+                                    isQRPToPagePList.add(false)
+                                }
+                            }
+
+                            var i = -1
+                            var j = 0
+                            var con = true
+                            var qrRectF: RectF? = null
+                            result.points?.forEach { mat ->
+                                if(con){
+                                    var MLPoints = MLMatToPoints(mat)
+                                    qrRectF = pointsToRectF(MLPoints)
+                                    i++
+                                    if(subRectF.contains(qrRectF!!) && isQRPToPagePList[i]){
+                                        con = false
+                                    }
+                                }
+                            }
+                            if(qrRectF != null){
+                                var qrObject = qrObjectList[i]
+                                page.setQrObject(qrObject)
+                                page.updateRole(RoleDao.getRole())
+                                page.addIteration()
+                                var canvas = Canvas(bmp)
+                                var paint = Paint()
+                                page.toQRObject().toQRCodeBitmap(qrRectF!!)?.let {
+                                    canvas.drawBitmap(it, qrRectF!!.left, qrRectF!!.top, paint)
+                                }
+                                pageView.postInvalidate()
+                                pageManager.save(subPage, generatePageBmp(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY)))
+
+                            }
+
+                        }
+
+                    }
+                }
+
+                override fun onFailure(e: Exception?) {
+                    LogUtil.e(TAG, "onFailure: 未识别到二维码！")
+                    pageManager.save(subPage, generatePageBmp(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY)))
+
+                }
+            })
         }
+    }
+
+    fun pointsToRectF(points: ArrayList<org.opencv.core.Point>):RectF{
+        var rectF = RectF()
+        rectF.left = points.get(0).x.toFloat()
+        rectF.top = points.get(0).y.toFloat()
+        rectF.right = points.get(2).x.toFloat()
+        rectF.bottom = points.get(2).y.toFloat()
+        return rectF
+    }
+
+    fun MLMatToPoints(mat: Mat): ArrayList<org.opencv.core.Point> {
+        var points = ArrayList<org.opencv.core.Point>()
+        for( i in 0..3){
+            points.add(org.opencv.core.Point(mat[i, i][0], mat[i, i][1]))
+            Log.d(OpenCVQRCodeActivity.TAG, "point$i: ${mat[i, i][0]}, ${mat[i, i][1]}")
+        }
+        return points
     }
 
     override fun getResponser(): Responser {
         return XueChengResponser()
     }
 
-    open inner class XueChengResponser: Responser() {
+    open inner class XueChengResponser: CommandResponser() {
         override fun onLongPress(command: Command?): Boolean {
             if(!super.onLongPress(command)){
                 return false
             }
 
-            showToast("长压命令")
+//            showToast("长压命令")
             command?.handWriting?.firstDot?.let {coordinate->
-                bitmap?.let { commit(coordinate, page, it) }
+                bitmap?.let {
+                    thread {
+                        commit(coordinate, page, it)
+                    }
+                }
             }
 
             return true
@@ -139,7 +240,7 @@ class XueChengViewActivity : PageViewActivity() {
                 audioManager.stopRATimer()
             }
 
-            showToast("单击")
+//            showToast("单击")
 
             return false
         }
@@ -163,6 +264,7 @@ class XueChengViewActivity : PageViewActivity() {
                             }
                         } else {
                             //跳转笔迹动态复现
+                            Log.e(TAG, "onDoubleClick: 跳转笔迹动态复现准备开始")
                             var localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
                                 mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
 
@@ -179,6 +281,7 @@ class XueChengViewActivity : PageViewActivity() {
                                 var subBitmap = Bitmap.createBitmap(bitmap, newSubRect.left, newSubRect.top, newSubRect.width(), newSubRect.height())
 //                                LogUtil.e(TAG, "onDoubleClick: ", )
                                 BitmapCacheManager.putBitmap("subBitmap", subBitmap)
+                                Log.e(TAG, "onDoubleClick: 跳转笔迹动态复现准备结束")
                                 HWReplayActivity.startHWReplayActivity(this@XueChengViewActivity, subRect, "subBitmap", page, it.areaCode, page.getSingleHandWritingByCoordinate(mediaDot))
                             }
 //                            page.getAudioNameByCoordinate(mediaDot)?.let { audioName ->
@@ -189,26 +292,29 @@ class XueChengViewActivity : PageViewActivity() {
                         }
                     }
                 }
-                //资源卡跳转播放
-                var localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
-                    mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
 
-                localData?.let {
-                    if("资源卡" == localData.areaIdentification){
-                        LogUtil.e(TAG, "双击资源卡")
-                        var v = VideoManager.getInstance().getVideoByName(localData.addInformation)
-                        VideoManager.getInstance().addVideo(v.videoID, v.videoName)
-                        LogUtil.e(TAG, "onDoubleClick: 跳转视频播放: videoId: "+v.videoID+" videoTime: "+5.0f)
-                        VideoManager.startVideoNoteActivity(this@XueChengViewActivity, XueChengVideoNoteActivity::class.java, v.videoID, 5.0f)
-                        LogUtil.e(TAG, "视频跳转至videoID: $v.videoID")
-                        LogUtil.e(TAG, "视频跳转至videoName: $v.videoName")
-                        return false
+                command?.let {
+                    //资源卡跳转播放
+                    var localData = excelManager.getLocalData(mediaDot.intX, mediaDot.intY,
+                        mediaDot.pageId.toInt(), command.name, RoleDao.getRole()!!.roleName)
+
+                    localData?.let {
+                        if("资源卡" == localData.areaIdentification){
+                            LogUtil.e(TAG, "双击资源卡")
+                            var v = VideoManager.getInstance().getVideoByName(localData.addInformation)
+                            VideoManager.getInstance().addVideo(v.videoID, v.videoName)
+                            LogUtil.e(TAG, "onDoubleClick: 跳转视频播放: videoId: "+v.videoID+" videoTime: "+5.0f)
+                            VideoManager.startVideoNoteActivity(this@XueChengViewActivity, XueChengVideoNoteActivity::class.java, v.videoID, 5.0f)
+                            LogUtil.e(TAG, "视频跳转至videoID: $v.videoID")
+                            LogUtil.e(TAG, "视频跳转至videoName: $v.videoName")
+                            return false
+                        }
                     }
                 }
 
             }
 
-            showToast("双击命令")
+//            showToast("双击命令")
             return true
         }
 
@@ -247,10 +353,12 @@ class XueChengViewActivity : PageViewActivity() {
                 return false
             }
 
-            audioManager.startRATimer(pageManager.getNewAudioAbsolutePath(page))
-            audioRecorder = true
+            command?.handWriting?.firstDot?.let {coordinate->
+                audioManager.startRATimer(pageManager.getNewAudioAbsolutePath(coordinate, page))
+                audioRecorder = true
+            }
 
-            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show() }
+//            runOnUiThread { Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show() }
 
             return false
         }
@@ -271,17 +379,17 @@ class XueChengViewActivity : PageViewActivity() {
         }
 
         override fun onDui(command: Command?): Boolean {
-            showToast("对勾命令")
+//            showToast("对勾命令")
             return super.onDui(command)
         }
 
         override fun onCha(command: Command?): Boolean {
-            showToast("叉命令")
+//            showToast("叉命令")
             return super.onCha(command)
         }
 
         override fun onBanDui(command: Command?): Boolean {
-            showToast("半对命令")
+//            showToast("半对命令")
             return super.onBanDui(command)
         }
 

@@ -358,8 +358,10 @@ open class PageViewActivity : PageActivity() {
                 return false
             }
 
-            audioManager.startRATimer(pageManager.getNewAudioAbsolutePath(page))
-            audioRecorder = true
+            command?.handWriting?.firstDot?.let {coordinate->
+                audioManager.startRATimer(pageManager.getNewAudioAbsolutePath(coordinate, page))
+                audioRecorder = true
+            }
 
             runOnUiThread { Toast.makeText(XmateNotesApplication.context, "指令控制符命令", Toast.LENGTH_SHORT).show() }
 

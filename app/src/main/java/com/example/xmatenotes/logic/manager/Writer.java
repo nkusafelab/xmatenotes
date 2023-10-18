@@ -291,6 +291,10 @@ public class Writer {
         LogUtil.e(TAG, "response: 识别结束");
         if(command != null){
             if(command instanceof SymbolicCommand){
+                closeHandWriting();
+                if(this.singleHandWritingBuffer != null){
+                    this.singleHandWritingBuffer.computeRect();
+                }
                 //如果有，移除普通书写延时响应任务
                 if(containsResponseWorker(handWritingWorker)){
                     deleteResponseWorker(handWritingWorker);
@@ -367,6 +371,7 @@ public class Writer {
      */
     public void closeHandWriting(){
         if(handWritingBuffer != null){
+            handWritingBuffer.close();
             handWritingBuffer = null;
             LogUtil.e(TAG, "closeHandWriting: 一次普通书写结束,handWritingBuffer = null");
         }

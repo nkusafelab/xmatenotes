@@ -59,6 +59,11 @@ public class XueChengCard extends Page{
         return this.pageStorageName;
     }
 
+    public String getSuperPageName(){
+        String superCode = this.code.substring(0,4)+"00"+this.createTime;
+        return getPageStorageName(superCode, this.createTime);
+    }
+
     public void setSubCode(String subCode) {
         this.subCode = subCode;
     }

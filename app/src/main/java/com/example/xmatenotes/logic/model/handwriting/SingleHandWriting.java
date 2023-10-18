@@ -1,5 +1,7 @@
 package com.example.xmatenotes.logic.model.handwriting;
 
+import android.util.Log;
+
 import com.example.xmatenotes.app.XmateNotesApplication;
 import com.example.xmatenotes.util.LogUtil;
 
@@ -87,6 +89,7 @@ public class SingleHandWriting implements Serializable {
 //        boundRect.union(handWriting.getBoundRectF());初始handWriting.getBoundRectF()为单点
         this.handWritings.add(handWriting);
         this.handWritingsNumber++;
+        LogUtil.e(TAG, "addHandWriting: "+handWriting);
 
         return this;
     }
@@ -99,17 +102,27 @@ public class SingleHandWriting implements Serializable {
             if(handWritingsNumber == 0){
 
             } else {
-                SerializableRectF rectF = new SerializableRectF();
-                for (HandWriting handWriting: this.handWritings) {
-                    if(handWriting.getBoundRectF().equals(rectF)){
-                        continue;
-                    }
-                    boundRect.union(handWriting.getBoundRectF());
-                }
+                computeRect();
                 this.handWritings.get(handWritings.size()-1).close();
             }
             isClosed = true;
+            LogUtil.e(TAG, "close");
         }
+    }
+
+    /**
+     * 计算boundRect
+     * SingleHandWriting的boundRect必须通过主动调用此方法来计算获得，否则boundRect没有面积，无效
+     */
+    public void computeRect(){
+        SerializableRectF rectF = new SerializableRectF();
+        for (HandWriting handWriting: this.handWritings) {
+            if(handWriting.getBoundRectF().equals(rectF)){
+                continue;
+            }
+            boundRect.union(handWriting.getBoundRectF());
+        }
+        LogUtil.e(TAG, "computeRect");
     }
 
 //    public boolean isEmpty(){

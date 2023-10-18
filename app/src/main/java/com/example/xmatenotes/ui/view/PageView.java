@@ -137,7 +137,7 @@ public class PageView extends AppCompatImageView {
             canvas.drawBitmap(mBitmap, mMatrix, mPaint);
         }
 //        canvas.drawBitmap(pageViewActivity.bitmap, mMatrix, mPaint);
-        RectF rectF = getIntrinsicRectF();
+//        RectF rectF = getIntrinsicRectF();
 
 //        if (this.coordinateConverter == null && this.pageActivity != null) {
 //            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());

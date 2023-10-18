@@ -1,6 +1,7 @@
 package com.example.xmatenotes.logic.model.handwriting;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -77,6 +78,7 @@ public class Stroke implements Serializable, Cloneable {
 
     public Stroke(long prePeriod) {
         this.prePeriod = prePeriod;
+        LogUtil.e(TAG, "Stroke: this.prePeriod: "+this.prePeriod);
     }
 
 //    /**

@@ -92,7 +92,7 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
     private void initUI(){
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle("当前状态");
+        actionBar.setTitle("角色信息设置");
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         ll_name = findViewById(R.id.ll_name);
@@ -176,14 +176,13 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
 //        RoleDao roleDao = AppDataBase.getDatabase(XmateNotesApplication.context).roleDao();
         initUI();
         clear();
+        fillRoleUI(RoleDao.INSTANCE.getRole());
         //加载各种布局
         if(!XmateNotesApplication.isMacEffective()){
             Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
             tv_address.setText("");
-
         } else {
             tv_address.setText(XmateNotesApplication.mBTMac.toUpperCase());
-            fillRoleUI(RoleDao.INSTANCE.getRole());
         }
 
 //        if("00:00:00:00:00:00".equals(XmateNotesApplication.mBTMac)){
@@ -254,14 +253,15 @@ public class StatusActivity extends BaseActivity implements View.OnClickListener
             public void onClick(View v) {
                 switch (v.getId()){
                     case R.id.save:
-                        if(tv_address.getText().length() == 0 || tv_name.getText().length() == 0 || student1_name.getText().length() == 0 || group1_number.getText().length() == 0 || group1_tip.getText().length() == 0 || school1.getText().length() == 0 || class1_number.getText().length() == 0 || grade1.getText().length() == 0 ){
+//                        if(tv_address.getText().length() == 0 || tv_name.getText().length() == 0 || student1_name.getText().length() == 0 || group1_number.getText().length() == 0 || group1_tip.getText().length() == 0 || school1.getText().length() == 0 || class1_number.getText().length() == 0 || grade1.getText().length() == 0 ){
+                        if(tv_name.getText().length() == 0 || student1_name.getText().length() == 0 || group1_number.getText().length() == 0 || group1_tip.getText().length() == 0 || school1.getText().length() == 0 || class1_number.getText().length() == 0 || grade1.getText().length() == 0 ){
                             Toast.makeText(StatusActivity.this, "信息未填写完整", Toast.LENGTH_SHORT).show();
                         } else {
+                            RoleDao.INSTANCE.saveRole(tv_name.getText().toString(), student1_name.getText().toString(), group1_number.getText().toString(), group1_tip.getText().toString(), school1.getText().toString(), class1_number.getText().toString(), grade1.getText().toString(), tv_address.getText().toString());
                             if(XmateNotesApplication.isMacEffective()){
-                                RoleDao.INSTANCE.saveRole(tv_name.getText().toString(), student1_name.getText().toString(), group1_number.getText().toString(), group1_tip.getText().toString(), school1.getText().toString(), class1_number.getText().toString(), grade1.getText().toString(), tv_address.getText().toString());
                                 Toast.makeText(StatusActivity.this, "已保存", Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(StatusActivity.this, "未连接蓝牙", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(StatusActivity.this, "已保存, 未连接蓝牙", Toast.LENGTH_SHORT).show();
                             }
                         }
 

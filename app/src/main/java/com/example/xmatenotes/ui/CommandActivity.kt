@@ -261,7 +261,7 @@ abstract class CommandActivity : BaseActivity() {
             dotsListener = object: BluetoothLEService.OnDataReceiveListener {
                 override fun onDataReceive(dot: Dot?) {
                     runOnUiThread {
-                        LogUtil.e(TAG, "onDataReceive: $dot.toString()")
+                        LogUtil.e(TAG, "onDataReceive: $dot")
                         processEachDot(dot)
                     }
                 }

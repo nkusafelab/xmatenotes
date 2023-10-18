@@ -7,7 +7,9 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -124,6 +126,23 @@ public class DrawingImageView extends AppCompatImageView {
 
     }
 
+    /**
+     * 获取内部图片在屏幕上的真实坐标范围
+     *
+     * @return
+     */
+    public RectF getIntrinsicRectF() {
+        Matrix matrix = getImageMatrix();
+        Drawable drawable = getDrawable();
+        if (drawable != null) {
+            RectF rectF = new RectF();
+            rectF.set(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            matrix.mapRect(rectF);
+            return rectF;
+        }
+        return null;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -131,8 +150,10 @@ public class DrawingImageView extends AppCompatImageView {
 //            canvas.drawBitmap(mBitmap, mMatrix, null);
 //        }
         if(this.coordinateConverter == null && this.cardProcessActivity != null){
-            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
-            setCoordinateConverter(this.cardProcessActivity.getCoordinateConverter(getWidth(), getHeight()));
+            RectF rectF = getIntrinsicRectF();
+//            LogUtil.e(TAG, "getWidth(): " + getWidth() + " getHeight(): " + getHeight());
+            LogUtil.e(TAG, "onDraw: rectF: "+rectF);
+            setCoordinateConverter(this.cardProcessActivity.getCoordinateConverter(rectF.left, rectF.top, rectF.width(), rectF.height()));
         }
 
 //        Rect rect = this.getDrawable().getBounds();

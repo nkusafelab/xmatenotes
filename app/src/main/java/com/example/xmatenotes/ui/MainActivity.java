@@ -456,7 +456,7 @@ public class MainActivity extends BaseActivity {
         audioManager = AudioManager.getInstance();
         audioManager.audioInit(this);
 
-        pageManager = PageManager.getInstance().init();
+        pageManager = PageManager.getInstance();
 //        oldPageManager = OldPageManager.getInstance();
         Log.e(TAG,"PageManager.getInstance()");
 
@@ -562,9 +562,9 @@ public class MainActivity extends BaseActivity {
         }else {
             getSupportActionBar().setTitle(getResources().getString(R.string.app_name)+"（蓝牙未连接）");
         }
-        if(mService != null){
-            mService.setOnDataReceiveListener(dotsListener);//添加监听器
-        }
+//        if(mService != null){
+//            mService.setOnDataReceiveListener(dotsListener);//添加监听器
+//        }
         Log.e(TAG,"MainActivity.onResume()");
 
         this.writer = Writer.getInstance().init().setResponser(new Responser() {
@@ -948,7 +948,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        switchPage(oldPageManager.currentPageID);
+//        switchPage(oldPageManager.currentPageID);
         Log.e(TAG,"MainActivity.onStart()");
     }
 
@@ -1023,6 +1023,8 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(WeChatQRCodeActivity.class);
                 return true;
             case R.id.xuecheng_notes:
+                // 初始化OpenCV
+                OpenCV.initAsync(XmateNotesApplication.context);
                 Intent xuechengIntent = new Intent(this, XueChengViewActivity.class);
                 Log.e(TAG,"xuecheng");
                 startActivity(xuechengIntent);

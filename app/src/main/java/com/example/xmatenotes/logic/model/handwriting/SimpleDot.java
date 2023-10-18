@@ -1,9 +1,11 @@
 package com.example.xmatenotes.logic.model.handwriting;
 
+import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.text.ParseException;
@@ -52,7 +54,11 @@ public class SimpleDot extends BaseDot implements Cloneable {
         this(computeCompletedDot(dot.x, dot.fx), computeCompletedDot(dot.y, dot.fy));
         this.type = dot.type;
         try {
+            LogUtil.e(TAG, "SimpleDot: timelong before: "+dot.timelong);
+
             this.timelong = reviseTimelong(dot.timelong);
+//            this.timelong = System.currentTimeMillis();
+            LogUtil.e(TAG, "SimpleDot: timelong after: "+this.timelong);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }

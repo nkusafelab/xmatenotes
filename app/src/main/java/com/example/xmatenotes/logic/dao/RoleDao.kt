@@ -26,14 +26,14 @@ object RoleDao {
         saveRole(Role(roleName, studentNumber, groupNumber, groupTip, school, classNumber, grade, macaddres))
     }
     fun saveRole(role: Role){
+        this.role = role
         if(XmateNotesApplication.isMacEffective()){
-            this.role = role
             val roleString = Gson().toJson(role)
             var mac = role.macaddres
             storager.saveStringBySharedPreferences(mac, roleString)
             LogUtil.e(TAG, "saveRole: 存入mac地址和角色信息: $mac:$roleString")
         } else{
-            LogUtil.e(TAG, "saveRole: 蓝牙mac地址无效，存储失败！")
+            LogUtil.e(TAG, "saveRole: 蓝牙mac地址无效，持久化存储失败！")
         }
     }
 
@@ -43,10 +43,15 @@ object RoleDao {
         } else {
             if (XmateNotesApplication.isMacEffective()){
                 var mac = XmateNotesApplication.mBTMac
-                return getRole(mac)
+                var role = getRole(mac)
+                if(role != null){
+                    return role
+                }
+                LogUtil.e(TAG, "getRole: 未存储mac对应的身份信息！")
+            } else {
+                LogUtil.e(TAG, "getRole: 未连接点阵笔蓝牙！使用默认身份信息")
             }
-            LogUtil.e(TAG, "getRole: 未连接点阵笔蓝牙！")
-            return null
+            return getDefultRole()
         }
     }
 
@@ -56,9 +61,13 @@ object RoleDao {
             this.role = Gson().fromJson(roleString, Role::class.java)
             return this.role
         } else {
-            LogUtil.e(TAG, "getRole: 获取角色信息失败！")
+            LogUtil.e(TAG, "getRole: 本地获取角色信息失败！")
             return null
         }
+    }
+
+    private fun getDefultRole(): Role{
+        return Role("助教", "1", "1", "1", "1", "1", "1", "")
     }
 
     fun isSavedRole() = this.role != null
