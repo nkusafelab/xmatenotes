@@ -83,6 +83,9 @@ public class Writer {
      * @return
      */
     public Writer bindPage(IPage page){
+        if(isBindPage()){
+            unBindPage();
+        }
         this.page = page;
         if(this.page != null){
             LogUtil.e(TAG, "bindPage: Writer绑定Page: "+this.page.getCode());
@@ -109,8 +112,17 @@ public class Writer {
         this.page = null;
         if(writeTimer != null){
             writeTimer.stop();
+            writeTimer = null;
         }
         return this;
+    }
+
+    /**
+     * 是否绑定了page
+     * @return
+     */
+    public boolean isBindPage(){
+        return this.page != null || writeTimer != null;
     }
 
     public IPage getBindedPage(){

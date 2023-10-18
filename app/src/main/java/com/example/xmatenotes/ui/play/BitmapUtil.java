@@ -1,4 +1,4 @@
-package com.example.xmatenotes.util;
+package com.example.xmatenotes.ui.play;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -7,6 +7,8 @@ import android.graphics.BitmapRegionDecoder;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.util.Log;
+
+import com.example.xmatenotes.util.LogUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,7 +44,7 @@ public class BitmapUtil {
     }
 
     public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId, int reqWidth, int reqHeight) {
-//        return decodeSampledBitmapFromStream(res.openRawResource(resId), reqWidth, reqHeight);
+        //        return decodeSampledBitmapFromStream(res.openRawResource(resId), reqWidth, reqHeight);
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
@@ -55,7 +57,7 @@ public class BitmapUtil {
         options.inJustDecodeBounds = false;
         options.inMutable =true;
 
-//        Bitmap bm = BitmapFactory.decodeResource(res, resId, options).copy(Bitmap.Config.ARGB_8888, true);
+        //        Bitmap bm = BitmapFactory.decodeResource(res, resId, options).copy(Bitmap.Config.ARGB_8888, true);
         Bitmap bm = BitmapFactory.decodeResource(res, resId, options);
 
         return createScaledBitmap(bm, reqWidth, reqHeight);
@@ -75,31 +77,31 @@ public class BitmapUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        final BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true;
-//
-//        try {
-//            LogUtil.e(TAG, "decodeSampledBitmapFromStream: ins.available(): "+(ins.available()));
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        BitmapFactory.decodeStream(ins, null, options);
-////        BitmapFactory.decodeResource(res, resId, options);
-//
-//        LogUtil.e(TAG, "options.outWidth: " + options.outWidth + " options.outHeight: " + options.outHeight);
-//
-//        options.inSampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
-//
-//        options.inJustDecodeBounds = false;
-//        try {
-//            LogUtil.e(TAG, "decodeSampledBitmapFromStream: ins.available(): "+(ins.available()));
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        Bitmap bm = BitmapFactory.decodeStream(ins, null, options).copy(Bitmap.Config.ARGB_8888, true);;
-////        Bitmap bm = BitmapFactory.decodeResource(res, resId, options).copy(Bitmap.Config.ARGB_8888, true);
-//
-//        return createScaledBitmap(bm, reqWidth, reqHeight);
+        //        final BitmapFactory.Options options = new BitmapFactory.Options();
+        //        options.inJustDecodeBounds = true;
+        //
+        //        try {
+        //            LogUtil.e(TAG, "decodeSampledBitmapFromStream: ins.available(): "+(ins.available()));
+        //        } catch (IOException e) {
+        //            throw new RuntimeException(e);
+        //        }
+        //        BitmapFactory.decodeStream(ins, null, options);
+        ////        BitmapFactory.decodeResource(res, resId, options);
+        //
+        //        LogUtil.e(TAG, "options.outWidth: " + options.outWidth + " options.outHeight: " + options.outHeight);
+        //
+        //        options.inSampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
+        //
+        //        options.inJustDecodeBounds = false;
+        //        try {
+        //            LogUtil.e(TAG, "decodeSampledBitmapFromStream: ins.available(): "+(ins.available()));
+        //        } catch (IOException e) {
+        //            throw new RuntimeException(e);
+        //        }
+        //        Bitmap bm = BitmapFactory.decodeStream(ins, null, options).copy(Bitmap.Config.ARGB_8888, true);;
+        ////        Bitmap bm = BitmapFactory.decodeResource(res, resId, options).copy(Bitmap.Config.ARGB_8888, true);
+        //
+        //        return createScaledBitmap(bm, reqWidth, reqHeight);
     }
 
     public static Bitmap decodeSampledBitmapFromByteArray(byte[] byteArr, int reqWidth, int reqHeight) {
@@ -112,7 +114,7 @@ public class BitmapUtil {
 
         options.inJustDecodeBounds = false;
         options.inMutable =true;
-//        options.inBitmap = reusable;
+        //        options.inBitmap = reusable;
         Bitmap bitmap =  BitmapFactory.decodeByteArray(byteArr,0,byteArr.length,options);
         return createScaledBitmap(bitmap, reqWidth, reqHeight);
     }
@@ -123,11 +125,11 @@ public class BitmapUtil {
 
         if (height > reqHeight || width > reqHeight) {
             // 计算出实际宽高和目标宽高的比率
-//            final int heightRatio = Math.round((float) height / (float) reqHeight);
-//            final int widthRatio = Math.round((float) width / (float) reqWidth);
+            //            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            //            final int widthRatio = Math.round((float) width / (float) reqWidth);
             // 选择宽和高中最小的比率作为inSampleSize的值，这样可以保证最终图片的宽和高
             // 一定都会大于等于目标的宽和高。
-//            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            //            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
 
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;

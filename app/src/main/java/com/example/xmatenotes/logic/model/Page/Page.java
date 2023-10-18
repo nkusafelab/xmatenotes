@@ -599,6 +599,10 @@ public class Page implements IPage,Serializable {
         return code;
     }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public float getRealWidth() {
         return realWidth;
     }
@@ -613,5 +617,17 @@ public class Page implements IPage,Serializable {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
+    }
+
+    public float getRealLeft() {
+        return realLeft;
+    }
+
+    public float getRealTop() {
+        return realTop;
+    }
+
+    public QRObject getQrObject() {
+        return qrObject;
     }
 }

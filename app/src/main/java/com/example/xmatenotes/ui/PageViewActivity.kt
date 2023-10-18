@@ -27,7 +27,6 @@ import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.view.PageView
 import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.util.BitmapUtil
-import kotlin.concurrent.thread
 
 /**
  * 支持屏幕NK-cola的活动
@@ -144,7 +143,7 @@ open class PageViewActivity : PageActivity() {
         return PageManager.getPageByPageID(0);
     }
 
-    fun getCoordinateConverter(left: Float, top: Float, viewWidth: Float, viewHeight: Float): CoordinateConverter {
+    open fun getCoordinateConverter(left: Float, top: Float, viewWidth: Float, viewHeight: Float): CoordinateConverter {
         return CoordinateConverter(left, top, viewWidth,
             viewHeight, page.realWidth, page.realHeight)
 //        return page.setRealDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
@@ -170,14 +169,14 @@ open class PageViewActivity : PageActivity() {
 
             } else {
                 //时间耗费较大
-                var oldBmp = bitmap
+//                var oldBmp = bitmap
                 bitmap = getViewBitmap(mediaDot.pageId)
                 LogUtil.e(TAG, "switchPage: bitmap = getViewBitmap(mediaDot.pageID): "+mediaDot.pageId)
                 Log.e(TAG, "switchPage: bitmap!!.width: "+ bitmap!!.width+" bitmap!!.height: "+bitmap!!.height)
                 pageView.post {
                     pageView.setImageBitmap(bitmap)
                     pageView.drawLineDots(page.dotList.clone() as List<SingleHandWriting>, page.coordinateCropper)
-                    BitmapUtil.recycleBitmap(oldBmp)
+//                    BitmapUtil.recycleBitmap(oldBmp)
                 }
             }
             return true
@@ -189,7 +188,7 @@ open class PageViewActivity : PageActivity() {
      * 生成带有笔迹的卡片图片
      * 不直接使用PageView中的bitmap是为了使得不同设备能够生成相同分辨率的图片
      */
-    fun generatePageBmp(page: Page, mBitmap: Bitmap): Bitmap{
+    open fun generatePageBmp(page: Page, mBitmap: Bitmap): Bitmap{
         val bitmap: Bitmap = mBitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(bitmap)
         var paint = Paint()
@@ -207,7 +206,7 @@ open class PageViewActivity : PageActivity() {
         return bitmap
     }
 
-    fun processEachDot(simpleDot: SimpleDot) {
+    open fun processEachDot(simpleDot: SimpleDot) {
 
         processEachDot((createMediaDot(simpleDot)))
     }
@@ -221,7 +220,7 @@ open class PageViewActivity : PageActivity() {
         super.processEachDot(mediaDot)
     }
 
-    protected fun createMediaDot(simpleDot: SimpleDot): MediaDot {
+    protected open fun createMediaDot(simpleDot: SimpleDot): MediaDot {
         val mediaDot = MediaDot(simpleDot)
         mediaDot.pageId = this.currentPageId
         mediaDot.penMac = XmateNotesApplication.mBTMac
@@ -270,7 +269,7 @@ open class PageViewActivity : PageActivity() {
                 return false
             }
             showToast("长压命令")
-            pageManager.save(page, bitmap?.let { generatePageBmp(page, it) })
+            pageManager.save(page, bitmap?.let { generatePageBmp(page, it) }, pageManager.getPageAbsolutePath(page))
 
             return true
         }

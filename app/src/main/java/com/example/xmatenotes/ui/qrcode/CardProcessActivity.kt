@@ -19,26 +19,22 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.xmatenotes.app.XmateNotesApplication
 import com.example.xmatenotes.R
-import com.example.xmatenotes.app.ax.A3
 import com.example.xmatenotes.logic.manager.AudioManager
 import com.example.xmatenotes.logic.manager.CoordinateConverter
-import com.example.xmatenotes.logic.manager.CoordinateConverter.CoordinateCropper
+import com.example.xmatenotes.logic.manager.PageManager
 import com.example.xmatenotes.logic.manager.Storager
 import com.example.xmatenotes.logic.manager.VideoManager
 import com.example.xmatenotes.logic.manager.Writer
 import com.example.xmatenotes.logic.model.Page.Card
 import com.example.xmatenotes.logic.model.Page.CardManager
 import com.example.xmatenotes.logic.model.Page.Page
-import com.example.xmatenotes.logic.model.handwriting.HandWriting
 import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot
-import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.logic.network.BitableManager
 import com.example.xmatenotes.ui.BaseActivity
 import com.example.xmatenotes.ui.HWReplayActivity
-import com.example.xmatenotes.ui.XueChengViewActivity
 import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
 import com.example.xmatenotes.ui.ckplayer.XueChengVideoNoteActivity
 import com.example.xmatenotes.ui.view.DrawingImageView
@@ -73,6 +69,7 @@ class CardProcessActivity : AppCompatActivity() {
 
     private var storager = Storager.getInstance()
     private var cardManager = CardManager.getInstance()
+    private var pageManager = PageManager.getInstance()
     private val audioManager = AudioManager.getInstance()
     private var bitableManager = BitableManager.getInstance()
     private lateinit var writer: Writer
@@ -83,9 +80,12 @@ class CardProcessActivity : AppCompatActivity() {
     private lateinit var clearButton:Button
     private lateinit var recameraButton: Button
 
-    private lateinit var cardData: Card
+    private lateinit var card: Card
     private var bitmap: Bitmap? = null
     private var audioRecorder = false //录音开关
+
+    private var pageBmpBounds =  RectF()
+    private var bmpBounds = RectF()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,13 +112,13 @@ class CardProcessActivity : AppCompatActivity() {
 //            actionBar.setDisplayHomeAsUpEnabled(true)
         }
 
-        bitmap = BitmapCacheManager.getBitmap("WeChatQRCodeBitmap")
+        bitmap = BitmapUtil.getBitmap("WeChatQRCodeBitmap")
         LogUtil.e(TAG, "Storager.cardCache == null: "+(Storager.cardCache == null))
-        cardData = Storager.cardCache
+        card = Storager.cardCache
         Storager.cardCache = null
-        var cardAbsolutePath = cardManager.mkdirs(cardData)
-        cardManager.downLoad(cardData.preCode, cardAbsolutePath, object : CardManager.ObjectInputResp {
-            override fun onFinish(obj: Any?) {
+        var cardAbsolutePath = pageManager.mkdirs(card)
+        pageManager.downLoad(card.preCode, cardAbsolutePath, object : PageManager.ObjectInputResp {
+            fun onFinish(obj: Any?) {
                 LogUtil.e(TAG, "onCreate: card == null: "+(obj == null))
                 if (obj != null){
                     if(obj is Card){
@@ -131,46 +131,76 @@ class CardProcessActivity : AppCompatActivity() {
                         }
 
                         //融合笔迹点集合
-                        cardData.addDotsList(0, card.cardResource.dotList)
+                        card.addDotsList(0, card.cardResource.dotList)
                         LogUtil.e(TAG, "onCreate: 融合旧的singleHandWriting数量为"+card.cardResource.dotList.size+" HandWriting数量为: "+handWritingNumber)
                         //融合音频文件名集合
-                        cardData.addAudioNameList(0, card.getAudioNameList())
+                        card.addAudioNameList(0, card.getAudioNameList())
                         //融合笔迹范围，暂不处理
                     }
                     if(obj is Page){
                         var page = obj as Page
-                        var pageBmpBounds = RectF()
                         pageBmpBounds.left = intent.getFloatExtra("left", 0f)
                         pageBmpBounds.right = intent.getFloatExtra("right", 0f)
                         pageBmpBounds.top = intent.getFloatExtra("top", 0f)
                         pageBmpBounds.bottom = intent.getFloatExtra("bottom", 0f)
-                        var cConverter = CoordinateConverter(pageBmpBounds.left, pageBmpBounds.top, pageBmpBounds.width(), pageBmpBounds.height(), page.realWidth, page.realHeight)
-                        var cCropper = CoordinateCropper(pageBmpBounds.left, pageBmpBounds.top)
-                        var shwList = ArrayList<SingleHandWriting>()
+                        bmpBounds.left = intent.getFloatExtra("superleft", 0f)
+                        bmpBounds.top = intent.getFloatExtra("supertop", 0f)
+                        bmpBounds.right = intent.getFloatExtra("superright", 0f)
+                        bmpBounds.bottom = intent.getFloatExtra("superbottom", 0f)
+//                        bmpBounds.left =
+//                        var cConverter = CoordinateConverter(pageBmpBounds.left, pageBmpBounds.top, pageBmpBounds.width(), pageBmpBounds.height(), page.realWidth, page.realHeight)
+//                        var cCropper = CoordinateCropper(pageBmpBounds.left, pageBmpBounds.top)
+//                        var shwList = ArrayList<SingleHandWriting>()
                         var handWritingNumber = 0
                         for (singleHandWriting in page.dotList){
-                            var shw = SingleHandWriting()
-                            for (handWriting in singleHandWriting.handWritings){
-                                var hw = HandWriting(handWriting.prePeriod, handWriting.firsttime)
-                                for (stroke in handWriting.strokes){
-                                    for (dot in stroke.dots){
-                                        hw.addDot(cConverter.convertOut(page.coordinateCropper.cropIn(dot)))
-                                    }
-                                }
-                                shw.addHandWriting(hw)
-                            }
-                            shw.isNew = false
-                            handWritingNumber += shw.size()
-                            shwList.add(shw)
+//                            var shw = SingleHandWriting()
+//                            for (handWriting in singleHandWriting.handWritings){
+//                                var hw = HandWriting(handWriting.prePeriod, handWriting.firsttime)
+//                                for (stroke in handWriting.strokes){
+//                                    for (dot in stroke.dots){
+//                                        hw.addDot(cConverter.convertOut(page.coordinateCropper.cropIn(dot)))
+//                                    }
+//                                }
+//                                shw.addHandWriting(hw)
+//                            }
+                            singleHandWriting.isNew = false
+//                            shw.isNew = false
+                            handWritingNumber += singleHandWriting.size()
+//                            shwList.add(shw)
                         }
                         //融合笔迹点集合
-                        cardData.addDotsList(0, shwList)
-                        LogUtil.e(TAG, "onCreate: 融合旧的singleHandWriting数量为"+page.dotList.size+" HandWriting数量为: "+handWritingNumber)
+                        card.addDotsList(0, page.dotList)
+                        LogUtil.e(TAG, "onCreate: 融合旧的singleHandWriting数量为: "+card.dotList.size+" HandWriting数量为: "+handWritingNumber)
                         //融合音频文件名集合
-                        cardData.addAudioNameList(0, page.audioNameList)
+                        card.addAudioNameList(0, page.audioNameList)
                         //融合笔迹范围，暂不处理
                     }
 
+                }
+            }
+
+            override fun onFinish(page: Page?) {
+                LogUtil.e(TAG, "onCreate: page == null: "+(page == null))
+                if(page != null){
+                    pageBmpBounds.left = intent.getFloatExtra("left", 0f)
+                    pageBmpBounds.right = intent.getFloatExtra("right", 0f)
+                    pageBmpBounds.top = intent.getFloatExtra("top", 0f)
+                    pageBmpBounds.bottom = intent.getFloatExtra("bottom", 0f)
+                    bmpBounds.left = intent.getFloatExtra("superleft", 0f)
+                    bmpBounds.top = intent.getFloatExtra("supertop", 0f)
+                    bmpBounds.right = intent.getFloatExtra("superright", 0f)
+                    bmpBounds.bottom = intent.getFloatExtra("superbottom", 0f)
+                    var handWritingNumber = 0
+                    for (singleHandWriting in page.dotList){
+                        singleHandWriting.isNew = false
+                        handWritingNumber += singleHandWriting.size()
+                    }
+                    //融合笔迹点集合
+                    card.addDotsList(0, page.dotList)
+                    LogUtil.e(TAG, "onCreate: 融合旧的singleHandWriting数量为: "+card.dotList.size+" HandWriting数量为: "+handWritingNumber)
+                    //融合音频文件名集合
+                    card.addAudioNameList(0, page.audioNameList)
+                    //融合笔迹范围，暂不处理
                 }
             }
 
@@ -308,14 +338,14 @@ class CardProcessActivity : AppCompatActivity() {
         }
         super.onResume()
 
-        this.writer = Writer.getInstance().init().bindPage(cardData).setResponser(object : Responser() {
+        this.writer = Writer.getInstance().init().bindPage(card).setResponser(object : Responser() {
             override fun onLongPress(command: Command?):Boolean {
                 if(!super.onLongPress(command)){
                     return false
                 }
 
                 runOnUiThread { Toast.makeText(XmateNotesApplication.context, "长压命令", Toast.LENGTH_SHORT).show() }
-                cardManager.save(cardData, bitmap?.let { generateCardBmp(cardData, it) })
+                cardManager.save(card, bitmap?.let { generateCardBmp(card, it) })
 
                 return false
             }
@@ -342,7 +372,7 @@ class CardProcessActivity : AppCompatActivity() {
 
                 command?.handWriting?.firstDot?.let { coordinate ->
                     var mediaDot = coordinate as MediaDot
-                    cardData.getHandWritingByCoordinate(mediaDot)?.let { handWriting ->
+                    card.getHandWritingByCoordinate(mediaDot)?.let { handWriting ->
                         if (handWriting.penMac.equals(XmateNotesApplication.mBTMac)) {
                             if (handWriting.hasVideo()) {
                                 //跳转视频播放
@@ -369,9 +399,9 @@ class CardProcessActivity : AppCompatActivity() {
                                         this@CardProcessActivity,
                                         subRect,
                                         "cardBitmap",
-                                        cardData,
-                                        cardData.code,
-                                        cardData.getSingleHandWritingByCoordinate(mediaDot)
+                                        card,
+                                        card.code,
+                                        card.getSingleHandWritingByCoordinate(mediaDot)
                                     )
                                 }
 
@@ -421,7 +451,7 @@ class CardProcessActivity : AppCompatActivity() {
                 }
 
                 //绘制笔迹
-                imageView.drawDots(cardData.cardResource.dotList)
+                imageView.drawDots(card.dotList)
                 return super.onCalligraphy(command)
             }
 
@@ -441,7 +471,7 @@ class CardProcessActivity : AppCompatActivity() {
                 }
 
                 command?.handWriting?.firstDot?.let {coordinate->
-                    audioManager.startRATimer(cardManager.getNewAudioAbsolutePath(coordinate, cardData))
+                    audioManager.startRATimer(cardManager.getNewAudioAbsolutePath(coordinate, card))
                     audioRecorder = true
                 }
 
@@ -456,7 +486,7 @@ class CardProcessActivity : AppCompatActivity() {
                 }
 
                 //绘制笔迹
-                imageView.drawDots(cardData.cardResource.dotList)
+                imageView.drawDots(card.dotList)
 //                runOnUiThread { Toast.makeText(XmateNotesApplication.context, "手势命令", Toast.LENGTH_SHORT).show() }
 
                 return false
@@ -498,8 +528,14 @@ class CardProcessActivity : AppCompatActivity() {
 //        bitmap?.let {
 //            cardData.setRealDimensions(bitmap!!.width.toFloat(), bitmap!!.height.toFloat())
 //        }
-        return CoordinateConverter(left, top, viewWidth,
-            viewHeight, bitmap!!.width.toFloat(), bitmap!!.height.toFloat()
+        var viewRectF = RectF()
+        viewRectF.left = left
+        viewRectF.top = top
+        viewRectF.right = viewRectF.left + viewWidth
+        viewRectF.bottom = viewRectF.top + viewHeight
+        viewRectF = BitmapUtil.mapRect(pageBmpBounds, bmpBounds, viewRectF)
+        return CoordinateConverter(viewRectF.left, viewRectF.top, viewRectF.width(),
+            viewRectF.height(), card.realWidth, card.realHeight
         )
 //        return page.setRealDimensions(viewWidth.toFloat(), viewHeight.toFloat(), resources.displayMetrics.density * 160)
     }
@@ -526,17 +562,17 @@ class CardProcessActivity : AppCompatActivity() {
             imageView.coordinateConverter.coordinateScaler.realWidth,
             imageView.coordinateConverter.coordinateScaler.realHeight
         )
-        var path = imageView.drawDots(cardData.cardResource.dotList, coordinateConverter)
+        var path = imageView.drawDots(this.card.cardResource.dotList, coordinateConverter)
         canvas.drawPath(path, paint)
         return bitmap
     }
 
     fun processEachDot(simpleDot: SimpleDot){
         val mediaDot = MediaDot(simpleDot)
-        mediaDot.pageId = this.cardData.code.toLong()
+        mediaDot.pageId = this.card.code.toLong()
         //如果正在录音，再次长压结束录音
         if (audioRecorder) {
-            mediaDot.audioID = Integer.parseInt(cardData.getLastAudioName())
+            mediaDot.audioID = Integer.parseInt(card.getLastAudioName())
             mediaDot.color = MediaDot.DEEP_GREEN
         }
 

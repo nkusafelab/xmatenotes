@@ -79,8 +79,14 @@ abstract class PageActivity : CommandActivity() {
     }
 
     override fun onStart() {
+        bitableManager.initial(null, null, APPToken).initialTable(PAGES_TABLEID)
+        if(!this.writer.isBindPage){
+            var pageBuffer = PageManager.getPageByPageID(PageManager.currentPageID)
+            if (pageBuffer != null){
+                this.writer.bindPage(pageBuffer)
+            }
+        }
         super.onStart()
-
 //        this.writer = Writer.getInstance().setResponser(getResponser())
 //        initPage()
 //        initCoordinateConverter()
@@ -108,6 +114,8 @@ abstract class PageActivity : CommandActivity() {
         }
     }
 
+
+
     override fun onDestroy() {
         super.onDestroy()
 //        unbindService(mServiceConnection)
@@ -123,7 +131,7 @@ abstract class PageActivity : CommandActivity() {
 //    }
 
     override fun initPage(){
-        bitableManager.initial(null, null, APPToken).initialTable(PAGES_TABLEID)
+
         var mediaDot = MediaDot()
         mediaDot.pageId = PageManager.currentPageID
         switchPage(mediaDot)
@@ -218,7 +226,6 @@ abstract class PageActivity : CommandActivity() {
             currentPageId = mediaDot.pageId
             pageManager.update(mediaDot)
             page = pageBuffer
-            this.writer.unBindPage()
             this.writer.bindPage(page)
 
             if(!pageManager.pagePathexists(page)){
@@ -245,7 +252,7 @@ abstract class PageActivity : CommandActivity() {
             }
 
             showToast("长压命令")
-            pageManager.save(page, null)
+            pageManager.save(page, null, null)
 
             return true
         }

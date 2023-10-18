@@ -47,14 +47,15 @@ abstract class CommandActivity : BaseActivity() {
         val bBind = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE)
 
         initUI()
-
+        this.writer = Writer.getInstance().setResponser(getResponser())
+        initPage()
     }
 
     override fun onStart() {
         super.onStart()
-
-        this.writer = Writer.getInstance().setResponser(getResponser())
-        initPage()
+        if(!this.writer.isBindPage){
+            this.writer.bindPage(null)
+        }
         initCoordinateConverter()
     }
 
@@ -78,6 +79,10 @@ abstract class CommandActivity : BaseActivity() {
         super.onPause()
     }
 
+    override fun onStop() {
+        super.onStop()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unbindService(mServiceConnection)
@@ -92,7 +97,7 @@ abstract class CommandActivity : BaseActivity() {
     }
 
     protected open fun initPage(){
-        this.writer.bindPage(null)
+
     }
 
     /**

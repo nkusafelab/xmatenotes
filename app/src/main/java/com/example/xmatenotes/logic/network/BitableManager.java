@@ -303,6 +303,8 @@ public class BitableManager {
      * @param callBack 回调接口，涉及onFinish(AppTableRecord[] appTableRecords)(找到的所有记录);onFinish(AppTableRecord appTableRecord)(创建的新纪录);onError(String errorMsg)(查找失败);
      */
     public void searchAppTableRecords(String tableId, Map<String, Object> fields, String filter, final BitableResp callBack){
+        LogUtil.e(TAG, "searchAppTableRecords: tableId: "+tableId);
+        LogUtil.e(TAG, "searchAppTableRecords: 筛选条件: "+filter);
         ListAppTableRecordReq req = ListAppTableRecordReq.newBuilder()
                 .appToken(appToken)
                 .tableId(tableId)

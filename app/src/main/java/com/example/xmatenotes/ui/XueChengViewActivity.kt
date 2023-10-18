@@ -9,7 +9,6 @@ import android.graphics.RectF
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.Toast
 import com.example.xmatenotes.MLScanningAnalyzer
 import com.example.xmatenotes.OpenCVQRCodeActivity
 import com.example.xmatenotes.R
@@ -26,20 +25,19 @@ import com.example.xmatenotes.logic.model.handwriting.SimpleDot
 import com.example.xmatenotes.logic.model.instruction.Command
 import com.example.xmatenotes.logic.model.instruction.Responser
 import com.example.xmatenotes.ui.ckplayer.VideoNoteActivity
-import com.example.xmatenotes.util.LogUtil
 import com.example.xmatenotes.ui.ckplayer.XueChengVideoNoteActivity
 import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
-import com.example.xmatenotes.ui.qrcode.CardProcessActivity
 import com.example.xmatenotes.ui.qrcode.QRResultListener
 import com.example.xmatenotes.ui.qrcode.WeChatQRCodeActivity
 import com.example.xmatenotes.util.BitmapUtil
+import com.example.xmatenotes.util.LogUtil
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.king.mlkit.vision.camera.AnalyzeResult
 import com.king.wechat.qrcode.WeChatQRCodeDetector
 import org.opencv.OpenCV
 import org.opencv.core.Mat
-import java.lang.Exception
+import java.io.File
 import kotlin.concurrent.thread
 
 /**
@@ -52,7 +50,7 @@ class XueChengViewActivity : PageViewActivity() {
         private const val MARGIN = 0 //“余光”宽度，默认10
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedIxnstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_xue_cheng)
         excelManager.init(this, "A3学程样例·纸分区坐标.xlsx")
@@ -115,8 +113,8 @@ class XueChengViewActivity : PageViewActivity() {
         )
         var subPage = (page as XueCheng).getSubPageByCoordinate(point)
         subPage?.let {
-            pageManager.iterateVersion(page)
-            subPage.createTime = page.createTime
+//            pageManager.iterateVersion(page)
+//            subPage.createTime = page.createTime
             var rectF = it.pageBounds
             LogUtil.e(TAG, "commit: subPage.pageBounds: $rectF")
             var leftTopDot = SimpleDot(rectF.left, rectF.top)
@@ -127,6 +125,7 @@ class XueChengViewActivity : PageViewActivity() {
             //迭代新二维码
             MLScanningAnalyzer(true).analyze(bmp, object : QRResultListener {
                 override fun onSuccess(result: AnalyzeResult<MutableList<String>>?) {
+                    LogUtil.e(TAG, "onSuccess: 识别出二维码")
                     if (result != null) {
                         LogUtil.e(TAG, result.result.toString())
                         if (result is MLScanningAnalyzer.MLQRCodeAnalyzeResult) {
@@ -165,15 +164,38 @@ class XueChengViewActivity : PageViewActivity() {
                             if(qrRectF != null){
                                 var qrObject = qrObjectList[i]
                                 page.setQrObject(qrObject)
+                                subPage.qrObject = qrObject.clone()
                                 page.updateRole(RoleDao.getRole())
+                                subPage.updateRole(RoleDao.getRole())
                                 page.addIteration()
+                                subPage.addIteration()
+                                val oldFile = File(pageManager.getPageAbsolutePath(page))
+                                pageManager.iterateVersion(page)
+                                var newFile = File(pageManager.getPageAbsolutePath(page))
+                                var pageResAbsolutePath = newFile.absolutePath
+                                if (oldFile.renameTo(newFile)) {
+                                    LogUtil.e(
+                                        TAG,
+                                        "save: Directory " + oldFile.name + " renamed to " + newFile.name
+                                    )
+                                } else {
+                                    LogUtil.e(
+                                        TAG,
+                                        "save: Could not rename directory " + oldFile.name + " to " + newFile.name
+                                    )
+                                }
+                                subPage.createTime = page.createTime
+                                subPage.qrObject.time = page.createTime
+                                subPage.code = subPage.code.substring(0, 6)+subPage.createTime
+                                subPage.qrObject.pn = subPage.code
                                 var canvas = Canvas(bmp)
                                 var paint = Paint()
-                                page.toQRObject().toQRCodeBitmap(qrRectF!!)?.let {
+                                subPage.toQRObject().toQRCodeBitmap(qrRectF!!)?.let {
                                     canvas.drawBitmap(it, qrRectF!!.left, qrRectF!!.top, paint)
                                 }
                                 pageView.postInvalidate()
-                                pageManager.save(subPage, generatePageBmp(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY)))
+                                pageManager.save(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY), pageResAbsolutePath)
+//                                pageManager.save(subPage, generatePageBmp(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY)), pageResAbsolutePath)
 
                             }
 
@@ -184,7 +206,23 @@ class XueChengViewActivity : PageViewActivity() {
 
                 override fun onFailure(e: Exception?) {
                     LogUtil.e(TAG, "onFailure: 未识别到二维码！")
-                    pageManager.save(subPage, generatePageBmp(subPage, Bitmap.createBitmap(bmp, leftTopDot.intX, leftTopDot.intY, rightBottomDot.intX-leftTopDot.intX, rightBottomDot.intY-leftTopDot.intY)))
+                    page.updateRole(RoleDao.getRole())
+                    val oldFile = File(pageManager.getPageAbsolutePath(page))
+                    pageManager.iterateVersion(page)
+                    var newFile = File(pageManager.getPageAbsolutePath(page))
+                    var pageResAbsolutePath = newFile.absolutePath
+                    if (oldFile.renameTo(newFile)) {
+                        LogUtil.e(
+                            TAG,
+                            "save: Directory " + oldFile.name + " renamed to " + newFile.name
+                        )
+                    } else {
+                        LogUtil.e(
+                            TAG,
+                            "save: Could not rename directory " + oldFile.name + " to " + newFile.name
+                        )
+                    }
+                    pageManager.save(page, generatePageBmp(page, bitmap), pageResAbsolutePath)
 
                 }
             })
@@ -281,7 +319,7 @@ class XueChengViewActivity : PageViewActivity() {
                                 LogUtil.e(TAG, "onDoubleClick: newSubRect: $newSubRect")
                                 var subBitmap = Bitmap.createBitmap(bitmap, newSubRect.left, newSubRect.top, newSubRect.width(), newSubRect.height())
 //                                LogUtil.e(TAG, "onDoubleClick: ", )
-                                BitmapCacheManager.putBitmap("subBitmap", subBitmap)
+                                BitmapUtil.putBitmap("subBitmap", subBitmap)
                                 Log.e(TAG, "onDoubleClick: 跳转笔迹动态复现准备结束")
                                 HWReplayActivity.startHWReplayActivity(this@XueChengViewActivity, subRect, "subBitmap", page, it.areaCode, page.getSingleHandWritingByCoordinate(mediaDot))
                             }

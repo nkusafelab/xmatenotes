@@ -194,7 +194,7 @@ open class PageTestActivity : BaseActivity() {
             }
 
             showToast("长压命令")
-            pageManager.save(page, bitmap?.let { generatePageBmp(page, it) })
+            pageManager.save(page, bitmap?.let { generatePageBmp(page, it) }, null)
 
             return false
         }

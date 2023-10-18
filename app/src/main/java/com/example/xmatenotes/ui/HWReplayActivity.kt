@@ -19,6 +19,7 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting
 import com.example.xmatenotes.ui.qrcode.BitmapCacheManager
 import com.example.xmatenotes.ui.view.PageView
+import com.example.xmatenotes.util.BitmapUtil
 import com.example.xmatenotes.util.LogUtil
 import kotlin.concurrent.thread
 
@@ -104,7 +105,7 @@ class HWReplayActivity : BaseActivity() {
         var bitmapKey = intent.getStringExtra("bitmapKey")
         LogUtil.e(TAG, "onCreate: 收到bitmapKey: $bitmapKey")
         bitmapKey?.let {
-            bitmap = BitmapCacheManager.getBitmap(bitmapKey)!!
+            bitmap = BitmapUtil.getBitmap(bitmapKey)!!
         }
 
         isSupportActionBarDisplayConnected = false

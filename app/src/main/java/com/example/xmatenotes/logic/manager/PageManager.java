@@ -234,7 +234,7 @@ public class PageManager {
         return currentPageID;
     }
 
-    private String getPageAbsolutePath(Page page){
+    public String getPageAbsolutePath(Page page){
         return getPageAbsolutePath(page.getPageName());
     }
 
@@ -346,39 +346,43 @@ public class PageManager {
         }
     }
 
-    public void save(Page page, Bitmap bitmap){
-
-        File oldFile = new File(getPageAbsolutePath(page));
-        LogUtil.e(TAG, "save: oldFile.getAbsolutePath(): "+oldFile.getAbsolutePath());
-        File newFile;
-        String pageAbsolutePath = oldFile.getAbsolutePath();
-        //重命名
-        if(oldFile.exists()){
-            page.create();
-            newFile = new File(getPageAbsolutePath(page));
-            if (oldFile.renameTo(newFile)) {
-                pageAbsolutePath = newFile.getAbsolutePath();
-                LogUtil.e(TAG,"save: Directory " + oldFile.getName() + " renamed to " + newFile.getName());
-            } else {
-                LogUtil.e(TAG,"save: Could not rename directory " + oldFile.getName() + " to " + newFile.getName());
-            }
-        } else {
-            LogUtil.e(TAG, "save: oldFile不存在!");
-            if(page instanceof XueChengCard){
-                LogUtil.e(TAG, "save: page为XueChengCard");
-                XueChengCard xueChengCard = (XueChengCard)page;
-                oldFile = new File(getPageAbsolutePath(xueChengCard.getSuperPageName()));
-                pageAbsolutePath = oldFile.getAbsolutePath();
-                LogUtil.e(TAG, "save: xueChengCard.getSuperPageAbsolutePath: "+pageAbsolutePath);
-                xueChengCard.create();
-                newFile = new File(getPageAbsolutePath(xueChengCard));
-                newFile.mkdirs();
-                LogUtil.e(TAG, "save: XueChengCard: newFile.mkdirs(): "+newFile.getAbsolutePath());
-            } else {
-                LogUtil.e(TAG, "save: 退出save流程");
-                return;
-            }
+    public void save(Page page, Bitmap bitmap, String pageResAbsolutePath){
+        File file = new File(getPageAbsolutePath(page));
+        if(!file.exists()){
+            file.mkdirs();
         }
+
+//        File oldFile = new File(getPageAbsolutePath(page));
+//        LogUtil.e(TAG, "save: oldFile.getAbsolutePath(): "+oldFile.getAbsolutePath());
+//        File newFile;
+//        String pageAbsolutePath = oldFile.getAbsolutePath();
+//        //重命名
+//        if(oldFile.exists()){
+//            page.create();
+//            newFile = new File(getPageAbsolutePath(page));
+//            if (oldFile.renameTo(newFile)) {
+//                pageAbsolutePath = newFile.getAbsolutePath();
+//                LogUtil.e(TAG,"save: Directory " + oldFile.getName() + " renamed to " + newFile.getName());
+//            } else {
+//                LogUtil.e(TAG,"save: Could not rename directory " + oldFile.getName() + " to " + newFile.getName());
+//            }
+//        } else {
+//            LogUtil.e(TAG, "save: oldFile不存在!");
+//            if(page instanceof XueChengCard){
+//                LogUtil.e(TAG, "save: page为XueChengCard");
+//                XueChengCard xueChengCard = (XueChengCard)page;
+//                oldFile = new File(getPageAbsolutePath(xueChengCard.getSuperPageName()));
+//                pageAbsolutePath = oldFile.getAbsolutePath();
+//                LogUtil.e(TAG, "save: xueChengCard.getSuperPageAbsolutePath: "+pageAbsolutePath);
+////                xueChengCard.create();
+//                newFile = new File(getPageAbsolutePath(xueChengCard));
+//                newFile.mkdirs();
+//                LogUtil.e(TAG, "save: XueChengCard: newFile.mkdirs(): "+newFile.getAbsolutePath());
+//            } else {
+//                LogUtil.e(TAG, "save: 退出save流程");
+//                return;
+//            }
+//        }
 
         bitableManager.initialTable(Page.pagesTableId);
 
@@ -405,7 +409,7 @@ public class PageManager {
         //存储音频
 
         //上传飞书
-        String finalPageAbsolutePath = pageAbsolutePath;
+        String finalPageAbsolutePath = pageResAbsolutePath;
         LogUtil.e(TAG, "save: finalPageAbsolutePath: "+finalPageAbsolutePath);
         bitableManager.createAppTableRecord(Page.pagesTableId, page.toMap(), new BitableManager.BitableResp() {
             @Override
@@ -450,7 +454,7 @@ public class PageManager {
         bitableManager.initialTable(Page.pagesTableId);
 
         //查飞书多维表格
-        bitableManager.searchAppTableRecords(Page.pagesTableId, null, "CurrentValue.[Code] = " + code, new BitableManager.BitableResp() {
+        bitableManager.searchAppTableRecords(Page.pagesTableId, null, "CurrentValue.[Code] = \"" + code+"\"", new BitableManager.BitableResp() {
             @Override
             public void onFinish(AppTableRecord[] appTableRecords) {
                 super.onFinish(appTableRecords);

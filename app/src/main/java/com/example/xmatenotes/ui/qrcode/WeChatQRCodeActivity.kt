@@ -23,7 +23,9 @@ import com.example.xmatenotes.logic.model.Page.Card
 import com.example.xmatenotes.logic.model.Page.QRObject
 import com.example.xmatenotes.logic.model.Page.getSubjectColor
 import com.example.xmatenotes.logic.network.BitableManager
+import com.example.xmatenotes.ui.CardViewActivity
 import com.example.xmatenotes.ui.qrcode.CircleRunnable.CircleCallBack
+import com.example.xmatenotes.util.BitmapUtil
 import com.example.xmatenotes.util.LogUtil
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -808,11 +810,25 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
                         ivResult.setImageBitmap(bMap)
                         val matrix: Matrix = ivResult.imageMatrix
                         val drawable = ivResult.drawable
+                        val viewRectF = RectF()
+
+                        // 获取控件在屏幕上的坐标
+                        val location = IntArray(2)
+                        ivResult.getLocationOnScreen(location)
+
+                        // 计算矩形区域
+                        viewRectF.left = location[0].toFloat()
+                        viewRectF.top = location[1].toFloat()
+                        viewRectF.right = viewRectF.left + ivResult.width
+                        viewRectF.bottom = viewRectF.top + ivResult.height
                         var intrnRectF = RectF()
                         if (drawable != null) {
                             intrnRectF.set(0f, 0f, drawable.intrinsicWidth.toFloat(),drawable.intrinsicHeight.toFloat())
                             matrix.mapRect(intrnRectF)
                         }
+                        intrnRectF.offset(viewRectF.left, viewRectF.top)
+
+                        LogUtil.e(TAG, "onScanResultCallback: intrnRectF: $intrnRectF")
                         previewView.alpha = 0F
 
                         viewfinderView.isShowPoints = false
@@ -831,16 +847,22 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 //                    ivResult.setImageBitmap(bitmap)
                         Storager.cardCache = cardData
                         LogUtil.e(TAG, "Storager.cardCache == null: "+(Storager.cardCache == null))
-                        BitmapCacheManager.putBitmap("WeChatQRCodeBitmap", bitmap)
+                        BitmapUtil.putBitmap("WeChatQRCodeBitmap", bitmap)
 
                         //初始化回false为下次做准备
                         keyDown=false
-                        val intent = Intent(getContext(), CardProcessActivity::class.java)
+                        val intent = Intent(getContext(), CardViewActivity::class.java)
+//                        val intent = Intent(getContext(), CardProcessActivity::class.java)
                         if(!intrnRectF.isEmpty){
-                            intent.putExtra("left", intrnRectF.left)
-                            intent.putExtra("right", intrnRectF.right)
-                            intent.putExtra("top", intrnRectF.top)
-                            intent.putExtra("bottom", intrnRectF.bottom)
+                            LogUtil.e(TAG, "onScanResultCallback: rootView.width: "+rootView.width+" rootView.height: "+rootView.height)
+                            intent.putExtra("intrnleft", intrnRectF.left)
+                            intent.putExtra("intrnright", intrnRectF.right)
+                            intent.putExtra("intrntop", intrnRectF.top)
+                            intent.putExtra("intrnbottom", intrnRectF.bottom)
+                            intent.putExtra("superleft", 0f)
+                            intent.putExtra("superright", rootView.width.toFloat())
+                            intent.putExtra("supertop", 0f)
+                            intent.putExtra("superbottom", rootView.height.toFloat())
                         }
                         startActivity(intent)
                     }
@@ -1761,7 +1783,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
      * 设置顶部学科栏
      */
     fun updateTopActionBar(card: Card) {
-        setPreCodeText(card.cardDataLabel.preCode)
+        setPreCodeText(card.preCode)
         setPostCodeText(card.cardDataLabel.postCode)
         setSubjectText(card.cardDataLabel.subjectName)
         setUnitText(card.cardDataLabel.unitName)

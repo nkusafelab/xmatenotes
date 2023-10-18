@@ -25,10 +25,11 @@ import com.example.xmatenotes.logic.model.handwriting.MediaDot;
 import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
 import com.example.xmatenotes.logic.model.handwriting.SingleHandWriting;
 import com.example.xmatenotes.logic.model.handwriting.Stroke;
+import com.example.xmatenotes.ui.CardshowActivity;
 import com.example.xmatenotes.ui.HWReplayActivity;
 import com.example.xmatenotes.ui.PageViewActivity;
-import com.example.xmatenotes.util.LogUtil;
 import com.example.xmatenotes.util.BitmapUtil;
+import com.example.xmatenotes.util.LogUtil;
 import com.tqltech.tqlpencomm.bean.Dot;
 
 import java.io.InputStream;
@@ -362,7 +363,7 @@ public class PageView extends AppCompatImageView {
 //        setImageDrawable(new BitmapDrawable(pageViewActivity.getResources(), bm));
 //        super.setImageBitmap(pageViewActivity.bitmap);
         super.setImageBitmap(bm);
-//        BitmapUtil.recycleBitmap(mBitmap);
+//        com.example.xmatenotes.util.BitmapUtil.recycleBitmap(mBitmap);
 //        mBitmap = bm;
 //        mBitmap = Bitmap.createBitmap(100,100, Bitmap.Config.ARGB_8888);
         mBitmap = bm;
@@ -401,12 +402,12 @@ public class PageView extends AppCompatImageView {
 
     public void setImageRes(Resources res, int resId) {
 //        setImageStream(res.openRawResource(resId));
-        setImageBitmap(BitmapUtil.decodeSampledBitmapFromResource(res, resId, getWidth(), getHeight()));
+        setImageBitmap(BitmapUtil.INSTANCE.decodeSampledBitmapFromResource(res, resId, getWidth(), getHeight()));
     }
 
     public void setImageStream(InputStream in) {
         LogUtil.e(TAG, "setImageStream(): getWidth(): " + getWidth() + " getHeight(): " + getHeight());
-        setImageBitmap(BitmapUtil.decodeSampledBitmapFromStream(in, getWidth(), getHeight()));
+        setImageBitmap(BitmapUtil.INSTANCE.decodeSampledBitmapFromStream(in, getWidth(), getHeight()));
     }
 
     /**
@@ -465,6 +466,20 @@ public class PageView extends AppCompatImageView {
     public void setBitmapCoordinateConverter(CoordinateConverter bitmapCoordinateConverter) {
         this.bitmapCoordinateConverter = bitmapCoordinateConverter;
         LogUtil.e(TAG, "配置bitmap坐标转换器: "+this.bitmapCoordinateConverter.toString());
+    }
+
+    public void  setCoordinateConverter(float pageRealWidth, float pageRealHeight, RectF subRectF, RectF superRectF){
+        RectF rectF = getIntrinsicRectF();
+        RectF viewRectF = new RectF(rectF.left, rectF.top, rectF.left+rectF.width(), rectF.top+rectF.height());
+        LogUtil.e(TAG, "setCoordinateConverter: 转换前viewRectF: "+viewRectF);
+        viewRectF = BitmapUtil.INSTANCE.mapRect(subRectF, superRectF, viewRectF);
+        LogUtil.e(TAG, "setCoordinateConverter: 转换后viewRectF: "+viewRectF);
+        if(this.pageViewActivity != null){
+            setScreenCoordinateConverter(new CoordinateConverter(viewRectF.left, viewRectF.top, viewRectF.width(), viewRectF.height(),pageRealWidth, pageRealHeight));
+        }
+        if(this.hwReplayActivity != null){
+            setScreenCoordinateConverter(new CoordinateConverter(viewRectF.left, viewRectF.top, viewRectF.width(), viewRectF.height(),pageRealWidth, pageRealHeight));
+        }
     }
 
     //利用矩阵缩放位图至合适大小

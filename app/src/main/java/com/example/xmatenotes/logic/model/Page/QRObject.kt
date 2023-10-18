@@ -108,7 +108,7 @@ data class QRObject(
      */
     var time:String
 
-) : Serializable {
+) : Serializable, Cloneable {
 
     companion object {
         private const val serialVersionUID: Long = 8149896890841871570L
@@ -139,5 +139,9 @@ data class QRObject(
 
     override fun toString(): String {
         return "QRObject(p='$p', psx=$psx, psy=$psy, pn='$pn', qx=$qx, qy=$qy, ql=$ql, sc='$sc', gr='$gr', cl='$cl', ca='$ca', au='$au', te='$te', st='$st', gn='$gn', gl='$gl', sub='$sub', data='$data', time='$time')"
+    }
+
+    public override fun clone(): QRObject {
+        return super.clone() as QRObject
     }
 }
