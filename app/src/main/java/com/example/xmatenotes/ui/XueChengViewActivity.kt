@@ -50,7 +50,7 @@ class XueChengViewActivity : PageViewActivity() {
         private const val MARGIN = 0 //“余光”宽度，默认10
     }
 
-    override fun onCreate(savedIxnstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_xue_cheng)
         excelManager.init(this, "A3学程样例·纸分区坐标.xlsx")

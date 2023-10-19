@@ -46,6 +46,7 @@ abstract class CommandActivity : BaseActivity() {
         val gattServiceIntent = Intent(this, BluetoothLEService::class.java)
         val bBind = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE)
 
+        //以下顺序不要颠倒
         initUI()
         this.writer = Writer.getInstance().setResponser(getResponser())
         initPage()
@@ -92,10 +93,16 @@ abstract class CommandActivity : BaseActivity() {
         return R.layout.activity_command
     }
 
+    /**
+     * 初始化UI，在onCreate()中执行
+     */
     protected open fun initUI(){
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
+    /**
+     * 初始化Page，在onStart()中执行
+     */
     protected open fun initPage(){
 
     }

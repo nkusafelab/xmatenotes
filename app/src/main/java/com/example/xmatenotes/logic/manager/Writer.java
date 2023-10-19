@@ -90,7 +90,7 @@ public class Writer {
         if(this.page != null){
             LogUtil.e(TAG, "bindPage: Writer绑定Page: "+this.page.getCode());
         } else {
-            LogUtil.e(TAG, "bindPage: Writer绑定Page: "+this.page);
+            LogUtil.e(TAG, "bindPage: Writer绑定Page: "+ null);
         }
 
         writeTimer = new WriteTimer();
