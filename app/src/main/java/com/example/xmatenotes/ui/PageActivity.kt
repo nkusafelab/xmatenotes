@@ -80,13 +80,8 @@ abstract class PageActivity : CommandActivity() {
 
     override fun onStart() {
         bitableManager.initial(null, null, APPToken).initialTable(PAGES_TABLEID)
-        if(!this.writer.isBindPage){
-            var pageBuffer = PageManager.getPageByPageID(PageManager.currentPageID)
-            if (pageBuffer != null){
-                this.writer.bindPage(pageBuffer)
-            }
-        }
         super.onStart()
+
 //        this.writer = Writer.getInstance().setResponser(getResponser())
 //        initPage()
 //        initCoordinateConverter()
@@ -114,8 +109,6 @@ abstract class PageActivity : CommandActivity() {
         }
     }
 
-
-
     override fun onDestroy() {
         super.onDestroy()
 //        unbindService(mServiceConnection)
@@ -131,7 +124,6 @@ abstract class PageActivity : CommandActivity() {
 //    }
 
     override fun initPage(){
-
         var mediaDot = MediaDot()
         mediaDot.pageId = PageManager.currentPageID
         switchPage(mediaDot)
@@ -225,20 +217,24 @@ abstract class PageActivity : CommandActivity() {
         if (pageBuffer != null){
             currentPageId = mediaDot.pageId
             pageManager.update(mediaDot)
-            page = pageBuffer
-            this.writer.bindPage(page)
-
-            if(!pageManager.pagePathexists(page)){
-                LogUtil.e(TAG, "switchPage: pageManager.pagePathexists(page): false")
-                page.create()
-                pageManager.mkdirs(page)
-            }
-            LogUtil.e(TAG, "switchPage: 切换pageId: $currentPageId")
+            switchPage(pageBuffer)
             return true
         } else {
             LogUtil.e(TAG, "switchPage(): 尚未存储该页")
             return false
         }
+    }
+
+    protected fun switchPage(newPage: Page){
+        page = newPage
+        this.writer.bindPage(page)
+
+        if(!pageManager.pagePathexists(page)){
+            LogUtil.e(TAG, "switchPage: pageManager.pagePathexists(page): false")
+            page.create()
+            pageManager.mkdirs(page)
+        }
+        LogUtil.e(TAG, "switchPage: 切换pageId: $currentPageId")
     }
 
     protected open fun commit(point: SimpleDot, page: Page, bmp: Bitmap){

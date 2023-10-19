@@ -78,14 +78,12 @@ public class Writer {
     }
 
     /**
-     * 绑定版面对象
+     * 绑定版面对象，开启版面延时任务计时器
      * @param page
      * @return
      */
     public Writer bindPage(IPage page){
-        if(isBindPage()){
-            unBindPage();
-        }
+        unBindPage();
         this.page = page;
         if(this.page != null){
             LogUtil.e(TAG, "bindPage: Writer绑定Page: "+this.page.getCode());
@@ -304,20 +302,20 @@ public class Writer {
         if(command != null){
             if(command instanceof SymbolicCommand){
                 closeHandWriting();
-                if(this.singleHandWritingBuffer != null){
-                    this.singleHandWritingBuffer.computeRect();
-                }
+//                if(this.singleHandWritingBuffer != null){
+//                    this.singleHandWritingBuffer.computeRect();
+//                }
                 //如果有，移除普通书写延时响应任务
                 if(containsResponseWorker(handWritingWorker)){
                     deleteResponseWorker(handWritingWorker);
                     LogUtil.e(TAG, "response: 移除普通书写延时响应任务");
                 }
-
-                //如果有，移除单次笔迹延时响应任务
-                if(containsResponseWorker(singleHandWritingWorker)){
-                    deleteResponseWorker(singleHandWritingWorker);
-                    LogUtil.e(TAG, "response: 移除单次笔迹延时响应任务");
-                }
+//
+//                //如果有，移除单次笔迹延时响应任务
+//                if(containsResponseWorker(singleHandWritingWorker)){
+//                    deleteResponseWorker(singleHandWritingWorker);
+//                    LogUtil.e(TAG, "response: 移除单次笔迹延时响应任务");
+//                }
             }
 
             command.addObserver(responser);

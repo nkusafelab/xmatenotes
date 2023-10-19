@@ -48,15 +48,16 @@ abstract class CommandActivity : BaseActivity() {
 
         //以下顺序不要颠倒
         initUI()
-        this.writer = Writer.getInstance().setResponser(getResponser())
-        initPage()
+
     }
 
     override fun onStart() {
         super.onStart()
-        if(!this.writer.isBindPage){
-            this.writer.bindPage(null)
-        }
+//        if(!this.writer.isBindPage){
+//            this.writer.bindPage(null)
+//        }
+        this.writer = Writer.getInstance().setResponser(getResponser())
+        initPage()
         initCoordinateConverter()
     }
 
@@ -101,10 +102,10 @@ abstract class CommandActivity : BaseActivity() {
     }
 
     /**
-     * 初始化Page，在onStart()中执行
+     * 初始化及writer绑定Page，在onStart()中执行
      */
     protected open fun initPage(){
-
+        this.writer.bindPage(null)
     }
 
     /**

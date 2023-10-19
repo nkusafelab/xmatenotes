@@ -173,6 +173,18 @@ public class PageManager {
     }
 
     /**
+     * 判断pageId是否合法
+     * @param pageId
+     * @return
+     */
+    private boolean isPageIdLegal(long pageId){
+        if(0 <= pageId && pageId <= 255){
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 通过页码ID获取对应页对象，前提是对应页对象已经存在
      * @param pageID 页码ID
      * @return 如果对应页对象已经存在，返回页码ID对应的页对象；否则返回null
@@ -226,8 +238,13 @@ public class PageManager {
      * @param mediaDot
      */
     public void update(MediaDot mediaDot){
-        savePage((int) mediaDot.pageId);
-        currentPageID = mediaDot.pageId;
+        long pageId = mediaDot.pageId;
+        LogUtil.e(TAG, "update: pageId: "+pageId);
+        if(isPageIdLegal(pageId)){
+            //只存储并生成pageId在0~255之间的page对象
+            savePage((int) pageId);
+        }
+        currentPageID = pageId;
     }
 
     public static long getCurrentPageID() {
