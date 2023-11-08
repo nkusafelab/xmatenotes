@@ -1,19 +1,17 @@
 package com.example.xmatenotes;
 
-import static com.example.xmatenotes.Constants.A3_ABSCISSA_RANGE;
-import static com.example.xmatenotes.Constants.A3_ORDINATE_RANGE;
-
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
 
-import com.example.xmatenotes.DotClass.TimelongDot;
-import com.example.xmatenotes.datamanager.AudioManager;
-import com.example.xmatenotes.datamanager.Page;
-import com.example.xmatenotes.datamanager.PageManager;
+import com.example.xmatenotes.logic.model.Page.OldXueCheng;
+import com.example.xmatenotes.ui.BaseActivity;
+import com.example.xmatenotes.logic.model.handwriting.MediaDot;
+import com.example.xmatenotes.logic.model.handwriting.SimpleDot;
+import com.example.xmatenotes.logic.manager.AudioManager;
+import com.example.xmatenotes.logic.manager.OldPageManager;
 
 import java.util.ArrayList;
 
@@ -30,10 +28,10 @@ public class ReplayActivity extends BaseActivity {
 
     public final static long HANDWRITING_PERIOD = 30;//相邻两次笔迹间隔时间
 
-    private PageManager pageManager = null;
+    private OldPageManager oldPageManager = null;
     private AudioManager audioManager = null;
 //    private DrawImageView drawImageView = null;
-    private DrawImageSurfaceView drawImageSurfaceView = null;
+    private PageSurfaceView pageSurfaceView = null;
     private Rect rectXY = null;//待显示的矩形坐标范围
 
     private int penWidth = 3;
@@ -48,7 +46,7 @@ public class ReplayActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_replay);
 
-        pageManager = PageManager.getInstance();
+        oldPageManager = OldPageManager.getInstance();
         //初始化音频管理器
         audioManager = AudioManager.getInstance();
         audioManager.audioInit(this);
@@ -74,7 +72,7 @@ public class ReplayActivity extends BaseActivity {
 
         LinearLayout replayView = (LinearLayout)findViewById(R.id.replayActivity);
 
-        int resID = pageManager.getResIDByPageID(pageID);
+        int resID = oldPageManager.getResIDByPageID(pageID);
         Log.e(TAG,"resID: "+resID);
         Rect originalRect = null;
         if(resID != -1){
@@ -86,37 +84,37 @@ public class ReplayActivity extends BaseActivity {
 //                }else if(leftOrRight == 0){//左半边
 //                    rect = new Rect(0,0,middleWidth,rect.bottom);
 //                }
-                Rect childRect = DrawImageSurfaceView.mapRect(rectXY, originalRect);
+                Rect childRect = PageSurfaceView.mapRect(rectXY, originalRect);
                 Log.e(TAG,originalRect.toString());
                 if(childRect != null){
-                    drawImageSurfaceView = new DrawImageSurfaceView(this,resID, childRect);
+                    pageSurfaceView = new PageSurfaceView(this,resID, childRect);
                     Log.e(TAG,"new DrawImageSurfaceView(this,resID, originalRect)");
                 }
             }
         }else {
-            drawImageSurfaceView = new DrawImageSurfaceView(this,-1);
+            pageSurfaceView = new PageSurfaceView(this,-1);
         }
 
-        if(drawImageSurfaceView != null){
+        if(pageSurfaceView != null){
             LinearLayout.LayoutParams layoutParams = new
                     LinearLayout.LayoutParams (LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT);
-            replayView.addView(drawImageSurfaceView,layoutParams);
+            replayView.addView(pageSurfaceView,layoutParams);
             Log.e(TAG,"加载drawImageView完成");
 
             String finalLocalCode = localCode;
-            drawImageSurfaceView.post(new Runnable() {
+            pageSurfaceView.post(new Runnable() {
                 @Override
                 public void run() {
-                    drawImageSurfaceView.setPenWidth(penWidth);
-                    Page page = pageManager.getPageByPageID(pageID);
-                    Log.e(TAG,"page != null?: "+(page != null));
-                    if(page != null){
-                        ArrayList<String> audioList = page.getAudioList(finalLocalCode);
-                        ArrayList<Page.LocalHandwritingsMap> localHwsMapList = page.getLocalHandwritings(finalLocalCode);
-                        ArrayList<TimelongDot> timelongDots = page.getPageDotsBuffer();
+                    pageSurfaceView.setPenWidth(penWidth);
+                    OldXueCheng oldXueCheng = oldPageManager.getPageByPageID(pageID);
+                    Log.e(TAG,"page != null?: "+(oldXueCheng != null));
+                    if(oldXueCheng != null){
+                        ArrayList<String> audioList = oldXueCheng.getAudioList(finalLocalCode);
+                        ArrayList<OldXueCheng.LocalHandwritingsMap> localHwsMapList = oldXueCheng.getLocalHandwritings(finalLocalCode);
+                        ArrayList<MediaDot> mediaDots = oldXueCheng.getPageDotsBuffer();
                         Log.e(TAG,"获取timelongDots完成");
-                        if(timelongDots == null || localHwsMapList == null){
+                        if(mediaDots == null || localHwsMapList == null){
                             try {
                                 Thread.sleep(2000);
                             } catch (InterruptedException e) {
@@ -145,16 +143,16 @@ public class ReplayActivity extends BaseActivity {
                                 int lhmnumber = 0;//lhm下标
 
                                 Log.e(TAG, "localHwsMapList.size(): "+localHwsMapList.size());
-                                for(Page.LocalHandwritingsMap lhm : localHwsMapList){
-                                    drawImageSurfaceView.setPenColor(getColor());//更换画笔颜色
+                                for(OldXueCheng.LocalHandwritingsMap lhm : localHwsMapList){
+                                    pageSurfaceView.setPenColor(getColor());//更换画笔颜色
                                     for (int i = lhm.getBegin();i <= lhm.getEnd();i++){
-                                        TimelongDot tD = timelongDots.get(i);
-                                        Log.e(TAG, "tD.x: "+ tD.x);
-                                        Log.e(TAG, "tD.y: "+ tD.y);
+                                        MediaDot tD = mediaDots.get(i);
+                                        Log.e(TAG, "tD.x: "+ tD.getIntX());
+                                        Log.e(TAG, "tD.y: "+ tD.getIntY());
                                         Log.e(TAG,"tD.timelong: "+tD.timelong);
 
                                         //遇到附加音频信息的笔迹
-                                        if(tD.x == -1 && tD.y == -1){
+                                        if(tD.getIntX() == -1 && tD.getIntY() == -1){
                                             Log.e(TAG, "tD.x == -1 && tD.y == -1");
                                             if(lhmnumber >= localHWsMapID){
                                                 isPlayingAudio = true;
@@ -170,7 +168,7 @@ public class ReplayActivity extends BaseActivity {
                                             continue;
                                         }
 
-                                        if(tD.x == -2 && tD.y == -2){
+                                        if(tD.getIntX() == -2 && tD.getIntY() == -2){
                                             if(isPlayingAudio){
                                                 isPlayingAudio = false;
                                                 Log.e(TAG,"音频笔迹结束");
@@ -189,8 +187,8 @@ public class ReplayActivity extends BaseActivity {
                                             }
                                         }
 
-                                        Log.e(TAG,"(float)tD.x: "+(float)tD.x+" (float)tD.y: "+(float)tD.y+" tD.type: "+tD.type);
-                                        drawImageSurfaceView.drawDot((float)tD.x, (float)tD.y, tD.type, rectXY);//等主线程结束才会绘制
+                                        Log.e(TAG,"(float)tD.x: "+(float)tD.getFloatX()+" (float)tD.y: "+(float)tD.getFloatY()+" tD.type: "+tD.type);
+                                        pageSurfaceView.drawSDot(new SimpleDot(tD), rectXY);//等主线程结束才会绘制
 
                                         if(lhmnumber >= localHWsMapID){
                                             //控制非音频笔迹绘制速度
@@ -224,7 +222,7 @@ public class ReplayActivity extends BaseActivity {
 ////                                        long timelongStart = 0;
 ////                                        long lastTimelong = 0;
 //                                        for (int i = audioDotsMap.getBegin();i <= audioDotsMap.getEnd();i++){
-//                                            TimelongDot tD = timelongDots.get(i);
+//                                            TimelongDot tD = mediaDots.get(i);
 //                                            Log.e(TAG,"tD.timelong: "+tD.timelong);
 //                                            if(tD.x == -1 && tD.y == -1){
 //                                                dotTimelongStart = tD.timelong;

@@ -3,7 +3,6 @@ package com.example.xmatenotes;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -11,7 +10,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.xmatenotes.App.XApp;
+import com.example.xmatenotes.app.XmateNotesApplication;
 import com.tqltech.tqlpencomm.BLEException;
 import com.tqltech.tqlpencomm.bean.Dot;
 
@@ -47,6 +46,9 @@ public class BluetoothLEService extends Service {
     public static boolean getPenStatus() {
         return isPenConnected;
     }
+
+    private PenStatus penStatus;
+    private PenCommAgent penCommAgent;
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -181,6 +183,12 @@ public class BluetoothLEService extends Service {
             broadcastUpdate(intentAction);
             Log.i(TAG, "Connected to GATT server.");
             isPenConnected = true;
+
+
+            penCommAgent = PenCommAgent.GetInstance(getApplication());
+            penStatus = penCommAgent.getPenStatus();
+            penCommAgent.ReqAdjustRTC();
+            onReceivePenAllStatus(penStatus);
         }
 
         @Override
@@ -363,7 +371,7 @@ public class BluetoothLEService extends Service {
         @Override
         public void onPenNameSetupResponse(boolean bIsSuccess) {
             if (bIsSuccess) {
-                XApp.mPenName = XApp.tmp_mPenName;
+                XmateNotesApplication.mPenName = XmateNotesApplication.tmp_mPenName;
             }
             String intentAction = ACTION_PEN_STATUS_CHANGE;
 //            Log.i(TAG, "Disconnected from GATT server.");
@@ -380,7 +388,7 @@ public class BluetoothLEService extends Service {
         @Override
         public void onPenTimetickSetupResponse(boolean bIsSuccess) {
             if (bIsSuccess) {
-                XApp.mTimer = XApp.tmp_mTimer;
+                XmateNotesApplication.mTimer = XmateNotesApplication.tmp_mTimer;
             }
             String intentAction = ACTION_PEN_STATUS_CHANGE;
             Log.i(TAG, "Disconnected from GATT server.");
@@ -396,7 +404,7 @@ public class BluetoothLEService extends Service {
         @Override
         public void onPenAutoShutdownSetUpResponse(boolean bIsSuccess) {
             if (bIsSuccess) {
-                XApp.mPowerOffTime = XApp.tmp_mPowerOffTime;
+                XmateNotesApplication.mPowerOffTime = XmateNotesApplication.tmp_mPowerOffTime;
             }
             String intentAction = ACTION_PEN_STATUS_CHANGE;
             Log.i(TAG, "Disconnected from GATT server.");
@@ -427,7 +435,7 @@ public class BluetoothLEService extends Service {
         @Override
         public void onPenAutoPowerOnSetUpResponse(boolean bIsSuccess) {
             if (bIsSuccess) {
-                XApp.mPowerOnMode = XApp.tmp_mPowerOnMode;
+                XmateNotesApplication.mPowerOnMode = XmateNotesApplication.tmp_mPowerOnMode;
             }
             String intentAction = ACTION_PEN_STATUS_CHANGE;
             Log.i(TAG, "Disconnected from GATT server.");
@@ -442,7 +450,7 @@ public class BluetoothLEService extends Service {
         @Override
         public void onPenBeepSetUpResponse(boolean bIsSuccess) {
             if (bIsSuccess) {
-                XApp.mBeep = XApp.tmp_mBeep;
+                XmateNotesApplication.mBeep = XmateNotesApplication.tmp_mBeep;
             }
             String intentAction = ACTION_PEN_STATUS_CHANGE;
             Log.i(TAG, "Disconnected from GATT server.");
@@ -457,7 +465,7 @@ public class BluetoothLEService extends Service {
         @Override
         public void onPenSensitivitySetUpResponse(boolean bIsSuccess) {
             if (bIsSuccess) {
-                XApp.mPenSens = XApp.tmp_mPenSens;
+                XmateNotesApplication.mPenSens = XmateNotesApplication.tmp_mPenSens;
             }
             String intentAction = ACTION_PEN_STATUS_CHANGE;
             Log.i(TAG, "Disconnected from GATT server.");
@@ -512,21 +520,21 @@ public class BluetoothLEService extends Service {
 
         @Override
         public void onReceivePenAllStatus(PenStatus status) {
-            XApp.mBattery = status.mPenBattery;
-            XApp.mUsedMem = status.mPenMemory;
-            XApp.mTimer = status.mPenTime;
-            Log.e(TAG, "ApplicationResources.mTimer is " + XApp.mTimer + ", status is " + status.toString());
-            XApp.mPowerOnMode = status.mPenPowerOnMode;
-            XApp.mPowerOffTime = status.mPenAutoOffTime;
-            XApp.mBeep = status.mPenBeep;
-            XApp.mPenSens = status.mPenSensitivity;
-            XApp.tmp_mEnableLED = status.mPenEnableLed;
+            XmateNotesApplication.mBattery = status.mPenBattery;
+            XmateNotesApplication.mUsedMem = status.mPenMemory;
+            XmateNotesApplication.mTimer = status.mPenTime;
+            Log.e(TAG, "ApplicationResources.mTimer is " + XmateNotesApplication.mTimer + ", status is " + status.toString());
+            XmateNotesApplication.mPowerOnMode = status.mPenPowerOnMode;
+            XmateNotesApplication.mPowerOffTime = status.mPenAutoOffTime;
+            XmateNotesApplication.mBeep = status.mPenBeep;
+            XmateNotesApplication.mPenSens = status.mPenSensitivity;
+            XmateNotesApplication.tmp_mEnableLED = status.mPenEnableLed;
 
-            XApp.mPenName = status.mPenName;
-            XApp.mBTMac = status.mPenMac;
-            XApp.mFirmWare = status.mBtFirmware;
-            XApp.mMCUFirmWare = status.mPenMcuVersion;
-            XApp.mCustomerID = status.mPenCustomer;
+            XmateNotesApplication.mPenName = status.mPenName;
+            XmateNotesApplication.mBTMac = status.mPenMac;
+            XmateNotesApplication.mFirmWare = status.mBtFirmware;
+            XmateNotesApplication.mMCUFirmWare = status.mPenMcuVersion;
+            XmateNotesApplication.mCustomerID = status.mPenCustomer;
 
             String intentAction = ACTION_PEN_STATUS_CHANGE;
             broadcastUpdate(intentAction);
@@ -546,7 +554,7 @@ public class BluetoothLEService extends Service {
         public void onReceivePenMac(String penMac) {
             Log.e(TAG, "receive pen Mac " + penMac);
             mBluetoothDeviceAddress = penMac;
-            XApp.mBTMac = penMac;
+            XmateNotesApplication.mBTMac = penMac;
         }
 
         @Override

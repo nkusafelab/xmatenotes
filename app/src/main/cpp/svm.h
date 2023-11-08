@@ -46,7 +46,7 @@ extern "C" {
 		int probability; /* do probability estimates */
 	};
 
-	//
+	// 
 	// svm_model
 	//
 	struct svm_model
@@ -84,7 +84,8 @@ extern "C" {
 	int svm_get_nr_sv(const struct svm_model *model);
 	double svm_get_svr_probability(const struct svm_model *model);
 
-	double svm_predict_values(const struct svm_model *model, const struct svm_node *x, double* dec_values);
+	double
+		_values(const struct svm_model *model, const struct svm_node *x, double* dec_values);
 	double svm_predict(const struct svm_model *model, const struct svm_node *x);
 	double svm_predict_probability(const struct svm_model *model, const struct svm_node *x, double* prob_estimates);
 

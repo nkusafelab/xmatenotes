@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+    tools:context=".ui.MainActivity" >
 <!--    android:paddingBottom="@dimen/activity_vertical_margin"-->
 <!--    android:paddingLeft="@dimen/activity_horizontal_margin"-->
 <!--    android:paddingRight="@dimen/activity_horizontal_margin"-->
@@ -22,10 +22,10 @@
 <!--        android:layout_height="match_parent"-->
 <!--        android:src="@drawable/x1"/>-->
 
-    <com.example.xmatenotes.DrawImageSurfaceView
-        android:id="@+id/drawImageSurfaceView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:src="@drawable/x1"/>
+<!--    <com.example.xmatenotes.PageSurfaceView-->
+<!--        android:id="@+id/drawImageSurfaceView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        app:src="@drawable/x1"/>-->
 
 </RelativeLayout>

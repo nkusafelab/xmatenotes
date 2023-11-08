@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,6 +9,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray">#FF808080</color>
     <color name="black_overlay">#660000</color>
     <color name="statusColor">#ffffff</color>
     <color name="backColor">#fbfbfb</color>
@@ -18,4 +21,12 @@
     <color name="showItemColor">#404040</color>
 
     <color name="menuTextColor">#2e2165</color>
+
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="viewfinder_frame">#7F1FB3E2</color>
+    <color name="viewfinder_corner">#FF1FB3E2</color>
+    <color name="viewfinder_laser">#FF1FB3E2</color>
+    <color name="viewfinder_point">#FF1FB3E2</color>
+    <color name="viewfinder_point_stroke">#FFFFFFFF</color>
+    <color name="viewfinder_label_text">#FFC0C0C0</color>
 </resources>

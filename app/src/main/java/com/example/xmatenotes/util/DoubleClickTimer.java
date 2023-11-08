@@ -1,7 +1,6 @@
 package com.example.xmatenotes.util;
 
-import com.example.xmatenotes.instruction.DoubleClick;
-import com.example.xmatenotes.instruction.HandWriting;
+import com.example.xmatenotes.logic.model.instruction.DoubleClick;
 
 public class DoubleClickTimer extends Thread{
     @Override

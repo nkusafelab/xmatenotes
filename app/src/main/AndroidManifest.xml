@@ -5,33 +5,34 @@
     <uses-feature
         android:name="android.hardware.bluetooth"
         android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /><!--  允许应用程序发现和配对蓝牙设备  -->
-    <uses-permission android:name="android.permission.BLUETOOTH" /><!--  允许应用程序连接到配对的蓝牙设备  -->
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /><!--  需要能够连接到配对的蓝牙设备  -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/><!--  需要能够发现和配对附近的蓝牙设备  -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> <!-- 允许应用程序发现和配对蓝牙设备 -->
+    <uses-permission android:name="android.permission.BLUETOOTH" /> <!-- 允许应用程序连接到配对的蓝牙设备 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> <!-- 需要能够连接到配对的蓝牙设备 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" /> <!-- 需要能够发现和配对附近的蓝牙设备 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
-    <!-- 5.0之后蓝牙还需要位置权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 5.0之后蓝牙还需要位置权限 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" /> <!-- <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" /> -->
+    <uses-permission android:name="android.permission_group.STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
-    <!-- internet -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- internet -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 发送持久广播 -->
     <uses-permission android:name="android.permission.BROADCAST_STICKY" /> <!-- 阻止本机进入休眠状态 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- 设置手机震动权限 -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- 设置相机权限 -->
     <uses-permission android:name="android.permission.FLASHLIGHT" /> <!-- 兼容11版本 -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" /> <!-- 录音 -->
+    <!-- 录音 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
-        android:name=".App.XApp"
+        android:name=".app.XmateNotesApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -45,17 +46,72 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ReplayActivity"
+            android:name=".ui.CardViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.HWReplayActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.PageTestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.play.PlayShowActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.CommandActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.play.PlayActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ckplayer.XueChengVideoNoteActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ckplayer.VideoNoteActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.XueChengViewActivity"
             android:exported="false"
-            android:screenOrientation="portrait">
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".ui.PageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.PageViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OpenCameraActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".ui.qrcode.CardProcessActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".SetUpActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".ScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ReplayActivity"
+            android:exported="false"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.qrcode.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".ui.MainActivity"
             android:exported="true"
-            android:label="同学笔记3.09"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -64,19 +120,54 @@
             </intent-filter>
 
             <meta-data
-                android:name="android.app.lib_name"
+                android:name="android.qrcode.lib_name"
                 android:value="" />
         </activity>
         <activity
             android:name=".SelectDeviceActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".CkplayerActivity"
+            android:name=".ui.ckplayer.CkplayerActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".DotInfoActivity"
             android:label="@string/dot_info"
             android:screenOrientation="landscape" />
+        <activity android:name=".StatusAnotherActivity" />
+        <activity
+            android:name=".ScannerActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.qrcode.WeChatQRCodeActivity"
+            android:theme="@style/CameraScanTheme" />
+        <activity
+            android:name=".WeChatMultiQRCodeActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/CameraScanTheme" />
+        <activity
+            android:name=".StatusActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".OpenCVQRCodeActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/CameraScanTheme"
+            tools:ignore="Instantiatable" />
+        <activity
+            android:name=".CropActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.CardshowActivity"
+            android:screenOrientation="portrait" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.cameraalbumtest.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service
             android:name=".BluetoothLEService"

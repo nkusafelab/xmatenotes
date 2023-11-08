@@ -5,9 +5,12 @@
 #include"ComputeCharacter.h"
 #include"svm_predict.h"
 #include"svm_train.h"
+#include<map>
+#include <jni.h>
 
 #include <android/log.h>
-#include <jni.h>
+#include <sstream>
+#include <array>
 
 #define LOG_TAG "gestureRecognition"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -15,52 +18,35 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 vector<PEN_INFO> res;
-double CenterX, CenterY = 0;
-int lengthX, lengthY = 0;
-int count1 = 1;
-int tag = 0;
-int label = 0;
-int gestureCount = 1;
 int sampleCount = 0;
+vector<double> rollBackProb;
+vector<double> commonCharacterProb;
+bool isRollBack = true;
+bool isCommonCharacter = true;
 
-double write_start_time = 0, write_end_time = 0;
-double time_start = 0, time_end = 0;
 int bihua = 0;
-int nRet = 0;
-int NumberToday = 0, correctToday = 0, wrongToday = 0;
-int TotalNumber = 0, TotalCorrect = 0, TotalWrong = 0;
-double AccuracyToday = 0.0, TotalAccuracy = 0.0;
-char* path = nullptr;//????????????·??
 
-bool status = false;
-void onDataPacket(const PEN_INFO &penInfo) {
+char tag = 'a'; //初始化
+
+int inflectionPointsNumber = 0; //拐点数量
+
+//bool status = false;
+void onDataPacket(const PEN_INFO &penInfo, int count) {
     //penInfo.status: 0x00离开, 0x10悬浮, 0x11书写
-	LOGE("penInfo_status===%#x\n", penInfo.nStatus);
-	LOGE("penInfo_nX===%hu\n", penInfo.nX);
-	LOGE("penInfo_nY===%hu\n", penInfo.nY);
+//	LOGE("penInfo_status===%#x\n", penInfo.nStatus);
+//	LOGE("penInfo_nX===%hu\n", penInfo.nX);
+//	LOGE("penInfo_nY===%hu\n", penInfo.nY);
 	//penInfo.nPress: 0-1023
-	LOGE("penInfo_nPress===%hu\n", penInfo.nPress);
-    if ((int)penInfo.nPress > 0)
-    {
-        status = true;
-        if (write_start_time == 0)
-        {
-            //write_start_time = GetTickCount();
-        }
-        res.push_back(penInfo);
-        //time_start = GetTickCount();
-    }
-    else
-    {
-        if (status == true)
-        {
-            //write_end_time = GetTickCount();
-            bihua++;
-            tt();
-            status = false;
-        }
-
-    }
+//	LOGE("penInfo_nPress===%hu\n", penInfo.nPress);
+	if (!(penInfo.nX == 20000 && penInfo.nY == 10000)) {
+		res.push_back(penInfo);
+	} else {
+		bihua = count;
+		LOGE("bihua===%d\n", bihua);
+		LOGE("recognize() begin");
+		recognize();
+		LOGE("recognize() end");
+	}
 }
 
 JavaVM *g_VM;
@@ -68,127 +54,49 @@ jobject g_obj;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_xmatenotes_instruction_Instruction_encapsulation(JNIEnv *env, jobject thiz,
-																  jbyte status, jshort n_x,
-																  jshort n_y, jshort n_press) {
+Java_com_example_xmatenotes_logic_model_instruction_SymbolicCommand_encapsulation(JNIEnv *env,
+																				  jobject thiz,
+																				  jbyte status,
+																				  jshort n_x,
+																				  jshort n_y,
+																				  jshort n_press,
+																				  jint count) {
 	//JavaVM是虚拟机在JNI中的表示，后面在其他线程回调java层需要用到
 	env->GetJavaVM( &g_VM);
 	//生成一个全局引用保留下来，以便回调
 	g_obj = env->NewGlobalRef(thiz);
 
-	encapsulation(status, n_x, n_y, n_press);
+	encapsulation(status, n_x, n_y, n_press, count);
 }
 
-void encapsulation(unsigned char status, unsigned short nX, unsigned short nY, unsigned short nPress){
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_xmatenotes_logic_model_instruction_Instruction_encapsulation(JNIEnv *env,
+																			  jobject thiz,
+																			  jbyte status,
+																			  jshort n_x,
+																			  jshort n_y,
+																			  jshort n_press,
+																			  jint count) {
+	//JavaVM是虚拟机在JNI中的表示，后面在其他线程回调java层需要用到
+	env->GetJavaVM( &g_VM);
+	//生成一个全局引用保留下来，以便回调
+	g_obj = env->NewGlobalRef(thiz);
+
+	encapsulation(status, n_x, n_y, n_press, count);
+}
+
+void encapsulation(unsigned char status, unsigned short nX, unsigned short nY, unsigned short nPress, int count){
 	PEN_INFO penInfo = {status, nX, nY, nPress};
-	onDataPacket(penInfo);
+	onDataPacket(penInfo, count);
 }
 
-void setAddr(char* addr){
-	path = addr;
-}
-
-//???????????????????
-bool IsCorrectGestureName(const string &gestureName)
-{
-	int n = gestureName.size();
-	if (n <= 0 || n > 3)
-	{
-		return false;
-	}
-	else
-	{
-		if (gestureName[0] >= '0' && gestureName[0] <= '5' && n == 1)
-		{
-			label = gestureName[0] - '0';
-			return true;
-		}
-	}
-	return false;
-}
-
-//????????
-//一二三
-void PrintStatisticalResults()
-{
-	TotalNumber++;
-	NumberToday++;
-	TotalAccuracy = (double)TotalCorrect / (double)TotalNumber;
-	AccuracyToday = (double)correctToday / (double)NumberToday;
-	cout << "********************???????????????********************" << endl;
-
-	cout << "*??????????????????????" << TotalNumber << "                               " << endl;
-	cout << "*??????????????????????????" << TotalCorrect << "                           " << endl;
-	cout << "*?????????????????????????" << TotalWrong << "                           " << endl;
-	cout << "*???????????????????????" << TotalAccuracy * 100 << "%" << "                          " << endl;
-	cout << "*                                                          " << endl;
-	cout << "*??????????????????????" << NumberToday << "                               " << endl;
-	cout << "*??????????????????????????" << correctToday << "                           " << endl;
-	cout << "*?????????????????????????" << wrongToday << "                           " << endl;
-	cout << "*???????????????????????" << AccuracyToday * 100 << "%" << "                          " << endl;
-
-	cout << "************************************************************" << endl << endl;
-}
-
-//?洢?????????
-void SaveCollectData()
-{
-	ofstream outfile;
-
-
-
-	if (res.size() > 0)
-	{
-		//outfile.open("data\\collectData\\collectDataStroke.txt", ios::app);
-		outfile.open("/data/data/com.example.xmatenotes/files/collectdatastroke.txt", ios::app);
-
-		outfile << label << " ";
-
-		outfile << bihua << " ";
-		for (int i = 0; i < res.size(); ++i)
-		{
-			outfile << res[i].nX << " " << res[i].nY << " ";
-		}
-		outfile << endl;
-		outfile.close();
-	}
-}
-
-//???????
-void collectionData()
-{
-	ofstream outfile;
-	if (res.size() > 0)
-	{
-		outfile.open("test20200909.txt", ios::app);
-
-		outfile << tag << " ";
-		for (int i = 0; i < res.size(); ++i)
-		{
-			outfile << res[i].nX << " " << res[i].nY << " ";
-		}
-		outfile << endl;
-		res.clear();
-		outfile.close();
-
-		cout << "tag:" << tag << "  " << "count:" << count1 << endl;
-		if (count1 % 10 == 0)
-		{
-			tag++;
-			count1 = 0;
-			cout << "*************************end********************" << endl;
-		}
-		count1++;
-	}
-}
-
-//???????д??point.txt
+//将点信息写入point.txt（存储单次点信息）
 void writeToPoint()
 {
 	ofstream outfile;
 	if (res.size() > 0)
 	{
-		//outfile.open("data\\point\\point.txt");
 		outfile.open("/data/data/com.example.xmatenotes/files/point.txt");
 		outfile << tag << " ";
 		outfile << bihua << " ";
@@ -201,27 +109,56 @@ void writeToPoint()
 	}
 }
 
-//??????????????
+//计算实时数据特征
 void calCharacter()
 {
 	ifstream infile;
 	ofstream outfile;
 	string s;
 
-	//infile.open("data\\point\\point.txt");
-	//outfile.open("data\\point\\pointCharacter.txt");
 	infile.open("/data/data/com.example.xmatenotes/files/point.txt");
+	outfile.open("/data/data/com.example.xmatenotes/files/processsinglepoint.txt");
+	getline(infile, s);
+	istringstream iss(s);
+	string data;
+	iss >> data;
+	outfile << data << " ";
+	iss >> data;
+	outfile << data;
+	// 初始化上一个点的坐标
+	int last_x, last_y;
+	iss >> last_x >> last_y;
+	// 从第三个数据开始遍历每个点的坐标
+	while (iss >> data) {
+		int x = stoi(data);
+		iss >> data;
+		int y = stoi(data);
+		// 计算当前点和上一个点的距离
+		double distance = sqrt(pow(x - last_x, 2) + pow(y - last_y, 2));
+		// 如果距离大于等于26.08，则记录当前点的坐标
+		if (distance >= 26.08) {
+			outfile << " " << x << " " << y;
+			// 更新上一个点的坐标
+			last_x = x;
+			last_y = y;
+		}
+	}
+	// 写入换行符
+	outfile << endl;
+	infile.close();
+	outfile.close();
+
+	infile.open("/data/data/com.example.xmatenotes/files/processsinglepoint.txt");
+
+//	infile.open("/data/data/com.example.xmatenotes/files/point.txt");
 	outfile.open("/data/data/com.example.xmatenotes/files/pointcharacter.txt");
 
 	getline(infile, s);
 
 	ComputeCharacter cc(s);
+	LOGE("cc.Compute() begin");
 	cc.Compute();
-
-	CenterX = cc.CentroidX;
-	CenterY = cc.CentroidY;
-	lengthX = cc.xLength;
-	lengthY = cc.yLength;
+	LOGE("cc.Compute() end");
 
 	outfile << cc.tag << " ";
 	outfile << "0:" << cc.XYRatio << " ";
@@ -235,7 +172,12 @@ void calCharacter()
 	outfile << "8:" << cc.yEndMaxLengthRatio << " ";
 	outfile << "9:" << cc.xStartMinLengthRatio << " ";
 	outfile << "10:" << cc.yStartMinLengthRatio << " ";
-	outfile << "11:" << cc.InflectionPointsNumber;
+	outfile << "11:" << cc.InflectionPointsNumber << " ";
+	outfile << "12:" << cc.beginDirection << " "; //开始方向
+	outfile << "13:" << cc.endDirection << " "; //中止方向
+    outfile << "14:" << cc.pointDensity; //点密度
+	inflectionPointsNumber = cc.InflectionPointsNumber;
+
 	outfile << endl;
 
 	infile.close();
@@ -243,39 +185,7 @@ void calCharacter()
 
 }
 
-// ?????ж???
-void DistinguishStandard()
-{
-	ifstream infile;
-	string s;
-
-	//infile.open("data\\point\\point.txt");
-	infile.open("/data/data/com.example.xmatenotes/files/point.txt");
-	getline(infile, s);
-	ComputeCharacter cc(s);
-	cc.Compute();
-	cout << "*                                               *" << endl;
-	cout << "*???????ж????????" << "                         *" << endl;
-	cout << "*???????????????" << cc.XYRatio << "                      *" << endl;
-	cout << "*???????????" << cc.strokeCount << "                                  *" << endl;
-	cout << "*??????????" << cc.closeness << "                            *" << endl;
-	cout << "*???????????" << cc.Compactness << "                           *" << endl;
-	cout << "*?????????" << cc.curvature << "                              *" << endl;
-	cout << "*??????????" << cc.beginDirection << "                         " << endl;
-	cout << "*??????????" << cc.endDirection << "                            " << endl;
-	cout << "*???????X??????????????????????" << cc.xStartMaxLengthRatio << "  " << endl;
-	cout << "*???????Y??????????????????????" << cc.yStartMaxLengthRatio << "  " << endl;
-	cout << "*???????X??????????????????????" << cc.xEndMaxLengthRatio << "     " << endl;
-	cout << "*???????Y??????????????????????" << cc.yEndMaxLengthRatio << "     " << endl;
-	cout << "*???????X????????????С??????????" << cc.xStartMinLengthRatio << "   " << endl;
-	cout << "*???????Y????????????С??????????" << cc.yStartMinLengthRatio << "    " << endl;
-	cout << "*??????????????" << cc.InflectionPointsNumber << "                              *" << endl;
-
-	infile.close();
-
-}
-
-//??????????????
+//调用模型识别手势
 void PredictGesture()
 {
 	int paramNumberPredict = 4;
@@ -286,77 +196,12 @@ void PredictGesture()
 	tmp[2] = { "/data/data/com.example.xmatenotes/files/modelstroke.txt" };
 	//tmp[3] = { "data\\point\\outPoint.txt" };
 	tmp[3] = { "/data/data/com.example.xmatenotes/files/outpoint.txt" };
+	LOGE("svmPredict() begin");
 	svmPredict(paramNumberPredict, tmp);
+	LOGE("svmPredict() end");
 }
 
-//??????????
-long calPressAvg()
-{
-	long avgPress = 0;
-	for (int j = 0; j < res.size(); ++j)
-	{
-		avgPress += res[j].nPress;
-	}
-
-	int n = res.size();
-	if (n > 0)
-	{
-		avgPress = avgPress / n;
-	}
-	return avgPress;
-}
-
-//?ж????????????????
-void judgeControlDirection()
-{
-	cout << "????";
-}
-
-//???????????
-void printCommonCharac()
-{
-
-	cout << "* ????д???????????                          *" << endl;
-
-	cout << "* ????д???????" << (write_end_time - write_start_time) << "ms                           *" << endl;
-	cout << "* ????д??????????" << calPressAvg() << "                         *" << endl;
-	cout << "* ???????0                                   *" << endl;
-	cout << "* ???????????????                            *" << endl;
-	cout << "* ??????????????????????                    *" << endl;
-	cout << "* ????д????(???????????)????A4(27000,20600) *" << endl;
-	cout << "* ???????                                    *" << endl;
-	//cout << "*********************************************" << endl;
-}
-
-//??????????????????
-void printControlCharac()
-{
-	cout << "* ???????????????????                        *" << endl;
-	cout << "* ???????????????????                        *" << endl;
-	cout << "* ???????峤????" << lengthX << "                            *" << endl;
-	cout << "* ???????????" << lengthY << "                            *" << endl;
-
-	cout << "* ???б???????????????                        *" << endl;
-
-	cout << "* ??????????????                            *" << endl;
-	cout << "* ??????????γ?????                            *" << endl;
-	cout << "* ?????????????????????                        *" << endl;
-}
-
-void printGestureCount()
-{
-	cout << "* ??????????????????????";
-	if (gestureCount < 10)
-	{
-		cout << gestureCount++ << "                   *" << endl;
-	}
-	else
-	{
-		cout << gestureCount++ << "                  *" << endl;
-	}
-}
-
-//????????
+//获取预测结果
 void printResult()
 {
 	ifstream infile;
@@ -365,80 +210,81 @@ void printResult()
 	//infile.open("data\\point\\outPoint.txt");
 	infile.open("/data/data/com.example.xmatenotes/files/outpoint.txt");
 	getline(infile, s);
-	LOGE("outpoint.txt文件内容为%s", s.c_str());
+    getline(infile, s);
+	LOGE("outpoint.txt:%s", s.c_str());
 	infile.close();
-//	cout << "*************手势指令相关信息如下****************" << endl;
-	LOGE("*************手势指令相关信息如下****************");
-//	cout << "* ??????????????????";
-	LOGE("* 【手势指令识别结果】：");
 
 	if (s.size() <= 0)
 	{
-//		cout << "δ???" << endl;
-		LOGE("未识别");
+		LOGE("1");
         returnResult(6);
 	}
 	else
 	{
-		int result = 0;
-		for (int i = 0; i < s.size(); ++i)
-		{
-			result = result * 10 + (s[i] - '0');
-		}
-		label = result;
-		if (result == 0 && bihua == 1)
-		{
-//			cout << "???????              *" << endl;
-			LOGE("指令控制符");
-            returnResult(4);
-			printGestureCount();
-			printControlCharac();
-		}
-		else if (result == 1 && bihua == 1)
-		{
-//			cout << "??" << "                      *" << endl;
-			LOGE("对");
-            returnResult(5);
-			printGestureCount();
-		}
-		else if (result == 2 && bihua == 2)
-		{
-//			cout << "???1" << "                      *" << endl;
-			LOGE("半对1");
-            returnResult(6);
-			printControlCharac();
-		}
-		else if (result == 3 && bihua == 3)
-		{
-//			cout << "???2" << "                      *" << endl;
-			LOGE("半对2");
-            returnResult(7);
-			printControlCharac();
-		}
-		else if (result == 4 && bihua == 4)
-		{
-//			cout << "???3" << "                      *" << endl;
-			LOGE("半对3");
-            returnResult(8);
-			printControlCharac();
-		}
-		else if (result == 5 && bihua == 2)
-		{
-//			cout << "??" << "                      *" << endl;
-			LOGE("错");
-            returnResult(9);
-			printControlCharac();
-		}
-		else
-		{
-//			cout << "δ???" << endl;
-			LOGE("未识别");
-            returnResult(10);
+		LOGE("2");
+		if (isCommonCharacter) {
+			LOGE("3");
+			LOGE("commonCharacter");
+			returnResult(19);
+			return;
+		} else {
+			LOGE("4");
+
+			LOGE("inflectionPointsNumber:%d", inflectionPointsNumber);
+//			int result = s[0] - '0';
+//			if (s.size() >= 2 && s[1] != ' ') {
+//				result = result * 10 + (s[1] - '0');
+//			}
+			int result = predict_label;
+			LOGE("result:%d", result);
+			if (result == 0 && bihua == 1 && !isRollBack) {
+				LOGE("指令控制符");
+				returnResult(4);
+			} else if (result == 1 && bihua == 1 && !isRollBack) {
+				LOGE("对");
+				returnResult(5);
+			} else if (result == 2 && bihua == 2 && !isRollBack) {
+				LOGE("半对");
+				returnResult(6);
+			} else if (result == 3 && bihua == 3 && !isRollBack) {
+				LOGE("半半对");
+				returnResult(7);
+			} else if (result == 4 && bihua == 4 && !isRollBack) {
+				LOGE("半半半对");
+				returnResult(8);
+			} else if (result == 5 && bihua == 2 && !isRollBack && inflectionPointsNumber == 0) {
+				LOGE("叉");
+				returnResult(9);
+			} else if (result == 6 && bihua == 2 && !isRollBack) {
+				LOGE("问号");
+				returnResult(10);
+			} else if (result == 7 && bihua == 3 && !isRollBack) {
+				LOGE("半问号");
+				returnResult(11);
+			} else if (result == 8 && bihua == 4 && !isRollBack) {
+				LOGE("半半问号");
+				returnResult(12);
+			} else if (result == 9 && bihua == 5 && !isRollBack) {
+				LOGE("半半半问号");
+				returnResult(13);
+			} else if (result == 10 && bihua == 2 && !isRollBack) {
+				LOGE("叹号");
+				returnResult(14);
+			} else if (result == 11 && bihua == 3 && !isRollBack) {
+				LOGE("半叹号");
+				returnResult(15);
+			} else if (result == 12 && bihua == 4 && !isRollBack) {
+				LOGE("半半叹号");
+				returnResult(16);
+			} else if (result == 13 && bihua == 5 && !isRollBack) {
+				LOGE("半半半叹号");
+				returnResult(17);
+			} else {
+				LOGE("请重新输入");
+				returnResult(18);
+			}
 		}
 	}
-	printCommonCharac();
-	DistinguishStandard();
-	cout << "***********************end***********************" << endl << endl;
 }
 
 void returnResult(int result) {
@@ -479,412 +325,72 @@ void returnResult(int result) {
 
 }
 
-//???????
+//清空数据
 void ClearData()
 {
 	res.clear();
-	write_start_time = 0;
-	write_end_time = 0;
-	bihua = 0;
 	LOGE("ClearData()");
 }
 
-int printaaa(){
-    return 1;
+void loadProb(){
+    ifstream infile;
+    infile.open("/data/data/com.example.xmatenotes/files/staticprob.txt");
+
+	LOGE("infile.open() success");
+    string line;
+    while (getline(infile, line)) {
+		LOGE("acquire first line");
+        stringstream ss(line);
+        array<double, 14> arr;
+        for (int i = 0; i < 14; i++) {
+            if (!(ss >> arr[i])) {
+                cerr << "Failed to parse line\n";
+                return ;
+            }
+        }
+		LOGE("acquire rollBackProb");
+        rollBackProb.insert(rollBackProb.end(), arr.begin(), arr.end());
+		LOGE("acquire second line");
+        getline(infile, line);
+        ss.clear();
+        ss.str(line);
+        for (int i = 0; i < 14; i++) {
+            if (!(ss >> arr[i])) {
+                cerr << "Failed to parse line\n";
+                return;
+            }
+        }
+		LOGE("acquire commonCharacterProb");
+        commonCharacterProb.insert(commonCharacterProb.end(), arr.begin(), arr.end());
+    }
+    infile.close();
+	for (int i = 0; i < 14; i++) {
+		LOGE("label:%d  rollBackProb:%f commonCharacterProb:%f", i, rollBackProb[i], commonCharacterProb[i]);
+	}
 }
 
-//???????
+//识别手势
 void recognize()
 {
 	if (bihua > 5)
 	{
-		cout << "?????????δ????" << endl;
-		cout << "*************************end********************" << endl << endl;
+//		cout << "【输入错误，未识别！】" << endl;
+//		cout << "*************************end********************" << endl << endl;
 	}
 	else
 	{
+		LOGE("loadProb()");
+        loadProb();
+		LOGE("writeToPoint()");
 		writeToPoint();
+		globalStrokeCount = 0;
+		LOGE("calCharacter()");
 		calCharacter();
+		LOGE("PredictGesture()");
 		PredictGesture();
+		LOGE("printResult()");
 		printResult();
+		LOGE("printResult() end");
+		globalStrokeCount = 0;
 	}
-	cout << "??????????????????????????????????????2??????\n";
-}
-
-void ThreadFunc()
-{
-//	time_end = GetTickCount();
-//	double temp_time = time_start;
-//	while (time_end - time_start < 1000)
-//	{
-//		if (time_start - temp_time > 0.0)return;
-//		time_end = GetTickCount();
-//
-//	}
-	LOGE("ThreadFunc()");
-	recognize();
-}
-
-void tt()
-{
-	thread t1(ThreadFunc);
-	t1.detach();
-}
-
-//?????????????
-void MergeTrainFile(char* targetFile, const string& sourceFile1, const string& sourceFile2)
-{
-	ifstream infile;
-	ofstream outfile;
-	remove(targetFile);
-	infile.open(sourceFile1);
-	outfile.open(targetFile, ios::app);
-	string s;
-	while (getline(infile, s))
-	{
-		sampleCount++;
-		outfile << s << endl;
-	}
-	infile.close();
-
-	infile.open(sourceFile2);
-	while (getline(infile, s))
-	{
-		sampleCount++;
-		outfile << s << endl;
-	}
-	infile.close();
-	outfile.close();
-}
-
-//????????????
-void printTrainCount()
-{
-	if (sampleCount < 10)
-	{
-		cout << "* ????????????" << sampleCount << "                                *" << endl;
-		cout << "* ???????????????" << sampleCount - TotalWrong << "                         *" << endl;
-		cout << "* ????????????????" << TotalWrong << "                           *" << endl;
-		cout << "* ????????????       ?????????          *" << endl;
-	}
-	else if (sampleCount < 100)
-	{
-		cout << "* ????????????" << sampleCount << "                               *" << endl;
-		cout << "* ???????????????" << sampleCount - TotalWrong << "                         *" << endl;
-		cout << "* ????????????????" << TotalWrong << "                           *" << endl;
-		cout << "* ????????????       ?????????          *" << endl;
-	}
-	else if (sampleCount < 1000)
-	{
-		cout << "* ????????????" << sampleCount << "                              *" << endl;
-		cout << "* ???????????????" << sampleCount - TotalWrong << "                          *" << endl;
-		cout << "* ????????????????" << TotalWrong << "                           *" << endl;
-		cout << "* ????????????       ?????????          *" << endl;
-	}
-	else
-	{
-		cout << "* ????????????" << sampleCount << "                             *" << endl;
-		cout << "* ???????????????" << sampleCount - TotalWrong << "                          *" << endl;
-		cout << "* ????????????????" << TotalWrong << "                           *" << endl;
-		cout << "* ????????????       ?????????          *" << endl;
-	}
-}
-//???????????????????
-void CalTrainDataCharac(char* targetFile, const string& sourceFile)
-{
-	ifstream infile;
-	ofstream outfile;
-	remove(targetFile);
-	infile.open(sourceFile);
-	outfile.open(targetFile, ios::app);
-	string s;
-	while (getline(infile, s))
-	{
-		ComputeCharacter cc(s);
-		cc.Compute();
-		outfile << cc.tag << " ";
-		outfile << "0:" << cc.XYRatio << " ";
-		outfile << "1:" << cc.strokeCount << " ";
-		outfile << "2:" << cc.closeness << " ";
-		outfile << "3:" << cc.Compactness << " ";
-		outfile << "4:" << cc.curvature << " ";
-		outfile << "5:" << cc.xStartMaxLengthRatio << " ";
-		outfile << "6:" << cc.yStartMaxLengthRatio << " ";
-		outfile << "7:" << cc.xEndMaxLengthRatio << " ";
-		outfile << "8:" << cc.yEndMaxLengthRatio << " ";
-		outfile << "9:" << cc.xStartMinLengthRatio << " ";
-		outfile << "10:" << cc.yStartMinLengthRatio << " ";
-		outfile << "11:" << cc.InflectionPointsNumber;
-		outfile << endl;
-	}
-	infile.close();
-	outfile.close();
-}
-
-//??????
-void trainModel()
-{
-	cout << "********************??????********************" << endl;
-	sampleCount = 0;
-	//MergeTrainFile("data\\temp\\tempStroke.txt", "data\\collectData\\collectDataStroke.txt", "data\\train\\trainStroke.txt");
-	MergeTrainFile("/data/data/com.example.xmatenotes/files/tempstroke.txt", "/data/data/com.example.xmatenotes/files/collectdatastroke.txt", "/data/data/com.example.xmatenotes/files/trainstroke.txt");
-	cout << "* ???????????????                             *" << endl;
-	//CalTrainDataCharac("data\\character\\characterStroke.txt", "data\\temp\\tempStroke.txt");
-	CalTrainDataCharac("/data/data/com.example.xmatenotes/files/characterstroke.txt", "/data/data/com.example.xmatenotes/files/tempstroke.txt");
-	cout << "* ??????????????                             *" << endl;
-	int paramNumberPredict = 7;
-	char *tmp[7] = { "" };
-	tmp[1] = { "-s" };
-	tmp[2] = { "0" };
-	tmp[3] = { "-t" };
-	tmp[4] = { "0" };
-	//tmp[5] = { "data\\character\\characterStroke.txt" };
-	tmp[5] = { "/data/data/com.example.xmatenotes/files/characterstroke.txt" };
-	//tmp[6] = { "data\\model\\modelStroke.txt" };
-	tmp[6] = { "/data/data/com.example.xmatenotes/files/modelstroke.txt" };
-	cout << "* ???????????????????                   *" << endl;
-	svmTrain(paramNumberPredict, tmp);
-	cout << "* ?????????????                             *" << endl;
-	cout << "* ????????????????6 (?????????????????1?????2?????3)  *" << endl;
-	printTrainCount();
-	cout << "*********************end************************" << endl << endl;;
-}
-
-//????????????
-//?????date:2020/12/31
-void StrToDate(const string &s, string &year, string &month, string &day)
-{
-	int index = 0;
-	while (s[index] != ':')
-	{
-		index++;
-	}
-	index++;
-	while (s[index] != '/')
-	{
-		year += s[index++];
-	}
-	index++;
-	while (s[index] != '/')
-	{
-		month += s[index++];
-	}
-	index++;
-	while (index < s.size())
-	{
-		day += s[index++];
-	}
-}
-
-//???????????????
-//?????T:XX F:XXX
-void StrToTodayResult(const string &s)
-{
-	int index = 0;
-	string tmp;
-	while (s[index] != ':')
-	{
-		++index;
-	}
-	index++;
-
-	while (s[index] != ' ')
-	{
-		tmp += s[index++];
-	}
-	correctToday = atoi(tmp.c_str());
-	tmp.clear();
-
-	while (s[index] != ':')
-	{
-		index++;
-	}
-	index++;
-
-	while (index < s.size())
-	{
-		tmp += s[index++];
-	}
-	wrongToday = atoi(tmp.c_str());
-
-	NumberToday = correctToday + wrongToday;
-}
-
-//??????????????
-void StrToTotalResult(const string &s)
-{
-	int index = 0;
-	string tmp;
-	while (s[index] != ':')
-	{
-		++index;
-	}
-	index++;
-
-	while (s[index] != ' ')
-	{
-		tmp += s[index++];
-	}
-	TotalCorrect = atoi(tmp.c_str());
-	tmp.clear();
-
-	while (s[index] != ':')
-	{
-		index++;
-	}
-	index++;
-
-	while (index < s.size())
-	{
-		tmp += s[index++];
-	}
-	TotalWrong = atoi(tmp.c_str());
-
-	TotalNumber = TotalCorrect + TotalWrong;
-}
-//??????ü??
-void LoadUsageRecord()
-{
-	ifstream infile;
-
-	//infile.open("data\\StatisticalResults\\StatisticalResults.txt");
-	infile.open("/data/data/com.example.xmatenotes/files/statisticalresults.txt");
-	string s, year, month, day;
-	getline(infile, s);
-	StrToDate(s, year, month, day);
-
-	getline(infile, s);
-	StrToTotalResult(s);
-
-	getline(infile, s);
-	StrToTodayResult(s);
-
-	infile.close();
-
-	//infile.open("data\\train\\trainStroke12.txt");
-	infile.open("/data/data/com.example.xmatenotes/files/trainstroke12.txt");
-	while (getline(infile, s))
-	{
-		sampleCount++;
-	}
-	infile.close();
-
-	//infile.open("data\\train\\trainStroke3.txt");
-	infile.open("/data/data/com.example.xmatenotes/files/trainstroke3.txt");
-	while (getline(infile, s))
-	{
-		sampleCount++;
-	}
-	infile.close();
-}
-
-//?????????
-void UpdateUsageRecord()
-{
-	//remove("data\\StatisticalResults\\StatisticalResults.txt");
-	remove("/data/data/com.example.xmatenotes/files/statisticalresults.txt");
-	ofstream outfile;
-
-	//outfile.open("data\\StatisticalResults\\StatisticalResults.txt", ios::app);
-	outfile.open("/data/data/com.example.xmatenotes/files/statisticalresults.txt", ios::app);
-	outfile << "Total T:" << TotalCorrect << " " << "F:" << TotalWrong << endl;
-	outfile << "Today T:" << correctToday << " " << "F:" << wrongToday << endl;
-	outfile.close();
-}
-
-//????????????
-void MergerExternalDataFile(const string &sourceDataFile12, const string &sourceDataFile3, const string &sourceStatisticalFile)
-{
-	cout << "**********************************" << endl;
-	cout << "*?????????????                *" << endl;
-
-	ifstream infile;
-	string s;
-	ofstream outfile;
-	infile.open("/data/data/com.example.xmatenotes/files/" + sourceDataFile12);
-	outfile.open("/data/data/com.example.xmatenotes/files/collectDataStroke12.txt", ios::app);
-
-	while (getline(infile, s))
-	{
-		outfile << s << endl;
-		//cout << s << endl;
-	}
-	infile.close();
-	outfile.close();
-
-	infile.open("/data/data/com.example.xmatenotes/files/" + sourceDataFile3);
-	outfile.open("/data/data/com.example.xmatenotes/files/collectDataStroke3.txt", ios::app);
-
-	while (getline(infile, s))
-	{
-
-		outfile << s << endl;
-	}
-	infile.close();
-	outfile.close();
-
-	infile.open("/data/data/com.example.xmatenotes/files/" + sourceStatisticalFile);
-
-	getline(infile, s);
-
-	getline(infile, s);
-
-	int externalCorrect = 0;
-	int externalWrong = 0;
-	int index = 0;
-	string tmp;
-	while (s[index] != ':')
-	{
-		++index;
-	}
-	index++;
-
-	while (s[index] != ' ')
-	{
-		tmp += s[index++];
-	}
-	externalCorrect = atoi(tmp.c_str());
-	tmp.clear();
-
-	while (s[index] != ':')
-	{
-		index++;
-	}
-	index++;
-
-	while (index < s.size())
-	{
-		tmp += s[index++];
-	}
-	externalWrong = atoi(tmp.c_str());
-
-	TotalCorrect += externalCorrect;
-	TotalWrong += externalWrong;
-	TotalNumber = TotalCorrect + TotalWrong;
-
-	cout << "*?????????????                *" << endl;
-	//MergeTrainFile();
-	cout << "*???????????????????" << sampleCount << "        *" << endl;
-	cout << "*???????????????????" << sampleCount - (externalCorrect + externalWrong) << "        *" << endl;
-	cout << "*????????????????????" << (externalCorrect + externalWrong) << "       *" << endl;
-	cout << "**********************************" << endl << endl;
-	infile.close();
-}
-
-
-//????????????????
-void SeparateDataByStroke()
-{
-	ifstream infile;
-	//infile.open("data\\collectData.txt");
-	infile.open("/data/data/com.example.xmatenotes/files/collectdata.txt");
-	string s;
-
-	while (getline(infile, s))
-	{
-		ComputeCharacter cc(s);
-		cc.Compute();
-		cc.InrcStroketCount();
-	}
-
 }

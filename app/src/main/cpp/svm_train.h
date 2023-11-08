@@ -39,7 +39,7 @@ void exit_with_help1()
 		"-wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)\n"
 		"-v n: n-fold cross validation mode\n"
 		"-q : quiet mode (no outputs)\n"
-	);
+		);
 	exit(1);
 }
 
@@ -132,7 +132,7 @@ void do_cross_validation()
 	if (param.svm_type == EPSILON_SVR ||
 		param.svm_type == NU_SVR)
 	{
-		for (i = 0;i<prob.l;i++)
+		for (i = 0; i<prob.l; i++)
 		{
 			double y = prob.y[i];
 			double v = target[i];
@@ -147,11 +147,11 @@ void do_cross_validation()
 		printf("Cross Validation Squared correlation coefficient = %g\n",
 			((prob.l*sumvy - sumv*sumy)*(prob.l*sumvy - sumv*sumy)) /
 			((prob.l*sumvv - sumv*sumv)*(prob.l*sumyy - sumy*sumy))
-		);
+			);
 	}
 	else
 	{
-		for (i = 0;i<prob.l;i++)
+		for (i = 0; i<prob.l; i++)
 			if (target[i] == prob.y[i])
 				++total_correct;
 		printf("Cross Validation Accuracy = %g%%\n", 100.0*total_correct / prob.l);
@@ -176,14 +176,14 @@ void parse_command_line(int argc, char **argv, char *input_file_name, char *mode
 	param.eps = 1e-3;
 	param.p = 0.1;
 	param.shrinking = 1;
-	param.probability = 0;
+	param.probability = 1; //default:0
 	param.nr_weight = 0;
 	param.weight_label = NULL;
 	param.weight = NULL;
 	cross_validation = 0;
 
 	// parse options
-	for (i = 1;i<argc;i++)
+	for (i = 1; i<argc; i++)
 	{
 		if (argv[i][0] != '-') break;
 		if (++i >= argc)
@@ -299,7 +299,7 @@ void read_problem(const char *filename)
 	{
 		char *p = strtok(line1, " \t"); // label
 
-									   // features
+										// features
 		while (1)
 		{
 			p = strtok(NULL, " \t");
@@ -318,7 +318,7 @@ void read_problem(const char *filename)
 
 	max_index = 0;
 	j = 0;
-	for (i = 0;i<prob.l;i++)
+	for (i = 0; i<prob.l; i++)
 	{
 		inst_max_index = -1; // strtol gives 0 if wrong format, and precomputed kernel has <index> start from 0
 		readline1(fp);
@@ -363,7 +363,7 @@ void read_problem(const char *filename)
 		param.gamma = 1.0 / max_index;
 
 	if (param.kernel_type == PRECOMPUTED)
-		for (i = 0;i<prob.l;i++)
+		for (i = 0; i<prob.l; i++)
 		{
 			if (prob.x[i][0].index != 0)
 			{

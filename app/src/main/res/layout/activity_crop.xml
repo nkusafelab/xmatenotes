@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    tools:context=".CropActivity" >
+
+    <ImageView
+        android:id="@+id/crop_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <com.example.xmatenotes.DraggableViewContainer
+        android:id="@+id/draggableViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.example.xmatenotes.DraggableView
+            android:id="@+id/circleLeftTop"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <com.example.xmatenotes.DraggableView
+            android:id="@+id/circleRightTop"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="100dp"
+            android:layout_marginStart="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <com.example.xmatenotes.DraggableView
+            android:id="@+id/circleLeftBottom"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <com.example.xmatenotes.DraggableView
+            android:id="@+id/circleRightBottom"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="100dp"
+            android:layout_marginEnd="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:clickable="true"
+            android:focusable="true" />
+
+
+    </com.example.xmatenotes.DraggableViewContainer>
+
+    <Button
+        android:id="@+id/crop_confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginStart="40dp"
+        android:text="确定"
+        />
+
+    <Button
+        android:id="@+id/QR_generate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp"
+        android:text="生成"
+        />
+
+
+
+
+
+
+
+
+
+
+</RelativeLayout>
+
+
+

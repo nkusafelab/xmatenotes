@@ -23,7 +23,6 @@ add_library( # Sets the name of the library.
         # Provides a relative path to your source file(s).
         algotirhm.cpp
         ComputeCharacter.cpp
-        InstructionController.cpp
         stdafx.cpp
         svm.cpp)
 
